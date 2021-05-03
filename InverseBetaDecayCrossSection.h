@@ -1,6 +1,6 @@
 #ifndef INVERSEBETADECAYCROSSSECTION_H
 #define INVERSEBETADECAYCROSSSECTION_H
-//gallina
+
 #include <cmath>
 
 namespace IBD {

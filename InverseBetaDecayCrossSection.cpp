@@ -1,5 +1,5 @@
 #include "InverseBetaDecayCrossSection.h"
-//pollo
+
 namespace IBD {
 
   double ElectronEnergyO0(double Enu){
