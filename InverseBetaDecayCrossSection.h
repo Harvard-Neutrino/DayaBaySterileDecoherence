@@ -4,7 +4,7 @@
 #include <cmath>
 
 namespace IBD {
-  // following hep-ph/9903554
+  // following hep-ph/9903554  
   static const double NeutrinoEnergyThreshold = 1.806; // MeV
   static const double DeltaNeutronToProtonMass = 1.29322; // MeV from PDG2018 mass differences
   static const double ElectronMass = 0.511; // MeV
