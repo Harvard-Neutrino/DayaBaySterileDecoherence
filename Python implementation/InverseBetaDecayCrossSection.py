@@ -14,7 +14,7 @@ def ElectronEnergyO0(Enu):
     Real energy of the electron after IBD (double).
 
     Note:
-    Might return a negative energy if Enu is less than the
+    Returns a negative energy if Enu is less than the
     difference of energy between neutron an proton.
     This problem is acknowledged in function CrossSection().
     """
@@ -30,8 +30,8 @@ def ElectronMomentum(Eele):
     Real momentum of the electron (double).
 
     Note:
-    Might return an imaginary number if the energy is
-    smaller than the mass. This is acknowledged in CrossSection().
+    Returns an error if the energy is smaller than the mass.
+    This is acknowledged in CrossSection().
     """
     return math.sqrt(Eele**2 - ElectronMass**2)
 

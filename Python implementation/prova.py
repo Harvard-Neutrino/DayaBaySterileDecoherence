@@ -1,3 +1,5 @@
 import InverseBetaDecayCrossSection as IBD
 
-print(IBD.CrossSection(2))
+MeV = 1
+
+print(IBD.ElectronMomentum(0.5*MeV))
