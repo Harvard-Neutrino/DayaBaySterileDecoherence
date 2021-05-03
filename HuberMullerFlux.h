@@ -7,7 +7,7 @@
 #include <math.h>
 
 namespace reactor_isotope_flux {
-
+  // comentari random escrit aquí
   namespace huber_muller {
     extern std::map< std::string, std::vector<double> > flux_parameters;
   } // close huber_muller namespace
