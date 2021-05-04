@@ -1,0 +1,14 @@
+"""# Pel que veig, el Carlos ha escollit fer dos namespaces per tenir
+# en compte els resultats dels fluxos segons Huber i segons Muller,
+# per separat. En concret, crea dos namespaces diferents per
+# poder-los diferenciar després amb l'operador :: -ho fa quan crida
+# la funció GetFlux.
+# Ara, pel que veig, en realitat només utilitza els fluxos de
+# Hubber_Muller. Per tant, podria ser innecessari fer-ho.
+
+# Sigui com sigui, sí que seria important començar a mirar-te
+# el que fa de crear classes, i mirar com podries implementar-ho
+# a Python. No sembla excessivament difícil, però estaria bé
+# tenir-ho ben muntat.
+
+# Es poden crear classes en un arxiu separat (mòdul)?"""
