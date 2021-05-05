@@ -103,7 +103,7 @@ class DayaBay: public Experiment<DayaBay,nusquids::nuSQUIDS> {
       double sin22th13 = 0.092;
       double dm2_31 = 2.494e-3;
       double x = 1.267*dm2_31 * L / enu;
-      std::cout << (1. - sin22th13*sin(x)*sin(x)) << std::endl;
+      std::cout << (1. - sin22th13*sin(x)*sin(x)) << std::endl; // This prints the proba
       return 1. - sin22th13*sin(x)*sin(x);
     }
     void use_simple_convolution(bool simple_convolution){ simple_convolution_ = simple_convolution; }

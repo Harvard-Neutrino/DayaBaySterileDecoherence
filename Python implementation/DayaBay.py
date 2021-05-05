@@ -8,6 +8,9 @@ import DayaBayData as DBD
 # 2. I am not understanding the function get_true_energy_bin_centers,
 #    its result is not coherent with the data bins (which are not of uniform size).
 # 3. As a result of 2, I don't know if FindFineBinIndex is correct.
+# 4. What to do with the implementation of nusquids?
+# 5. In line 131 of DayaBay.h (and lots of other places), one defines a Model?
+#    Probably this is nusquids stuff.
 
 class DayaBay:
 
@@ -143,3 +146,23 @@ class DayaBay:
         The squared distance between these EH and reactor.
         """
         return self.DistanceFromReactorToHallSquare[experiment][reactor]**2
+
+    # CALCULATION OF EXPECTED EVENTS
+    # ------------------------------
+
+    def oscProbability(self, enu, L):
+        """
+        Input:
+        enu (float): the energy of the electron antineutrino.
+        L (float): the length travelled by the antineutrino.
+
+        Output:
+        The probability of the antineutrino remaining an antineutrino.
+        This is computed according to (find paper!).
+        """
+        sin22th13 = 0.092
+        dm2_31 = 2.494e-3
+        x = 1.267*dm2_31*L/enu
+        return 1. - sin22th13*sin(x)**2
+
+#    def calculate_naked_event_expectation()
