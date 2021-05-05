@@ -50,6 +50,7 @@ class DayaBay: public Experiment<DayaBay,nusquids::nuSQUIDS> {
 
     Cost calc_costs(const Model& m) const override;
 
+    // Still not implemented
     std::vector<std::vector<Experiment<DayaBay>::Point>> get_data() const override;
     std::vector<std::vector<Experiment<DayaBay>::Point>> get_expectation(const Model &m) const override;
 
@@ -58,9 +59,12 @@ class DayaBay: public Experiment<DayaBay,nusquids::nuSQUIDS> {
     static void initialise_options() { }
     void set_ignore_oscillations(bool i_o){ ignore_oscillations = i_o; }
     bool are_we_ignoring_oscillations() const { return ignore_oscillations; }
+
+    // nusquids not implemented
     nusquids::marray<double,2> get_inverse_flux_covariance() const;
     nusquids::marray<double,2> get_pseudo_inverse_flux_covariance() const;
     nusquids::marray<double,2> get_flux_covariance() const;
+
     static std::vector<double> get_lower_neutrino_bin_edges() {return NeutrinoLowerBinEdges;}
     static std::vector<double> get_upper_neutrino_bin_edges() {return NeutrinoUpperBinEdges;}
   public:
