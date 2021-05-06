@@ -137,7 +137,7 @@ class DayaBay:
         """ Check InverseBetaDecayCrossSection.py for more info."""
         return IBD.CrossSection(enu)
 
-    def get_distance2(self,experiment,reactor):
+    def get_distance(self,experiment,reactor):
         """
         Input:
         experiment (str): name of the experimental hall.
@@ -146,19 +146,24 @@ class DayaBay:
         Output:
         The squared distance between these EH and reactor.
         """
-        return self.DistanceFromReactorToHallSquare[experiment][reactor]**2
+        return self.DistanceFromReactorToHallSquare[experiment][reactor]
 
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
 
-    def calculate_naked_event_expectation(self,model,set_name,i):
+    def calculate_naked_event_expectation_simple(self,model,set_name,i):
         """
+        This function implements formula (A.2) from 1709.04294.
+
         Input:
         model: a class containing the information of the model.
                Must contain a method oscProbability (+info on Models.py)
         set_name (str): name of the experimental hall studied.
-        i (int): I honestly don't know
+        i (int): the data bin we want to compute the expectation of.
         """
+        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
+        ElectronMass = 0.511 # MeV
+
         if (set_name not in self.sets_names):
             print("Cannot calculate naked rate. Invalid set.")
             return None
@@ -166,5 +171,37 @@ class DayaBay:
             print("Cannot calculate naked rate. Bin number is invalid.")
             return None
 
-        # expectation = 0.0
-        # min_energy_fine_index = self.FindFineBinIndex()
+        expectation = 0.0
+        # We want to know what are the fine reconstructed energies for which
+        # we want to make events inside the data bin i.
+        min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+        max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+
+        for reactor in self.reactor_names:
+            L = self.get_distance(set_name,reactor)
+
+            for erf in range(min_energy_fine_index,max_energy_fine_index):
+
+                for etf in range(0,len(self.FromEtrueToErec[1])):
+                    enu = (etf+0.5)*self.deltaEfine + (
+                          DeltaNeutronToProtonMass - ElectronMass)
+                    oscprob = model.oscProbability(enu,L)
+                    flux = 0.0
+
+                    for isotope in self.isotopes_to_consider:
+                        flux += (self.mean_fission_fractions[isotope]*
+                                 self.get_flux(enu,isotope))
+                    expectation += (flux * self.get_cross_section(enu) *
+                                    FromEtrueToErec[erf][etf] * oscprob)
+                    # isotope loop ends
+
+                # real antineutrino energies loop ends
+
+            # reconstructed energies loop ends
+            # the two deltaEfine are to realise a trapezoidal numeric integration
+            expectation *= deltaEfine**2
+            expectation *= self.EfficiencyOfHall[set_name]
+            expectation /= L**2
+
+        # reactor loop ends
+        return expectation * self.TotalNumberOfProtons
