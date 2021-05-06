@@ -96,19 +96,28 @@ class DayaBay:
     def get_data_lower_bin_edges(self):
         return self.DataLowerBinEdges
 
-    def get_true_energy_bin_centers(self):
+    def get_true_energy_bin_centers_deprecated(self):
         """
         Output: returns a list with the centers of the bins?
+        I want to deprecate this.
         """
         enutrue = []
         for i in range(0,len(self.FromEtrueToErec[1])):
             enutrue.append((i+0.5)*self.deltaEfine)
         return enutrue
 
-    def FindFineBinIndex(self,energy):
+    def get_true_energy_bin_centers(self):
+        """
+        Output:
+        Returns a numpy array with the centers of the real neutrino energy
+        of the histogram bins.
+        """
+        return (self.NeutrinoLowerBinEdges+self.NeutrinoUpperBinEdges)/2
+
+    def FindFineBinIndex_deprecated(self,energy):
         """
         Returns the index of the histogram in which the
-        input energy is found?
+        input energy is found. I want to deprecate this.
         """
         dindex = floor(energy/self.deltaEfine - 0.5)
         if dindex<0:
@@ -116,6 +125,25 @@ class DayaBay:
         else:
             return dindex
 
+    def FindFineBinIndex(self,energy):
+        """
+        Input:
+        energy (float): true energy of the antineutrino.
+
+        Output:
+        The index of the bin in which this energy is found (int).
+        This function works for an arbitrary distribution of bins
+        (even if they are not equidistant).
+        """
+        if ((energy < self.NeutrinoLowerBinEdges[0]) or (energy > self.NeutrinoUpperBinEdges[-1]):
+            print("Energy not in histogram.")
+            return None
+        else:
+            # We create an array with all the edges of the histogram.
+            allbins = self.NeutrinoLowerBinEdges[0].append(self.NeutrinoUpperBinEdges[-1])
+            # when introduced a value, np.histogram return an array such as (0,...,0,1,0,...,0)
+            # only thing left to do is to find in which index is the number one.
+            return np.where(np.histogram(energy,bins=allbins)[0]==1)[0][0]
 
     # FUNCTIONS TO GET FLUX, DISTANCES AND CROSS-SECTION
     # ---------------------------------------------------

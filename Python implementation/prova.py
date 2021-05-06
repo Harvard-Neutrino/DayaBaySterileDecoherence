@@ -28,6 +28,6 @@ DB_test = DB.DayaBay()
 #print(DB_test.get_flux(0.1,'U235'))
 #print(DB_test.get_cross_section(2))
 
-#print(DB_test.get_true_energy_bin_centers())
+print(DB_test.get_true_energy_bin_centers())
 #print(DB_test.get_data_lower_bin_edges())
-print(DB_test.get_distance2('EH1','D1'))
+#print(DB_test.get_distance2('EH1','D1'))
