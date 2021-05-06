@@ -2,15 +2,8 @@ import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF
 import DayaBayParameters as DBP
 import DayaBayData as DBD
-
-# THINGS TO TAKE INTO ACCOUNT
-# 1. One should be careful between which variables are public and which are private!
-# 2. I am not understanding the function get_true_energy_bin_centers,
-#    its result is not coherent with the data bins (which are not of uniform size).
-# 3. As a result of 2, I don't know if FindFineBinIndex is correct.
-# 4. What to do with the implementation of nusquids?
-# 5. In line 131 of DayaBay.h (and lots of other places), one defines a Model?
-#    Probably this is nusquids stuff.
+import Models
+import numpy as np
 
 class DayaBay:
 
@@ -96,54 +89,34 @@ class DayaBay:
     def get_data_lower_bin_edges(self):
         return self.DataLowerBinEdges
 
-    def get_true_energy_bin_centers_deprecated(self):
+    def get_true_energy_bin_centers(self):
         """
-        Output: returns a list with the centers of the bins?
-        I want to deprecate this.
+        This function divides the whole reconstructed energy spectrum in
+        the energy intervals which the experiment is capable to resolve.
+        The resolution is given by deltaEfine (here, 0.05 MeV).
+        This energy will allow neutrino energies from 0.78 MeV to 12.78 MeV (after
+        summing 0.78 MeV in the function), approximately.
+
+        Output:
+        returns a numpy array (the same length as the resolution
+        matrix) with the center of the bins of the resolution of the experiment.
         """
         enutrue = []
         for i in range(0,len(self.FromEtrueToErec[1])):
             enutrue.append((i+0.5)*self.deltaEfine)
         return enutrue
 
-    def get_true_energy_bin_centers(self):
+    def FindFineBinIndex(self,energy):
         """
-        Output:
-        Returns a numpy array with the centers of the real neutrino energy
-        of the histogram bins.
+        Input:
+        energy (int);
         """
-        return (self.NeutrinoLowerBinEdges+self.NeutrinoUpperBinEdges)/2
-
-    def FindFineBinIndex_deprecated(self,energy):
-        """
-        Returns the index of the histogram in which the
-        input energy is found. I want to deprecate this.
-        """
-        dindex = floor(energy/self.deltaEfine - 0.5)
+        dindex = np.floor(energy/self.deltaEfine - 0.5)
         if dindex<0:
             return 0
         else:
             return dindex
 
-    def FindFineBinIndex(self,energy):
-        """
-        Input:
-        energy (float): true energy of the antineutrino.
-
-        Output:
-        The index of the bin in which this energy is found (int).
-        This function works for an arbitrary distribution of bins
-        (even if they are not equidistant).
-        """
-        if ((energy < self.NeutrinoLowerBinEdges[0]) or (energy > self.NeutrinoUpperBinEdges[-1]):
-            print("Energy not in histogram.")
-            return None
-        else:
-            # We create an array with all the edges of the histogram.
-            allbins = self.NeutrinoLowerBinEdges[0].append(self.NeutrinoUpperBinEdges[-1])
-            # when introduced a value, np.histogram return an array such as (0,...,0,1,0,...,0)
-            # only thing left to do is to find in which index is the number one.
-            return np.where(np.histogram(energy,bins=allbins)[0]==1)[0][0]
 
     # FUNCTIONS TO GET FLUX, DISTANCES AND CROSS-SECTION
     # ---------------------------------------------------
@@ -178,19 +151,20 @@ class DayaBay:
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
 
-    def oscProbability(self, enu, L):
+    def calculate_naked_event_expectation(self,model,set_name,i):
         """
         Input:
-        enu (float): the energy of the electron antineutrino.
-        L (float): the length travelled by the antineutrino.
-
-        Output:
-        The probability of the antineutrino remaining an antineutrino.
-        This is computed according to (find paper!).
+        model: a class containing the information of the model.
+               Must contain a method oscProbability (+info on Models.py)
+        set_name (str): name of the experimental hall studied.
+        i (int): I honestly don't know
         """
-        sin22th13 = 0.092
-        dm2_31 = 2.494e-3
-        x = 1.267*dm2_31*L/enu
-        return 1. - sin22th13*sin(x)**2
+        if (set_name not in self.sets_names):
+            print("Cannot calculate naked rate. Invalid set.")
+            return None
+        elif (i > self.n_bins):
+            print("Cannot calculate naked rate. Bin number is invalid.")
+            return None
 
-#    def calculate_naked_event_expectation()
+        # expectation = 0.0
+        # min_energy_fine_index = self.FindFineBinIndex()

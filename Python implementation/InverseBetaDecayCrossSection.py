@@ -11,7 +11,7 @@ def ElectronEnergyO0(Enu):
     Enu (double): real energy of the incoming neutrino.
 
     Output:
-    Real energy of the electron after IBD (double).
+    Real energy of the electron after IBD (float).
 
     Note:
     Returns a negative energy if Enu is less than the

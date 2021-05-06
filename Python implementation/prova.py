@@ -1,6 +1,7 @@
 import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF
 import DayaBay as DB
+import Models
 
 huber_muller =  {'U235': [4.367, -4.577, 2.100, -5.294e-1, 6.185e-2, -2.777e-3],
                  'U238': [4.833e-1, 1.927e-1, -1.283e-1, -6.762e-3, 2.233e-3, -1.536e-4],
@@ -26,8 +27,19 @@ DB_test = DB.DayaBay()
 #print(DB_test.set_ignore_oscillations(True))
 #print(DB_test.are_we_ignoring_oscillations())
 #print(DB_test.get_flux(0.1,'U235'))
-#print(DB_test.get_cross_section(2))
 
-print(DB_test.get_true_energy_bin_centers())
-#print(DB_test.get_data_lower_bin_edges())
+
+#print(len(DB_test.get_resolution_matrix()))
+#print(len(DB_test.get_resolution_matrix()[1]))
+
+
+print(DB_test.FindFineBinIndex(0.7))
+print(DB_test.FindFineBinIndex(1.1))
+#print(len(DB_test.get_lower_neutrino_bin_edges()))
 #print(DB_test.get_distance2('EH1','D1'))
+
+def get_osc(model):
+    return model.oscProbability(10,10)
+
+Model_test = Models.PlaneWaveSM()
+#print(get_osc(Model_test))

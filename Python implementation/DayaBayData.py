@@ -1,5 +1,27 @@
 import numpy as np
 
+# To understand the information on the bins, we must understand the physical process.
+# An electron antineutrino arrives to the detector with an energy which can go between
+# 0 and infty. However, only if the antineutrino has an energy > 1.8 MeV, it can
+# produce IBD. In such case, a positron will be produced (with kinetic and rest energy).
+
+# This positron will have total energy between 511 keV and infty. It will annihilate with
+# an electron at rest. This will produce a flash of light, whose energy can go between
+# 1.022 MeV and infty (due to the rest mass energy of the positron+electron).
+
+# The energy of this light is called prompt energy, and is the one from the data bins.
+# We can relate the prompt energy with the incoming antineutrino energy through
+# Eprompt = Erealnu - 0.78 (MeV).
+# For more information, the process is described in 1610.04802.
+
+# -------------------------------------------------------------
+# PS: The program begins to take prompt energies from ~0.78 MeV.
+#     This is a bit stupid, since the first possible antineutrino energy should be
+#     ~1.806 MeV and the first non-null prompt energy will be 1.022 MeV.
+#     However, it will bring up no error, since this is taken into account
+#     in the IBD cross-section, which is set to be 0 if the antineutrino does not
+#     have enough energy.
+
 # -------------------------------------------------------------
 #   HISTOGRAM BINS
 # -------------------------------------------------------------
