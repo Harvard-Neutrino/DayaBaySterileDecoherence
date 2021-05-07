@@ -7,6 +7,11 @@ import numpy as np
 # It might be interesting to define this as a class, since then we will be
 # able to recover the values of the parameters from the class itself.
 
+class NoOscillations:
+
+    def oscProbability(self,enu,L):
+        return 1.
+
 class PlaneWaveSM:
     def __init__(self):
         self.sin22th13 = 0.092

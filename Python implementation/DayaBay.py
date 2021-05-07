@@ -4,6 +4,7 @@ import DayaBayParameters as DBP
 import DayaBayData as DBD
 import Models
 import numpy as np
+from scipy import integrate as integrate
 
 class DayaBay:
 
@@ -109,9 +110,13 @@ class DayaBay:
     def FindFineBinIndex(self,energy):
         """
         Input:
-        energy (int);
+        energy (float): prompt energy or neutrino true energy.
+
+        Output:
+        An integer telling us the index of the true_energy_bin_centers
+        bin in which the input energy is found.
         """
-        dindex = np.floor(energy/self.deltaEfine - 0.5)
+        dindex = np.int(np.floor(energy/self.deltaEfine - 0.5))
         if dindex<0:
             return 0
         else:
@@ -192,14 +197,76 @@ class DayaBay:
                         flux += (self.mean_fission_fractions[isotope]*
                                  self.get_flux(enu,isotope))
                     expectation += (flux * self.get_cross_section(enu) *
-                                    FromEtrueToErec[erf][etf] * oscprob)
+                                    self.FromEtrueToErec[erf][etf] * oscprob)
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
 
             # reconstructed energies loop ends
             # the two deltaEfine are to realise a trapezoidal numeric integration
-            expectation *= deltaEfine**2
+            expectation *= self.deltaEfine**2
+            expectation *= self.EfficiencyOfHall[set_name]
+            expectation /= L**2
+
+        # reactor loop ends
+        return expectation * self.TotalNumberOfProtons
+
+    def integrand(self,enu,L,model,isotope,erf,etf):
+        return (self.mean_fission_fractions[isotope]*
+                self.get_flux(enu,isotope)*
+                self.get_cross_section(enu) *
+                self.FromEtrueToErec[erf][etf] *
+                model.oscProbability(enu,L))
+
+    def calculate_naked_event_expectation_integr(self,model,set_name,i):
+        """
+        This function implements formula (A.2) from 1709.04294.
+        In this case, however, we perform an integral inside the fine energy
+        bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
+
+        Input:
+        model: a class containing the information of the model.
+               Must contain a method oscProbability (+info on Models.py)
+        set_name (str): name of the experimental hall studied.
+        i (int): the data bin we want to compute the expectation of.
+        """
+        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
+        ElectronMass = 0.511 # MeV
+
+        if (set_name not in self.sets_names):
+            print("Cannot calculate naked rate. Invalid set.")
+            return None
+        elif (i > self.n_bins):
+            print("Cannot calculate naked rate. Bin number is invalid.")
+            return None
+
+        expectation = 0.0
+        # We want to know what are the fine reconstructed energies for which
+        # we want to make events inside the data bin i.
+        min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+        max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+
+        for reactor in self.reactor_names:
+            L = self.get_distance(set_name,reactor)
+
+            for erf in range(min_energy_fine_index,max_energy_fine_index):
+
+                for etf in range(0,len(self.FromEtrueToErec[1])):
+                    enu_min = (etf)*self.deltaEfine + (
+                          DeltaNeutronToProtonMass - ElectronMass)
+                    enu_max = (etf+1)*self.deltaEfine + (
+                          DeltaNeutronToProtonMass - ElectronMass)
+
+                    for isotope in self.isotopes_to_consider:
+                        expectation += integrate.quad(self.integrand,enu_min,enu_max,
+                                                      args=(L,model,isotope,erf,etf))[0]
+                    # isotope loop ends
+
+                # real antineutrino energies loop ends
+
+            # reconstructed energies loop ends
+            # only one trapezoidal numeric integration has been done
+            expectation *= self.deltaEfine
             expectation *= self.EfficiencyOfHall[set_name]
             expectation /= L**2
 
