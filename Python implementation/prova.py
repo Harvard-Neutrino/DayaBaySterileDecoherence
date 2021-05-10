@@ -34,5 +34,7 @@ def get_osc(model):
 #Model_test = Models.PlaneWaveSM()
 Model_test = Models.NoOscillations()
 #print(get_osc(Model_test))
-print(DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',6))
-print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',6))
+print(DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',1))
+print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',1))
+# Petit problema, i = 0 dona ~21000, mentre que i = 1 dona ~17500. Molt menys,
+# és raonable?
