@@ -30,7 +30,6 @@ class DayaBay:
         # Associated objects of the class
         self.deltaEfine = 0.05 # in MeV. What is this???
         self.TotalNumberOfProtons = TotalMass*FH*Na*IH1/HidrogenMass
-        self.ignore_oscillations = False
 
         self.sets_names = DBP.exp_names
         self.reactor_names = DBP.reac_names
@@ -54,41 +53,8 @@ class DayaBay:
         self.PredictedBackground = DBD.predicted_bkg
 
 
-    # USEFUL FUNCTIONS TO ACCESS THE CLASS DATA
-    # -----------------------------------------
-    def name(self):
-        return "DayaBay"
-
-    def num_bins(self):
-        return self.n_bins
-
-    def set_ignore_oscillations(self,io):
-        self.ignore_oscillations = io
-        return self.ignore_oscillations
-
-    def are_we_ignoring_oscillations(self):
-        return self.ignore_oscillations
-
-    def get_isotope_names(self):
-        return self.isotopes_to_consider
-
-    def get_resolution_matrix(self):
-        return self.FromEtrueToErec
-
-
-    # USEFUL FUNCTIONS TO MAKE HISTOGRAMS
+    # FUNCTIONS TO MAKE HISTOGRAMS
     # -----------------------------------
-    def get_lower_neutrino_bin_edges(self):
-        return self.NeutrinoLowerBinEdges
-
-    def get_upper_neutrino_bin_edges(self):
-        return self.NeutrinoUpperBinEdges
-
-    def get_data_upper_bin_edges(self):
-        return self.DataUpperBinEdges
-
-    def get_data_lower_bin_edges(self):
-        return self.DataLowerBinEdges
 
     def get_true_energy_bin_centers(self):
         """
@@ -272,3 +238,61 @@ class DayaBay:
 
         # reactor loop ends
         return expectation * self.TotalNumberOfProtons
+
+    def get_data(self):
+        """
+        Output:
+        Returns a list, with as many elements as experimental halls.
+        Each element is a list with as many subelements as data bins.
+        Each subelement is a 4-tuple with: the number of counts, the error
+        (computed as the sqrt), and the lower and upper bin.
+
+        Note: one should take a better look at how the error is computed.
+        """
+        all_data = []
+        for set_name in self.sets_names:
+            observed_data = self.ObservedData[set_name]
+            data_list = []
+            for i in range(0,self.n_bins):
+                data_list.append([observed_data[i],np.sqrt(observed_data[i]),
+                                  self.DataLowerBinEdges[i],self.DataUpperBinEdges[i]])
+            all_data.append(data_list)
+        return np.array(all_data)
+
+    def get_expectation(self,model):
+        """
+        Input:
+        A model with which to compute the oscillation probability.
+
+        Output:
+        Returns a list, with as many elements as experimental halls.
+        Each element is a list with as many subelements as data bins.
+        Each subelement is a 4-tuple with: the number of counts, the error
+        (computed as the sqrt), and the lower and upper bin.
+
+        Note: one should take a better look at how the error is computed.
+        """
+        all_expe = []
+        for set_name in self.sets_names:
+            predicted_background = self.PredictedBackground[set_name]
+            expe_list = []
+            for i in range(0,self.n_bins):
+                expectation = self.calculate_naked_event_expectation_simple(model,set_name,i)
+                expectation += predicted_background[i]
+                expe_list.append((expectation,np.sqrt(expectation),
+                                  self.DataLowerBinEdges[i],self.DataUpperBinEdges[i]))
+            all_expe.append(expe_list)
+        return np.array(all_expe)
+
+    def get_inverse_flux_covariance(self):
+        return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
+
+    def get_chi2(self,model):
+        """
+        Input: a  model with which to compute expectations.
+        Output: a chi2 statistic comparing data and expectations.
+        """
+        data = self.get_data()[0,:,0]
+        expectation = self.get_expectation(model)[0,:,0]
+        Vinv = self.get_inverse_flux_covariance()
+        return (data-expectation).dot(Vinv.dot(data-expectation))

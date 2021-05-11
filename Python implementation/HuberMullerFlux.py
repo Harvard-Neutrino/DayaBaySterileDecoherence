@@ -1,7 +1,7 @@
 import math
 
 #  Prescriptiions for all isotopes but U238 from Huber 1106.0687
-#  The missing isotope (U238) is obtained from Muller et al 1101.2663
+#  The missing isotope (U238) is obtained from Muller et al
 huber_muller =  {'U235': [4.367, -4.577, 2.100, -5.294e-1, 6.185e-2, -2.777e-3],
                  'U238': [4.833e-1, 1.927e-1, -1.283e-1, -6.762e-3, 2.233e-3, -1.536e-4],
                  'PU239': [4.757, -5.392, 2.563, -6.596e-1, 7.820e-2, -3.536e-3],

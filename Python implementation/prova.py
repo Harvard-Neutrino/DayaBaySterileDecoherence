@@ -2,6 +2,8 @@ import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF
 import DayaBay as DB
 import Models
+import numpy as np
+import matplotlib.pyplot as plt
 
 #flux_test = HMF.reactor_isotope_flux('U235',huber_muller)
 #print(flux_test.isotope_name)
@@ -31,10 +33,14 @@ DB_test = DB.DayaBay()
 def get_osc(model):
     return model.oscProbability(10,10)
 
-#Model_test = Models.PlaneWaveSM()
+# Model_test = Models.PlaneWaveSM()
 Model_test = Models.NoOscillations()
 #print(get_osc(Model_test))
-print(DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',1))
-print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',1))
+# print(DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',1))
+# print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',1))
 # Petit problema, i = 0 dona ~21000, mentre que i = 1 dona ~17500. Molt menys,
 # és raonable?
+
+# print(DB_test.get_data()[:,:,0])
+# print(DB_test.get_expectation(Model_test))
+print(DB_test.get_chi2(Model_test))
