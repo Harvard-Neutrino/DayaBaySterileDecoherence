@@ -287,12 +287,29 @@ class DayaBay:
     def get_inverse_flux_covariance(self):
         return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
 
+    def get_inverse_resolution_matrix(self):
+        return np.linalg.inv(np.array(self.FromEtrueToErec))
+
+    def get_inverse_resolution_matrix_underdim(self):
+        M = self.get_inverse_resolution_matrix()
+        mat = np.zeros((len(self.NeutrinoLowerBinEdges),self.n_bins))
+        for i in range(0,self.n_bins):
+            minrec = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+            maxrec = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+            for j in range(0,len(self.NeutrinoLowerBinEdges)):
+                mintrue = self.FindFineBinIndex(self.NeutrinoLowerBinEdges[j])
+                maxtrue = self.FindFineBinIndex(self.NeutrinoUpperBinEdges[j])
+                mat[j,i] = np.mean(self.FromEtrueToErec[mintrue:maxtrue,minrec:maxrec])
+        return mat
+
     def get_chi2(self,model):
         """
         Input: a  model with which to compute expectations.
         Output: a chi2 statistic comparing data and expectations.
         """
+        U = self.get_inverse_resolution_matrix_underdim()
+        UT = U.transpose()
         data = self.get_data()[0,:,0]
         expectation = self.get_expectation(model)[0,:,0]
         Vinv = self.get_inverse_flux_covariance()
-        return (data-expectation).dot(Vinv.dot(data-expectation))
+        return (data-expectation).dot(UT.dot(Vinv.dot(U.dot(data-expectation))))
