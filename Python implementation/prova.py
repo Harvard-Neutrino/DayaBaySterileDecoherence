@@ -5,14 +5,14 @@ import Models
 import numpy as np
 import matplotlib.pyplot as plt
 
-#flux_test = HMF.reactor_isotope_flux('U235',huber_muller)
+flux_test = HMF.reactor_isotope_flux('U235',HMF.huber_muller)
 #print(flux_test.isotope_name)
-#print(flux_test.flux_parameters[flux_test.isotope_name])
+print(flux_test.flux_parameters[flux_test.isotope_name])
 
 #print(HMF.reactor_isotope_flux('U235',huber_muller).isotope_name)
 #print(HMF.reactor_isotope_flux('U238',muller).flux_parameters)
 
-#print(flux_test.GetFlux(0.1))
+print(flux_test.GetFlux(1.))
 
 DB_test = DB.DayaBay()
 #print(DB.DayaBay().num_bins())
@@ -33,14 +33,15 @@ DB_test = DB.DayaBay()
 def get_osc(model):
     return model.oscProbability(10,10)
 
-# Model_test = Models.PlaneWaveSM()
-Model_test = Models.NoOscillations()
+Model_test = Models.PlaneWaveSM()
+#Model_test = Models.WavePacketSterile_full()
 #print(get_osc(Model_test))
-# print(DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',1))
+#for i in range(0,DB_test.n_bins):
+    #print(DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',i))
 # print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',1))
 # Petit problema, i = 0 dona ~21000, mentre que i = 1 dona ~17500. Molt menys,
 # és raonable?
 
 # print(DB_test.get_data()[:,:,0])
 # print(DB_test.get_expectation(Model_test))
-print(DB_test.get_chi2(Model_test))
+#print(DB_test.get_chi2(Model_test))

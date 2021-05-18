@@ -325,7 +325,7 @@ class WavePacketSterile_full:
         self.sigmax = 2.1e-3*nm
 
     def get_mixing_matrix(self):
-        """ Returns the PMNS matrix"""
+        """ Returns the 4 neutrino mixing matrix. """
         c12 = np.cos(self.theta12)
         c13 = np.cos(self.theta13)
         c23 = np.cos(self.theta23)

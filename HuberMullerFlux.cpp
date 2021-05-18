@@ -1,4 +1,5 @@
 #include "HuberMullerFlux.h"
+#include <iostream>
 
 namespace reactor_isotope_flux {
 
@@ -34,3 +35,13 @@ double GetFlux(double Enu, const std::vector<double> & flux_parameters){
 }
 
 } // close reactorflux namespace
+
+
+int main(){
+
+  std::cout << reactor_isotope_flux::GetFlux(1,reactor_isotope_flux::huber_muller::flux_parameters["U235"]);
+  std::cout << "\n";
+  std::cout<<"Hola Món\n";
+
+  return 0;
+}

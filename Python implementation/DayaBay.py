@@ -28,7 +28,7 @@ class DayaBay:
         TotalMass = 20.e3 # in kg
 
         # Associated objects of the class
-        self.deltaEfine = 0.05 # in MeV. What is this???
+        self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix
         self.TotalNumberOfProtons = TotalMass*FH*Na*IH1/HidrogenMass
 
         self.sets_names = DBP.exp_names

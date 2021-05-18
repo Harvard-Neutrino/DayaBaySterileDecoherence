@@ -1,4 +1,4 @@
-import math
+import numpy as np
 
 #  Prescriptiions for all isotopes but U238 from Huber 1106.0687
 #  The missing isotope (U238) is obtained from Muller et al
@@ -42,8 +42,8 @@ class reactor_isotope_flux:
         according to the formula and parameters in 1106.0687.
         """
         exponent = 0.0
-        for i in range(0,len(self.flux_parameters)):
+        for i in range(0,len(self.flux_parameters[self.isotope_name])):
             exponent += self.flux_parameters[self.isotope_name][i]*Enu**i
         # The physical meaning of this formula is found on (22) from 1106.0687,
         # it's some kind of perturbative development as a function of Enu.
-        return math.exp(exponent)
+        return np.exp(exponent)
