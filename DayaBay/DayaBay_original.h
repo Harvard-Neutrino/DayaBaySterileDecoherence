@@ -3,16 +3,16 @@
 
 #include <map>
 #include <assert.h>
+#include "Experiment.hpp"
 #include "HuberMullerFlux.h"
+#include "DataSet.hpp"
+#include "Model.hpp"
 #include "InverseBetaDecayCrossSection.h"
-//#include <nuSQuIDS/tools.h>
-//#include "Experiment.hpp"
-//#include "DataSet.hpp"
-//#include "Model.hpp"
+#include <nuSQuIDS/tools.h>
 
 namespace dayabay {
 
-class DayaBay {
+class DayaBay: public Experiment<DayaBay,nusquids::nuSQUIDS> {
   private:
     static constexpr int n_bins = 35;
     static const std::vector<std::string> isotopes_to_consider;
@@ -48,22 +48,22 @@ class DayaBay {
     DayaBay();
     ~DayaBay(){}
 
-    // Cost calc_costs(const Model& m) const override;
+    Cost calc_costs(const Model& m) const override;
 
     // Still not implemented
-    //std::vector<std::vector<Experiment<DayaBay>::Point>> get_data() const override;
-    //std::vector<std::vector<Experiment<DayaBay>::Point>> get_expectation(const Model &m) const override;
+    std::vector<std::vector<Experiment<DayaBay>::Point>> get_data() const override;
+    std::vector<std::vector<Experiment<DayaBay>::Point>> get_expectation(const Model &m) const override;
 
     static std::string name() { return std::string("DayaBay");}
-    // size_t num_bins() const override { return n_bins; }
+    size_t num_bins() const override { return n_bins; }
     static void initialise_options() { }
     void set_ignore_oscillations(bool i_o){ ignore_oscillations = i_o; }
     bool are_we_ignoring_oscillations() const { return ignore_oscillations; }
 
     // nusquids not implemented
-    // nusquids::marray<double,2> get_inverse_flux_covariance() const;
-    // nusquids::marray<double,2> get_pseudo_inverse_flux_covariance() const;
-    // nusquids::marray<double,2> get_flux_covariance() const;
+    nusquids::marray<double,2> get_inverse_flux_covariance() const;
+    nusquids::marray<double,2> get_pseudo_inverse_flux_covariance() const;
+    nusquids::marray<double,2> get_flux_covariance() const;
 
     static std::vector<double> get_lower_neutrino_bin_edges() {return NeutrinoLowerBinEdges;}
     static std::vector<double> get_upper_neutrino_bin_edges() {return NeutrinoUpperBinEdges;}
@@ -103,18 +103,18 @@ class DayaBay {
       double sin22th13 = 0.092;
       double dm2_31 = 2.494e-3;
       double x = 1.267*dm2_31 * L / enu;
-      //std::cout << (1. - sin22th13*sin(x)*sin(x)) << std::endl; // This prints the proba
+      std::cout << (1. - sin22th13*sin(x)*sin(x)) << std::endl; // This prints the proba
       return 1. - sin22th13*sin(x)*sin(x);
     }
     void use_simple_convolution(bool simple_convolution){ simple_convolution_ = simple_convolution; }
   private:
     bool simple_convolution_ = false;
-  public:
+  private:
     //double from_
-    double calculate_naked_event_expectation(std::string set_name, unsigned int i) const {
+    double calculate_naked_event_expectation(const Model & model, std::string set_name, unsigned int i) const {
       using namespace reactor_isotope_flux;
-      //if(std::none_of(sets_names.begin(),sets_names.end(),[&set_name](std::string set){return set_name == set;}))
-      //  throw std::runtime_error("Dayabay:: Cannot calculate naked rate. Invalid set.");
+      if(std::none_of(sets_names.begin(),sets_names.end(),[&set_name](std::string set){return set_name == set;}))
+        throw std::runtime_error("Dayabay:: Cannot calculate naked rate. Invalid set.");
       if(i>=n_bins)
         throw std::runtime_error("Dayabay:: Cannot calculate naked rate. Bin number is invalid.");
 
@@ -125,17 +125,31 @@ class DayaBay {
       for(std::string reactor_name : reactor_names){
         for(size_t erf = min_reco_energy_fine_index; erf < max_reco_energy_fine_index; erf++){
           for(size_t etf = 0; etf < FromEtrueToErec.front().size(); etf++){
-            double enu = (etf+0.5)*deltaEFine + (DeltaNeutronToProtonMass - ElectronMass);// bin center
-            double L = sqrt(DistanceFromReactorToHallSquare.at({set_name,reactor_name}));
-            //double oscprob = model.amp<Model::E_TO_E, Model::ANTIPARTICLE, Model::FREE>(L/enu);
-            double oscprob = 1.;
-            if(ignore_oscillations) oscprob = 1.;
-            assert(oscprob > 0.0);
-            double flux = 0.0;
-            for(std::string isotope_name : isotopes_to_consider){
-              flux += mean_fission_fractions.at(isotope_name)*GetFlux(enu,huber_muller::flux_parameters[isotope_name]);
+            if(simple_convolution_){
+              double enu = (etf+0.5)*deltaEFine + (DeltaNeutronToProtonMass - ElectronMass);// bin center
+              double L = sqrt(DistanceFromReactorToHallSquare.at({set_name,reactor_name}));
+              double oscprob = model.amp<Model::E_TO_E, Model::ANTIPARTICLE, Model::FREE>(L/enu);
+              if(ignore_oscillations) oscprob = 1.;
+              assert(oscprob > 0.0);
+              double flux = 0.0;
+              for(std::string isotope_name : isotopes_to_consider){
+                flux += mean_fission_fractions.at(isotope_name)*GetFlux(enu,huber_muller::flux_parameters[isotope_name]);
+              }
+              expectation += flux*IBD::CrossSection(enu)*FromEtrueToErec[erf][etf]*deltaEFine*oscprob;
+            } else {
+              double enu_min = (etf)*deltaEFine + (DeltaNeutronToProtonMass - ElectronMass);// bin lower edge
+              double enu_max = (etf+1)*deltaEFine + (DeltaNeutronToProtonMass - ElectronMass);// bin upper edge
+              assert(enu_max > enu_min);
+              double L = sqrt(DistanceFromReactorToHallSquare.at({set_name,reactor_name}));
+              for(std::string isotope_name : isotopes_to_consider){
+                expectation += nusquids::integrate([&](double enu){
+                      double oscprob = model.amp<Model::E_TO_E, Model::ANTIPARTICLE, Model::FREE>(L/enu);
+                      if(ignore_oscillations) oscprob = 1.;
+                      assert(oscprob > 0.0);
+                      return mean_fission_fractions.at(isotope_name)*GetFlux(enu,huber_muller::flux_parameters[isotope_name])*IBD::CrossSection(enu)*FromEtrueToErec[erf][etf]*oscprob;
+                }, enu_min, enu_max);
+              }
             }
-            expectation += flux*IBD::CrossSection(enu)*FromEtrueToErec[erf][etf]*deltaEFine*oscprob;
           }
         }
         expectation *= deltaEFine;

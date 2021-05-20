@@ -1,9 +1,4 @@
 #include "DayaBay.h"
-#include <iostream>
-#include "HuberMullerFlux.h"
-#include "InverseBetaDecayCrossSection.h"
-#include <map>
-#include <assert.h>
 
 #define pow2(x) ((x)*(x))
 
@@ -340,58 +335,85 @@ namespace dayabay {
 
   DayaBay::DayaBay(){}
 
-  // DayaBay::Cost DayaBay::calc_costs(const Model& m) const{
-  //   return {0.0,0.0};
-  // }
+  DayaBay::Cost DayaBay::calc_costs(const Model& m) const{
+    return {0.0,0.0};
+  }
 
-  // std::vector<std::vector<Experiment<DayaBay>::Point>> DayaBay::get_data() const {
-  //   std::vector<std::vector<Experiment<DayaBay>::Point>> coso;
-  //   for(std::string set_name : sets_names){
-  //     auto observed_data = ObservedData.at(set_name);
-  //     assert(DataUpperBinEdges.size() == observed_data.size());
-  //     assert(DataLowerBinEdges.size() == observed_data.size());
-  //     std::vector<Experiment<DayaBay>::Point> data_list(observed_data.size());
-  //     for(unsigned int i =0; i < data_list.size(); i++){
-  //       data_list[i] = {observed_data[i],
-  //                       observed_data[i],//poisson error
-  //                       DataLowerBinEdges[i],
-  //                       DataUpperBinEdges[i]};
-  //     }
-  //     coso.push_back(data_list);
-  //   }
-  //   return coso;
-  // }
-  //
-  // std::vector<std::vector<Experiment<DayaBay>::Point>> DayaBay::get_expectation(const Model &m) const {
-  //   std::vector<std::vector<Experiment<DayaBay>::Point>> coso;
-  //   for(std::string set_name : sets_names){
-  //     auto predicted_background = PredictedBackground.at(set_name);
-  //     std::vector<Experiment<DayaBay>::Point> expectation_list(predicted_background.size());
-  //     assert(DataUpperBinEdges.size() == expectation_list.size());
-  //     assert(DataLowerBinEdges.size() == expectation_list.size());
-  //
-  //     for(unsigned int i =0; i < expectation_list.size(); i++){
-  //       double expectation = calculate_naked_event_expectation(m,set_name,i) + predicted_background[i];
-  //       //double expectation = calculate_naked_event_expectation(m,set_name,i);
-  //       double enu = (DataLowerBinEdges[i]+DataUpperBinEdges[i])/2.;
-  //       //std::cout << "expectation " << expectation << " at " << enu << std::endl;
-  //       double expectation_error = expectation;
-  //       expectation_list[i] = {expectation,
-  //                              expectation_error,//poisson error // fix me
-  //                              DataLowerBinEdges[i],
-  //                              DataUpperBinEdges[i]};
-  //     }
-  //
-  //     coso.push_back(expectation_list);
-  //   }
-  //   return coso;
-  // }
+  std::vector<std::vector<Experiment<DayaBay>::Point>> DayaBay::get_data() const {
+    std::vector<std::vector<Experiment<DayaBay>::Point>> coso;
+    for(std::string set_name : sets_names){
+      auto observed_data = ObservedData.at(set_name);
+      assert(DataUpperBinEdges.size() == observed_data.size());
+      assert(DataLowerBinEdges.size() == observed_data.size());
+      std::vector<Experiment<DayaBay>::Point> data_list(observed_data.size());
+      for(unsigned int i =0; i < data_list.size(); i++){
+        data_list[i] = {observed_data[i],
+                        observed_data[i],//poisson error
+                        DataLowerBinEdges[i],
+                        DataUpperBinEdges[i]};
+      }
+      coso.push_back(data_list);
+    }
+    return coso;
+  }
+
+  std::vector<std::vector<Experiment<DayaBay>::Point>> DayaBay::get_expectation(const Model &m) const {
+    std::vector<std::vector<Experiment<DayaBay>::Point>> coso;
+    for(std::string set_name : sets_names){
+      auto predicted_background = PredictedBackground.at(set_name);
+      std::vector<Experiment<DayaBay>::Point> expectation_list(predicted_background.size());
+      assert(DataUpperBinEdges.size() == expectation_list.size());
+      assert(DataLowerBinEdges.size() == expectation_list.size());
+
+      for(unsigned int i =0; i < expectation_list.size(); i++){
+        double expectation = calculate_naked_event_expectation(m,set_name,i) + predicted_background[i];
+        //double expectation = calculate_naked_event_expectation(m,set_name,i);
+        double enu = (DataLowerBinEdges[i]+DataUpperBinEdges[i])/2.;
+        //std::cout << "expectation " << expectation << " at " << enu << std::endl;
+        double expectation_error = expectation;
+        expectation_list[i] = {expectation,
+                               expectation_error,//poisson error // fix me
+                               DataLowerBinEdges[i],
+                               DataUpperBinEdges[i]};
+      }
+
+      coso.push_back(expectation_list);
+    }
+    return coso;
+  }
+
+  /*
+  std::vector<std::vector<double>> DayaBay::get_inverse_flux_covariance() const {
+    auto m = ConvertToEigenMatrix(NeutrinoCovarianceMatrix);
+    return ConvertToVectorVectorDouble(m.inverse());
+  }
+  */
+
+  nusquids::marray<double,2> DayaBay::get_inverse_flux_covariance() const {
+    auto m = ConvertToEigenMatrix(NeutrinoCovarianceMatrix);
+    return ConvertToMArray(m.inverse());
+  }
+
+  /*
+  std::vector<std::vector<double>> DayaBay::get_pseudo_inverse_flux_covariance() const {
+    auto m = ConvertToEigenMatrix(NeutrinoCovarianceMatrix);
+    return ConvertToVectorVectorDouble(m.completeOrthogonalDecomposition().pseudoInverse());
+  }
+  */
+
+  nusquids::marray<double,2> DayaBay::get_pseudo_inverse_flux_covariance() const {
+    auto m = ConvertToEigenMatrix(NeutrinoCovarianceMatrix);
+    return ConvertToMArray(m.completeOrthogonalDecomposition().pseudoInverse());
+  }
+
+  /*
+  std::vector<std::vector<double>> DayaBay::get_flux_covariance() const {
+    return NeutrinoCovarianceMatrix;
+  }
+  */
+
+  nusquids::marray<double,2> DayaBay::get_flux_covariance() const {
+    return ConvertToMArray(NeutrinoCovarianceMatrix);
+  }
 
 }// close dayabay namespace
-
-int main() {
-  dayabay::DayaBay DB_test;
-  std::cout << IBD::CrossSection(0.1);
-  std::cout << DB_test.calculate_naked_event_expectation("EH1",1);
-  return 0;
-}
