@@ -18,7 +18,7 @@ DB_test = DB.DayaBay()
 #print(DB.DayaBay().num_bins())
 #print(DB_test.set_ignore_oscillations(True))
 #print(DB_test.are_we_ignoring_oscillations())
-#print(DB_test.get_flux(0.1,'U235'))
+print(DB_test.get_flux(0.1,'U235'))
 
 
 #print(len(DB_test.get_resolution_matrix()))

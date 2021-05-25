@@ -5,30 +5,47 @@ import numpy as np
 #    EXPERIMENTAL PARAMETERS
 # -----------------------------------------------------
 
-# FUDGE FACTORS:
-# These are just some factors Carlos entered in case something didn't work right.
-fudge_factors = {'EH1':1.0,'EH2':1.0,'EH3':1.0}
-
-# AVERAGE OF FISSION FRACTIONS:
-# This has been taken from Table IX (nueve) on 1607.05378.
-mean_fis_frac = {'U235':0.55825,'U238':0.07600,'PU239':0.30975,'PU241':0.05575}
-
 # NAMES
+# -----
 # Here we introduce the names of the experimental halls, of the reactors, and of the isotopes.
 exp_names = ['EH1','EH2','EH3']
 reac_names = ['D1','D2','L1','L2','L3','L4']
 isotopes = ['U235','U238','PU239','PU241']
 
-# EFFICIENCY OF EXPERIMENTAL HALLS
+# FUDGE FACTORS:
+# These are just some factors Carlos entered in case something didn't work right.
+fudge_factors = {'EH1':1.0,'EH2':1.0,'EH3':1.0}
+
+
+# AVERAGE OF FISSION FRACTIONS:
+# -----------------------------
+# This has been taken from Table IX (nueve) on 1607.05378.
+# One might want to differentiate between different halls (slight diff.)
+mean_fis_frac = {'U235':0.55825,'U238':0.07600,'PU239':0.30975,'PU241':0.05575}
+
+
+# EFFICIENCY AND QUANTITY OF DETECTORS
+# ------------------------------------
 # In this quantity we have also added the number of detectors per hall.
 # EH1 has two ~ 20kT detectors, EH2 has two, and EH3 has 4.
-# The efficiency is computed using \epsilon_e * \epsilon_mu * (1 + \Delta N)
-efficiency = {'EH1': 2.0*0.82*0.97*(1.+0.),'EH2': 2*0.85*0.97*(1.-0.18),
-              'EH3': 4.0*0.98*0.97*(1.-0.18)}
+# However, we have taken into account slight variations of nº protons with respecte to AD1.
+# The efficiency is computed using \epsilon_e * \epsilon_mu
+# All data obtained from table VI of 1610.04802.
+efficiency = {'EH1': 0.82*0.97*(1.+1.0013),
+              'EH2': 0.85*0.97*(2.-0.0025+0.0002),
+              'EH3': 0.98*0.97*(4.-0.0012+0.0024-0.0025-0.0005)}
 
-# QUADRATIC DISTANCE FROM REACTORS TO EXP. HALLS
+# I understand that the following implementation is incorrect, since
+# table VI gives \Delta N in units of %: 0.23% is 0.0023.
+# efficiency = {'EH1': 2.0*0.82*0.97*(1.+0.),'EH2': 2*0.85*0.97*(1.-0.18),
+#               'EH3': 4.0*0.98*0.97*(1.-0.18)}
+
+
+
+# DISTANCE FROM REACTORS TO EXP. HALLS
+# ------------------------------------
 # Obtained from arXiv:1610.04802  PHYSICAL REVIEW D 95, 072006 (2017)
-# According to Carlos, averaged the distances of the detector in each hall in quadrature (but I don't think so)
+# Averaged the distances of the detector in each hall in quadrature (but I don't think so)
 distance = {'EH1': {'D1': 360.167,'D2': 370.089,'L1': 903.41, 'L2': 817.03, 'L3': 1353.93, 'L4': 1265.61},
             'EH2': {'D1': 1334.96,'D2': 1360.52,'L1': 470.278,'L2': 492.473,'L3': 558.145, 'L4': 500.141},
             'EH3': {'D1': 1921.39,'D2': 1895.92,'L1': 1536.93,'L2': 1537.25,'L3': 1555.56, 'L4': 1529.06}}
@@ -44,6 +61,7 @@ def get_distance2(experiment,reactor):
     The square distance between these EH and reactor.
     """
     return distance[experiment][reactor]**2
+
 
 
 # -----------------------------------------------------

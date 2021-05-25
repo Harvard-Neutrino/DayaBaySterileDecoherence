@@ -22,14 +22,19 @@ class DayaBay:
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
         Na = 6.022140857e23 # Avogadro's number
-        FH = 12.02 # hydrogen fraction in GdLS
+        FH = 12.02 # hydrogen fraction in GdLS (what is this and what for?)
         IH1 = 0.9998 # H1 isotope abundance
         HidrogenMass = 1.673723e-27 # hidrogen mass in kg
         TotalMass = 20.e3 # in kg
 
         # Associated objects of the class
         self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix
+
         self.TotalNumberOfProtons = TotalMass*FH*Na*IH1/HidrogenMass
+        # I believe this formula is not correct, should be aprox:
+        # self.TotalNumberOfProtons = 1000*TotalMass*Na*IH1*66/120
+        # where I have assumed that GdLS has formula roughly C9H12.
+        # However, it makes no sense if we don't have the nº of reactor fissions.
 
         self.sets_names = DBP.exp_names
         self.reactor_names = DBP.reac_names

@@ -38,8 +38,10 @@ class reactor_isotope_flux:
 
         Output:
         The flux of the outgoing neutrino with energy Enu
-        after the beta decay of the isotope in isotope_name,
-        according to the formula and parameters in 1106.0687.
+        after the beta decay of the isotope in isotope_name.
+        Units: #neutrinos/(MeV · fission)
+
+        More info: P. Vogel and J. Engel, Phys. Rev.D39, 3378 (1989).
         """
         exponent = 0.0
         for i in range(0,len(self.flux_parameters[self.isotope_name])):

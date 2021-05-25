@@ -48,6 +48,8 @@ figflux.savefig("Fluxes and cross-section.png")
 # -------------------------------------------------------
 
 x_ax = (DB_test.DataLowerBinEdges+DB_test.DataUpperBinEdges)/2
+deltaE = (DB_test.DataUpperBinEdges-DB_test.DataLowerBinEdges)
+print(deltaE)
 ev_simp = [DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',i) for i in range(0,DB_test.n_bins)]
 #ev_inte = [DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',i) for i in range(0,DB_test.n_bins)]
 data = np.array([43781,31619,40024,47052,53432,58628,63823,66905,67597,67761,66409,
@@ -55,9 +57,10 @@ data = np.array([43781,31619,40024,47052,53432,58628,63823,66905,67597,67761,664
                          21537,18159,15236,12603,9792,7447,5698,4250,3031,2154,1308,862,2873])
 
 figev,axev = plt.subplots(figsize = (10,7))
-axev.scatter(x_ax,ev_simp,marker="+",color = "black", label = "Simple calculus")
+axev.scatter(x_ax,ev_simp/deltaE/1.e5,marker="+",color = "black", label = "Simple calculus")
 #axev.scatter(x_ax,ev_inte,marker="+",color = "red", label = "Integrated calculus")
-axev.scatter(x_ax,data,marker="+",color = "red", label = "Data")
+#axev.scatter(x_ax,data,marker="+",color = "red", label = "Data")
+axev.scatter(x_ax,data/deltaE/1.e5,marker="+",color = "red", label = "Data")
 axev.set_xlabel("Energy (MeV)", fontsize = 16)
 axev.set_ylabel("Total number of events", fontsize = 16)
 axev.tick_params(axis='x', labelsize=13)
