@@ -30,11 +30,9 @@ class DayaBay:
         # Associated objects of the class
         self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix
 
-        self.TotalNumberOfProtons = TotalMass*FH*Na*IH1/HidrogenMass
-        # I believe this formula is not correct, should be aprox:
-        # self.TotalNumberOfProtons = 1000*TotalMass*Na*IH1*66/120
-        # where I have assumed that GdLS has formula roughly C9H12.
-        # However, it makes no sense if we don't have the nº of reactor fissions.
+        self.TotalNumberOfProtons = TotalMass*FH*IH1/HidrogenMass
+        # We need the nº of reactor fissions.
+        self.TotalNumberOfProtons = 1.
 
         self.sets_names = DBP.exp_names
         self.reactor_names = DBP.reac_names

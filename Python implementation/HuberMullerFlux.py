@@ -30,6 +30,7 @@ class reactor_isotope_flux:
         self.isotope_name = isotope_name
         self.flux_parameters = flux_parameters
 
+
     def GetFlux(self, Enu):
         """
         Input:
@@ -43,9 +44,16 @@ class reactor_isotope_flux:
 
         More info: P. Vogel and J. Engel, Phys. Rev.D39, 3378 (1989).
         """
+
+        # According to 1704.01082, U235 flux must be corrected
+        # by reducing its yield by 7.8%.
+        norm = 1.
+        if self.isotope_name == 'U235':
+            norm = 1-0.078
+
         exponent = 0.0
         for i in range(0,len(self.flux_parameters[self.isotope_name])):
             exponent += self.flux_parameters[self.isotope_name][i]*Enu**i
         # The physical meaning of this formula is found on (22) from 1106.0687,
         # it's some kind of perturbative development as a function of Enu.
-        return np.exp(exponent)
+        return np.exp(exponent)*norm

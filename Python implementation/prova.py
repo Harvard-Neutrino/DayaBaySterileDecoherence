@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 flux_test = HMF.reactor_isotope_flux('U235',HMF.huber_muller)
 #print(flux_test.isotope_name)
-print(flux_test.flux_parameters[flux_test.isotope_name])
+#print(flux_test.flux_parameters[flux_test.isotope_name])
 
 #print(HMF.reactor_isotope_flux('U235',huber_muller).isotope_name)
 #print(HMF.reactor_isotope_flux('U238',muller).flux_parameters)
@@ -18,7 +18,7 @@ DB_test = DB.DayaBay()
 #print(DB.DayaBay().num_bins())
 #print(DB_test.set_ignore_oscillations(True))
 #print(DB_test.are_we_ignoring_oscillations())
-print(DB_test.get_flux(0.1,'U235'))
+#print(DB_test.get_flux(0.1,'U235'))
 
 
 #print(len(DB_test.get_resolution_matrix()))
@@ -36,9 +36,10 @@ def get_osc(model):
 Model_test = Models.NoOscillations()
 #Model_test = Models.WavePacketSterile_full()
 #print(get_osc(Model_test))
-#for i in range(0,DB_test.n_bins):
-    #print(DB_test.calculate_naked_event_expectation_integr(Model_test,'EH1',i))
-print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',1))
+
+
+
+# print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',1))
 # Petit problema, i = 0 dona ~21000, mentre que i = 1 dona ~17500. Molt menys,
 # és raonable?
 
