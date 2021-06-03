@@ -19,15 +19,34 @@ Model_full = Models.PlaneWaveSM_full()
 # Makes plot comparing the survival probability under different models
 # ------------------------------------------------
 
-datx = np.arange(0.9,7,0.01)
-DBosc = [Model_osc.oscProbability(x,1000) for x in datx]
-SMosc = [Model_full.oscProbability(x,1000) for x in datx]
+datx = np.arange(0.7,12,0.01)
+DBosc = [Model_osc.oscProbability(x,1265.61) for x in datx]
+SMosc = [Model_full.oscProbability(x,1265.61) for x in datx]
 
 figprob, axprob = plt.subplots(figsize=(10,7))
 axprob.plot(datx,DBosc,label="DB")
 axprob.plot(datx,SMosc,label="SM")
 axprob.legend(loc="upper right",fontsize=16)
 figprob.savefig("Probabilities.png")
+
+
+# ------------------------------------------------
+# PROBABILITIES
+# Makes plot comparing the survival probability under different models
+# ------------------------------------------------
+
+datx = np.arange(0.7,12,0.01)
+Long = [Model_osc.oscProbability(x,1265.61) for x in datx]
+Short = [Model_osc.oscProbability(x,500.141) for x in datx]
+Mid = [Model_osc.oscProbability(x,1000.141) for x in datx]
+
+figprob, axprob = plt.subplots(figsize=(10,7))
+axprob.plot(datx,Long,label="Long")
+axprob.plot(datx,Short,label="Short")
+axprob.plot(datx,Mid,label="Mid")
+
+axprob.legend(loc="upper right",fontsize=16)
+figprob.savefig("Probabilities_dif_baselines.png")
 
 # ------------------------------------------------
 # FLUXES AND CROSS-SECTIONS

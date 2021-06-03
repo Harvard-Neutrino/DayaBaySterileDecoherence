@@ -212,7 +212,7 @@ class PlaneWaveSterile_full:
         self.delta34 = 0.
          #DB best fit
         self.theta12 = np.arcsin(np.sqrt(0.304))
-        self.theta13 = np.arcsin(np.sqrt(0.0841))/2. #nu-fit is sin^2theta = 0.02221
+        self.theta13 = np.arcsin(np.sqrt(0.0841))/2.  # nu-fit is sin^2theta = 0.02221
         self.theta23 = np.arcsin(np.sqrt(0.570))
         self.theta14 = np.arcsin(np.sqrt(r14))/2.
         self.theta24 = np.arcsin(np.sqrt(r24))/2.

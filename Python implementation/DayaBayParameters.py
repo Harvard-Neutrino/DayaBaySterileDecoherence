@@ -12,6 +12,8 @@ exp_names = ['EH1','EH2','EH3']
 reac_names = ['D1','D2','L1','L2','L3','L4']
 isotopes = ['U235','U238','PU239','PU241']
 
+
+
 # FUDGE FACTORS:
 # These are just some factors Carlos entered in case something didn't work right.
 fudge_factors = {'EH1':1.0,'EH2':1.0,'EH3':1.0}
@@ -46,9 +48,14 @@ efficiency = {'EH1': 0.82*0.97*(1.+1.0013),
 # ------------------------------------
 # Obtained from arXiv:1610.04802  PHYSICAL REVIEW D 95, 072006 (2017)
 # Averaged the distances of the detector in each hall in quadrature (but I don't think so)
+# distance = {'EH1': {'D1': 360.167,'D2': 370.089,'L1': 903.41, 'L2': 817.03, 'L3': 1353.93, 'L4': 1265.61},
+#             'EH2': {'D1': 1334.96,'D2': 1360.52,'L1': 470.278,'L2': 492.473,'L3': 558.145, 'L4': 500.141},
+#             'EH3': {'D1': 1921.39,'D2': 1895.92,'L1': 1536.93,'L2': 1537.25,'L3': 1555.56, 'L4': 1529.06}}
+
 distance = {'EH1': {'D1': 360.167,'D2': 370.089,'L1': 903.41, 'L2': 817.03, 'L3': 1353.93, 'L4': 1265.61},
             'EH2': {'D1': 1334.96,'D2': 1360.52,'L1': 470.278,'L2': 492.473,'L3': 558.145, 'L4': 500.141},
             'EH3': {'D1': 1921.39,'D2': 1895.92,'L1': 1536.93,'L2': 1537.25,'L3': 1555.56, 'L4': 1529.06}}
+
 
 # Here we define a function to easily access the square of this distance.
 def get_distance2(experiment,reactor):

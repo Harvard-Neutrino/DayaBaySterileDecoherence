@@ -40,7 +40,7 @@ class DayaBay:
 
         self.mean_fission_fractions = DBP.mean_fis_frac
         self.EfficiencyOfHall = DBP.efficiency
-        self.DistanceFromReactorToHallSquare = DBP.distance
+        self.DistanceFromReactorToHall = DBP.distance
         self.FudgeFactorPerHall = DBP.fudge_factors
 
         self.NeutrinoCovarianceMatrix = DBP.neutrino_covariance_matrix
@@ -119,9 +119,9 @@ class DayaBay:
         reactor (str): name of the reactor.
 
         Output:
-        The squared distance between these EH and reactor.
+        The distance between these EH and reactor (data in meters).
         """
-        return self.DistanceFromReactorToHallSquare[experiment][reactor]
+        return self.DistanceFromReactorToHall[experiment][reactor]
 
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
@@ -167,19 +167,17 @@ class DayaBay:
                         flux += (self.mean_fission_fractions[isotope]*
                                  self.get_flux(enu,isotope))
                     expectation += (flux * self.get_cross_section(enu) *
-                                    self.FromEtrueToErec[erf][etf] * oscprob)
+                                    self.FromEtrueToErec[erf][etf] * oscprob)/L**2
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
 
             # reconstructed energies loop ends
-            # the two deltaEfine are to realise a trapezoidal numeric integration
-            expectation *= self.deltaEfine**2
-            expectation *= self.EfficiencyOfHall[set_name]
-            expectation /= L**2
+            #expectation /= L**2 # this is an error, and the root of all evil in the world
 
         # reactor loop ends
-        return expectation #* self.TotalNumberOfProtons
+        # the two deltaEfine are to realise a trapezoidal numeric integration
+        return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
     def integrand(self,enu,L,model,isotope,erf,etf):
         return (self.mean_fission_fractions[isotope]*
@@ -306,6 +304,18 @@ class DayaBay:
             TotalNumberOfBkgPerBin += self.PredictedBackground[set_name]
             TotalNumberOfExpEvents += exp_events[set_name]
         return (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
+
+    def get_survival(self,model):
+        Model_noosc = Models.NoOscillations()
+        exp_events_noosc = self.get_expectation_unnorm_nobkg(Model_noosc,do_we_integrate = False)
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
+        ratio = dict([(set_name,np.sum(exp_events[set_name])/np.sum(exp_events_noosc[set_name])) for set_name in self.sets_names])
+        return ratio
+
+    def get_data_survival(self):
+        total_data = dict([(set_name,np.sum(self.ObservedData[set_name])) for set_name in self.sets_names])
+        total_dbkg = dict([(set_name,np.sum(self.AllData[set_name][:,5])) for set_name in self.sets_names])
+        return dict([(set_name, total_data[set_name]/total_dbkg[set_name]) for set_name in self.sets_names])
 
     def get_expectation(self,model):
         """
