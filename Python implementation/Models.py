@@ -23,21 +23,21 @@ class NoOscillations:
 # -----------------------------------------------------------
 class PlaneWaveSM:
     def __init__(self):
-        self.sin22th13 = 0.092
-        self.dm2_31 = 2.494e-3
+        self.sin22th13 = 0.0841
+        self.dm2_31 = 2.4e-3
 
     def oscProbability(self,enu,L):
         """
         Input:
-        enu (float): the energy of the electron antineutrino.
-        L (float): the length travelled by the antineutrino.
+        enu (float): the energy of the electron antineutrino, in MeV.
+        L (float): the length travelled by the antineutrino, in meters.
 
         Output:
         The probability of the antineutrino remaining an antineutrino.
         This is computed according to (find paper!).
         """
         x = 1.267*self.dm2_31*L/enu
-        return 1.- self.sin22th13*np.sin(x)**2
+        return 1. - self.sin22th13*np.sin(x)**2
 
 
 # -----------------------------------------------------------
@@ -47,11 +47,11 @@ class PlaneWaveSM:
 class PlaneWaveSM_full:
     def __init__(self):
         self.deltaCP = 0
-        self.theta12 = np.arcsin(np.sqrt(0.304))
-        self.theta13 = np.arcsin(np.sqrt(0.02221))
-        self.theta23 = np.arcsin(np.sqrt(0.570))
-        self.dm2_21 = 2.44e-3 # eV^2
-        self.dm2_31 = 7.42e-5 # eV^2
+        self.theta12 = np.arcsin(np.sqrt(0.846))/2.
+        self.theta13 = np.arcsin(np.sqrt(0.0841))/2.
+        self.theta23 = np.arcsin(np.sqrt(0.999))/2.
+        self.dm2_31 = 2.44e-3 # eV^2
+        self.dm2_21 = 7.42e-5 # eV^2
         self.V = 0
         self.VCC = 0
 
@@ -64,7 +64,7 @@ class PlaneWaveSM_full:
         s13 = np.sin(self.theta13)
         s23 = np.sin(self.theta23)
         dCP = self.deltaCP
-        U3 = np.array([[c12*c13, s12*c13, s13*np.exp(-1j*dCP)],
+        U3 = np.matrix([[c12*c13, s12*c13, s13*np.exp(-1j*dCP)],
                        [-s12*c23 - c12*s13*s23*np.exp(-1j*dCP),
                         c12*c23 - s12*s13*s23*np.exp(-1j*dCP), c13*s23],
                        [s12*s23 - c12*s13*c23*np.exp(1j*dCP),
@@ -95,8 +95,8 @@ class PlaneWaveSM_full:
         """This function computes the difference in velocities between
         the wave packets of the eigenstates. The velocities are computed
         numerically by performing a numerical derivative.
-        Here the step of the derivative has been picked as 0.001E. Then,
-        the estimated error is proporcional to (0.001E)^2 and the third
+        Here the step of the derivative has been picked as 0.00001E. Then,
+        the estimated error is proporcional to (0.00001E)^2 and the third
         derivative of the energy eigenvalues."""
         eps = E*h
         vapspost = np.linalg.eig(self.ham(E+eps))[0]
@@ -104,16 +104,19 @@ class PlaneWaveSM_full:
         vels = (vapspost-vapspre)/(2*eps)
         return np.array([vels[1]-vels[0],vels[2]-vels[0],vels[2]-vels[1]])
 
-    def oscProbability(self,enu,L):
+    def oscProbability(self,E,l):
         """This function returns the probability of an electron neutrino
         with energy E remaining an electron neutrino after travelling a
-        distance L, in the wave packet formalism."""
+        distance L, in the wave packet formalism.
+        L must be in meters, and E must be in MeV."""
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
         arg = -1j*self.DeltaEij(enu)*L
         U2 = np.square(np.abs(self.get_matter_mixing_matrix(enu)))
         return U2[0,0]**2+U2[0,1]**2+U2[0,2]**2 + 2*np.real(
-            U2[0,0]*U2[0,1]*np.exp(arg[0])+
-            U2[0,0]*U2[0,2]*np.exp(arg[1])+
-            U2[0,1]*U2[0,2]*np.exp(arg[2]))
+               U2[0,0]*U2[0,1]*np.exp(arg[0])+
+               U2[0,0]*U2[0,2]*np.exp(arg[1])+
+               U2[0,1]*U2[0,2]*np.exp(arg[2]))
 
 # -----------------------------------------------------------
 # Wave packet Standard Model: 3 neutrinos, decoherence effects allowed.
@@ -126,8 +129,8 @@ class WavePacketSM:
         self.theta12 = np.arcsin(np.sqrt(0.304))
         self.theta13 = np.arcsin(np.sqrt(0.02221))
         self.theta23 = np.arcsin(np.sqrt(0.570))
-        self.dm2_21 = 2.44e-3 # eV^2
-        self.dm2_31 = 7.42e-5 # eV^2
+        self.dm2_31 = 2.44e-3 # eV^2
+        self.dm2_21 = 7.42e-5 # eV^2
         self.sigmax = 2.1e-3*nm
         self.V = 0
         self.VCC = 0
@@ -141,7 +144,7 @@ class WavePacketSM:
         s13 = np.sin(self.theta13)
         s23 = np.sin(self.theta23)
         dCP = self.deltaCP
-        U3 = np.array([[c12*c13, s12*c13, s13*np.exp(-1j*dCP)],
+        U3 = np.matrix([[c12*c13, s12*c13, s13*np.exp(-1j*dCP)],
                        [-s12*c23 - c12*s13*s23*np.exp(-1j*dCP),
                         c12*c23 - s12*s13*s23*np.exp(-1j*dCP), c13*s23],
                        [s12*s23 - c12*s13*c23*np.exp(1j*dCP),
@@ -207,8 +210,9 @@ class PlaneWaveSterile_full:
         self.delta14 = 0.
         self.delta24 = 0.
         self.delta34 = 0.
+         #DB best fit
         self.theta12 = np.arcsin(np.sqrt(0.304))
-        self.theta13 = np.arcsin(np.sqrt(0.02221))
+        self.theta13 = np.arcsin(np.sqrt(0.0841))/2. #nu-fit is sin^2theta = 0.02221
         self.theta23 = np.arcsin(np.sqrt(0.570))
         self.theta14 = np.arcsin(np.sqrt(r14))/2.
         self.theta24 = np.arcsin(np.sqrt(r24))/2.

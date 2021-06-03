@@ -52,6 +52,7 @@ class DayaBay:
         self.n_bins = DBD.number_of_bins
         self.FromEtrueToErec = DBP.reconstruct_mat
 
+        self.AllData = DBD.all_data
         self.ObservedData = DBD.observed_data
         self.PredictedBackground = DBD.predicted_bkg
 
@@ -152,7 +153,7 @@ class DayaBay:
         max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         for reactor in self.reactor_names:
-            L = self.get_distance(set_name,reactor)
+            L = self.get_distance(set_name,reactor) # in meters
 
             for erf in range(min_energy_fine_index,max_energy_fine_index):
 
@@ -178,7 +179,7 @@ class DayaBay:
             expectation /= L**2
 
         # reactor loop ends
-        return expectation * self.TotalNumberOfProtons
+        return expectation #* self.TotalNumberOfProtons
 
     def integrand(self,enu,L,model,isotope,erf,etf):
         return (self.mean_fission_fractions[isotope]*
@@ -216,7 +217,7 @@ class DayaBay:
         max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         for reactor in self.reactor_names:
-            L = self.get_distance(set_name,reactor)
+            L = self.get_distance(set_name,reactor) #in meters
 
             for erf in range(min_energy_fine_index,max_energy_fine_index):
 
@@ -224,7 +225,7 @@ class DayaBay:
                     enu_min = (etf)*self.deltaEfine + (
                           DeltaNeutronToProtonMass - ElectronMass)
                     enu_max = (etf+1)*self.deltaEfine + (
-                          DeltaNeutronToProtonMass - ElectronMass)
+                          DeltaNeutronToProtonMass - ElectronMass) # in MeV
 
                     for isotope in self.isotopes_to_consider:
                         expectation += integrate.quad(self.integrand,enu_min,enu_max,
@@ -240,7 +241,129 @@ class DayaBay:
             expectation /= L**2
 
         # reactor loop ends
-        return expectation * self.TotalNumberOfProtons
+        return expectation #* self.TotalNumberOfProtons
+
+    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False):
+        """
+        Computes the histogram of expected number of events without normalisation
+        to the real data, and without summing the predicted background.
+
+        Input:
+        model: a Models.py class with which to compute oscillation probabilities.
+        do_we_integrate: whether to integrate inside each energy bin or not.
+
+        Output:
+        A dictionary with a string key for each experimental hall, linking to a
+        numpy array with the expected events for each histogram bin.
+        """
+        if do_we_integrate == False:
+            Expectation = dict([(set_name,
+                                 np.array([self.calculate_naked_event_expectation_simple(model,set_name,i) for i in range(0,self.n_bins)]))
+                                for set_name in self.sets_names])
+        elif do_we_integrate == True:
+            Expectation = dict([(set_name,
+                                 np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(0,self.n_bins)]))
+                                for set_name in self.sets_names])
+        return Expectation
+
+    def normalization_to_noosc(self,events):
+        """
+        Input:
+        events: a dictionary with a string key for each experimental hall, linking to
+        a numpy array for some histogram of events. In principle, it should be
+        the number of expected number of events without oscillations.
+
+        Output:
+        norm: a normalisation factor with which to multiply events such that the total
+        number of events of "events" is the same as the one from DB no-oscillations data.
+        """
+        TotalNumberOfExpEventsNoOsc = dict([(set_name,np.sum(self.AllData[set_name][:,5]))
+                                            for set_name in self.sets_names])
+        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
+                                 for set_name in self.sets_names])
+        norm = dict([(set_name,(TotalNumberOfExpEventsNoOsc[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
+                     for set_name in self.sets_names])
+        return norm
+
+    def get_nuissance_parameters(self,exp_events):
+        """
+        Input:
+        events: a dictionary with a string key for each experimental hall, linking to
+        a numpy array for some histogram of events. In principle, it should be
+        the number of expected number of events of the model we want to study.
+
+        Output:
+        Returns the nuissance parameters which minimise the Poisson probability at all the
+        experimental halls simultaneously (i.e. each nuissance is the same for all halls).
+        They are computed as alpha_i = (sum(data_EHi)-sum(bkg_EHi))/(sum(exp_EHi))
+        """
+        TotalNumberOfEventsPerBin = 0.
+        TotalNumberOfBkgPerBin = 0.
+        TotalNumberOfExpEvents = 0.
+        for set_name in self.sets_names:
+            # set_name = 'EH1'
+            TotalNumberOfEventsPerBin += self.ObservedData[set_name]
+            TotalNumberOfBkgPerBin += self.PredictedBackground[set_name]
+            TotalNumberOfExpEvents += exp_events[set_name]
+        return (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
+
+    def get_expectation(self,model):
+        """
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output:
+        A 2-tuple with the expectation from the model and from a model without oscillations.
+        Each element of a tuple is a dictionary, where each key is an experimental hall.
+        Such key links to a numpy array which contains: the histogram of expected events,
+        the error bars of each bin, the lower limits of each bin, and the upper limits of each bin.
+        The error bars is purely statistical, i.e. sqrt(N)
+        """
+        Model_noosc = Models.NoOscillations()
+        exp_events_noosc = self.get_expectation_unnorm_nobkg(Model_noosc,do_we_integrate = False)
+        norm = self.normalization_to_noosc(exp_events_noosc)
+        exp_events_noosc = dict([(set_name,exp_events_noosc[set_name]*norm[set_name]) for set_name in self.sets_names])
+
+        # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
+        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
+
+        # We construct the nuissance parameters which minimise the Poisson probability
+        # alpha_i = (dataEH1_i+dataEH2_i+dataEH3_i)/(expEH1_i+expEH2_i+expEH3_i)
+        nuissances = self.get_nuissance_parameters(exp_events)
+
+        # We apply the nuissance parameters to no-oscillation data and obtain a normalisation factor again
+        exp_events_noosc = dict([(set_name,exp_events_noosc[set_name]*nuissances) for set_name in self.sets_names])
+        norm = self.normalization_to_noosc(exp_events_noosc)
+        # norm = {'EH1':1,'EH2':1,'EH3':1}
+
+        # Here we don't normalise anything
+        exp_events_noosc = dict([(set_name,exp_events_noosc[set_name]*norm[set_name]+self.PredictedBackground[set_name]) for set_name in self.sets_names])
+        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]*nuissances+self.PredictedBackground[set_name]) for set_name in self.sets_names])
+
+        model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),self.DataLowerBinEdges[i],self.DataUpperBinEdges[i])
+                                    for i in range(0,self.n_bins)])) for set_name in self.sets_names])
+        noosc_expectations = dict([(set_name,np.array([(exp_events_noosc[set_name][i],np.sqrt(exp_events_noosc[set_name][i]),self.DataLowerBinEdges[i],self.DataUpperBinEdges[i])
+                                    for i in range(0,self.n_bins)])) for set_name in self.sets_names])
+        return (model_expectations,noosc_expectations)
+
+
+
+
+
+
+
+
+
+# To compute no oscillations normalised with background
+# exp_events_noosc = DB_test.get_expectation_unnorm_nobkg(Model_noosc)
+# norm_factor = DB_test.get_normalization(exp_events_noosc)
+# exp_events_noosc[set_name]*norm_factor[set_name]+DB_test.PredictedBackground[set_name])
+
+
+# ------------------------------------------------------------
+# GOTTA CLEAN STUFF
+
 
     def get_data(self):
         """
@@ -262,30 +385,30 @@ class DayaBay:
             all_data.append(data_list)
         return np.array(all_data)
 
-    def get_expectation(self,model):
-        """
-        Input:
-        A model with which to compute the oscillation probability.
-
-        Output:
-        Returns a list, with as many elements as experimental halls.
-        Each element is a list with as many subelements as data bins.
-        Each subelement is a 4-tuple with: the number of counts, the error
-        (computed as the sqrt), and the lower and upper bin.
-
-        Note: one should take a better look at how the error is computed.
-        """
-        all_expe = []
-        for set_name in self.sets_names:
-            predicted_background = self.PredictedBackground[set_name]
-            expe_list = []
-            for i in range(0,self.n_bins):
-                expectation = self.calculate_naked_event_expectation_simple(model,set_name,i)
-                expectation += predicted_background[i]
-                expe_list.append((expectation,np.sqrt(expectation),
-                                  self.DataLowerBinEdges[i],self.DataUpperBinEdges[i]))
-            all_expe.append(expe_list)
-        return np.array(all_expe)
+    # def get_expectation(self,model):
+    #     """
+    #     Input:
+    #     A model with which to compute the oscillation probability.
+    #
+    #     Output:
+    #     Returns a list, with as many elements as experimental halls.
+    #     Each element is a list with as many subelements as data bins.
+    #     Each subelement is a 4-tuple with: the number of counts, the error
+    #     (computed as the sqrt), and the lower and upper bin.
+    #
+    #     Note: one should take a better look at how the error is computed.
+    #     """
+    #     all_expe = []
+    #     for set_name in self.sets_names:
+    #         predicted_background = self.PredictedBackground[set_name]
+    #         expe_list = []
+    #         for i in range(0,self.n_bins):
+    #             expectation = self.calculate_naked_event_expectation_simple(model,set_name,i)
+    #             expectation += predicted_background[i]
+    #             expe_list.append((expectation,np.sqrt(expectation),
+    #                               self.DataLowerBinEdges[i],self.DataUpperBinEdges[i]))
+    #         all_expe.append(expe_list)
+    #     return np.array(all_expe)
 
     def get_inverse_flux_covariance(self):
         return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))

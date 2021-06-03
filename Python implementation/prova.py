@@ -1,9 +1,11 @@
 import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF
 import DayaBay as DB
+import DayaBayData as DBdata
 import Models
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 flux_test = HMF.reactor_isotope_flux('U235',HMF.huber_muller)
 #print(flux_test.isotope_name)
@@ -30,13 +32,30 @@ DB_test = DB.DayaBay()
 #print(len(DB_test.get_lower_neutrino_bin_edges()))
 #print(DB_test.get_distance2('EH1','D1'))
 
+#print(DBdata.all_data['EH1'][:,0:7])
+
 def get_osc(model):
     return model.oscProbability(10,10)
 
-Model_test = Models.NoOscillations()
+Model_osc = Models.PlaneWaveSM()
+Model_noosc = Models.NoOscillations()
 #Model_test = Models.WavePacketSterile_full()
 #print(get_osc(Model_test))
 
+
+
+# exp_events_noosc = DB_test.get_expectation_unnorm_nobkg(Model_noosc)
+# norm_factor = DB_test.get_normalization(exp_events_noosc)
+# exp_events_noosc = dict([(set_name, exp_events_noosc[set_name]*norm_factor[set_name]+DB_test.PredictedBackground[set_name]) for set_name in DB_test.sets_names])
+# print(exp_events_noosc)
+
+list = DB_test.sets_names.copy()
+print(list)
+print(list + ['EH3'])
+begin_time = time.time()
+#data = DB_test.get_expectation(Model_osc)
+end_time = time.time()
+print(begin_time-end_time)
 
 
 # print(DB_test.calculate_naked_event_expectation_simple(Model_test,'EH1',1))
