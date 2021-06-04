@@ -22,6 +22,9 @@ import numpy as np
 #     in the IBD cross-section, which is set to be 0 if the antineutrino does not
 #     have enough energy.
 
+dir = "Data/"
+
+
 # -------------------------------------------------------------
 #   HISTOGRAM BINS
 # -------------------------------------------------------------
@@ -61,15 +64,15 @@ def txt_to_array(filename, sep = ","):
 # 0: Emin; 1: Emax, 2: Ecentral
 # 3: Nobs  4: Npred (including background)
 # 5: Nprednoosc; 6: Nbkg
-all_data = {'EH1': txt_to_array("DataEH1.dat")[:,0:7],
-            'EH2': txt_to_array("DataEH2.dat")[:,0:7],
-            'EH3': txt_to_array("DataEH3.dat")[:,0:7]}
+all_data = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,0:7],
+            'EH2': txt_to_array(dir+"DataEH2.dat")[:,0:7],
+            'EH3': txt_to_array(dir+"DataEH3.dat")[:,0:7]}
 
 
-observed_data = {'EH1': txt_to_array("DataEH1.dat")[:,3],
-                 'EH2': txt_to_array("DataEH2.dat")[:,3],
-                 'EH3': txt_to_array("DataEH3.dat")[:,3]}
+observed_data = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,3],
+                 'EH2': txt_to_array(dir+"DataEH2.dat")[:,3],
+                 'EH3': txt_to_array(dir+"DataEH3.dat")[:,3]}
 
-predicted_bkg = {'EH1': txt_to_array("DataEH1.dat")[:,6],
-                 'EH2': txt_to_array("DataEH2.dat")[:,6],
-                 'EH3': txt_to_array("DataEH3.dat")[:,6]}
+predicted_bkg = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,6],
+                 'EH2': txt_to_array(dir+"DataEH2.dat")[:,6],
+                 'EH3': txt_to_array(dir+"DataEH3.dat")[:,6]}
