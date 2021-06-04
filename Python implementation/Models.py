@@ -22,9 +22,9 @@ class NoOscillations:
 # Uses the approximate formula from Daya Bay.
 # -----------------------------------------------------------
 class PlaneWaveSM:
-    def __init__(self):
-        self.sin22th13 = 0.0841
-        self.dm2_31 = 2.4e-3
+    def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+        self.sin22th13 = Sin22Th13
+        self.dm2_31 = DM2_31
 
     def oscProbability(self,enu,L):
         """
