@@ -5,6 +5,7 @@ import DayaBayData as DBD
 import Models
 import numpy as np
 from scipy import integrate as integrate
+import scipy.special
 
 class DayaBay:
 
@@ -339,6 +340,22 @@ class DayaBay:
                                   for set_name in self.sets_names])
 
         return model_expectations
+
+
+# ----------------------------------------------------------
+# FITTING THE DATA
+# ----------------------------------------------------------
+
+    def get_poisson_chi2(self,model):
+        Exp = self.get_expectation(model)
+        Data = self.ObservedData
+        Bkg = self.PredictedBackground
+        TotalLogPoisson = 0.0
+        for set_name in self.sets_names:
+            lamb = Exp[set_name][:,0]
+            k = Data[set_name]-Bkg[set_name]
+            TotalLogPoisson += k - lamb + k*np.log(lamb/k)
+        return -2*np.sum(TotalLogPoisson)
 
 
 # ----------------------------------------------------------
