@@ -1,0 +1,1 @@
+He descobert que el Poisson que faig dóna molt més pes al EH1 que als altres, i en concret, al EH3 li'n dona molt poca. Això fa que, al final, el fit es faci al que fita millor a l'EH1, i que l'EH3 no quedi ben fitat.

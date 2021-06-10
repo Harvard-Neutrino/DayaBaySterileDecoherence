@@ -129,8 +129,8 @@ class WavePacketSM:
         self.theta12 = np.arcsin(np.sqrt(0.304))
         self.theta13 = np.arcsin(np.sqrt(0.02221))
         self.theta23 = np.arcsin(np.sqrt(0.570))
-        self.dm2_31 = 2.44e-3 # eV^2
-        self.dm2_21 = 7.42e-5 # eV^2
+        self.dm2_21 = 2.44e-3 # eV^2
+        self.dm2_31 = 7.42e-5 # eV^2
         self.sigmax = 2.1e-3*nm
         self.V = 0
         self.VCC = 0
@@ -217,8 +217,8 @@ class PlaneWaveSterile_full:
         self.theta14 = np.arcsin(np.sqrt(r14))/2.
         self.theta24 = np.arcsin(np.sqrt(r24))/2.
         self.theta34 = np.arcsin(np.sqrt(r34))/2.
-        self.dm2_21 = 2.44e-3 # eV^2
-        self.dm2_31 = 7.42e-5 # eV^2
+        self.dm2_31 = 2.44e-3 # eV^2
+        self.dm2_21 = 7.42e-5 # eV^2
         self.dm2_41 = 0.1     # eV^2
         self.V = 0
         self.VCC = 0
@@ -321,8 +321,8 @@ class WavePacketSterile_full:
         self.theta14 = np.arcsin(np.sqrt(r14))/2.
         self.theta24 = np.arcsin(np.sqrt(r24))/2.
         self.theta34 = np.arcsin(np.sqrt(r34))/2.
-        self.dm2_21 = 2.44e-3 # eV^2
-        self.dm2_31 = 7.42e-5 # eV^2
+        self.dm2_31 = 2.44e-3 # eV^2
+        self.dm2_21 = 7.42e-5 # eV^2
         self.dm2_41 = 0.1     # eV^2
         self.V = 0
         self.VCC = 0
