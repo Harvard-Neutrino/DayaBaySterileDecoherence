@@ -8,11 +8,13 @@ import Models
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+path = 'Figures/'
 DB_test = DB.DayaBay()
 Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
-Model_full = Models.PlaneWaveSM_full()
+Model_coh = Models.WavePacketSM()
+Model_osc4 = Models.PlaneWaveSterile()
+Model_coh4 = Models.WavePacketSterile()
 
 # ------------------------------------------------
 # PROBABILITIES
@@ -21,13 +23,17 @@ Model_full = Models.PlaneWaveSM_full()
 
 datx = np.arange(0.7,12,0.01)
 DBosc = [Model_osc.oscProbability(x,1265.61) for x in datx]
-SMosc = [Model_full.oscProbability(x,1265.61) for x in datx]
+DBcoh = [Model_coh.oscProbability(x,1265.61) for x in datx]
+DBosc4 = [Model_osc4.oscProbability(x,1265.61) for x in datx]
+DBcoh4 = [Model_coh4.oscProbability(x,1265.61) for x in datx]
 
 figprob, axprob = plt.subplots(figsize=(10,7))
-axprob.plot(datx,DBosc,label="DB")
-axprob.plot(datx,SMosc,label="SM")
-axprob.legend(loc="upper right",fontsize=16)
-figprob.savefig("Probabilities.png")
+axprob.plot(datx,DBosc,label="PW")
+axprob.plot(datx,DBcoh,label="WP")
+axprob.plot(datx,DBosc4,label="PW4")
+axprob.plot(datx,DBcoh4,label="WP4")
+axprob.legend(loc="lower right",fontsize=16)
+figprob.savefig(path+"Probabilities.png")
 
 
 # ------------------------------------------------
@@ -46,7 +52,7 @@ axprob.plot(datx,Short,label="Short")
 axprob.plot(datx,Mid,label="Mid")
 
 axprob.legend(loc="upper right",fontsize=16)
-figprob.savefig("Probabilities_dif_baselines.png")
+figprob.savefig(path+"Probabilities_dif_baselines.png")
 
 # ------------------------------------------------
 # FLUXES AND CROSS-SECTIONS
@@ -97,4 +103,4 @@ axflux.tick_params(axis='y', labelsize=13)
 axflux.axis([1.,8,0.0025,2.5])
 axflux.grid(linestyle="--")
 axflux.legend(loc="upper right",fontsize=16)
-figflux.savefig("Fluxes and cross-section.png")
+figflux.savefig(path+"Fluxes and cross-section.png")

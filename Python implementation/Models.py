@@ -19,12 +19,15 @@ class NoOscillations:
 
 # -----------------------------------------------------------
 # Plane wave Standard Model: 3 neutrinos, no decoherence
-# Uses the approximate formula from Daya Bay.
+# Uses the approximate formula from Daya Bay. No matter effects.
 # -----------------------------------------------------------
+
 class PlaneWaveSM:
-    def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
-        self.sin22th13 = Sin22Th13
-        self.dm2_31 = DM2_31
+    def __init__(self,Sin22Th13 = 0.0841,DM2_ee = 2.5e-3):
+        self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
+        self.th12 = 0.583763
+        self.dm2_ee = DM2_ee
+        self.dm2_21 = 7.42e-5
 
     def oscProbability(self,enu,L):
         """
@@ -36,8 +39,128 @@ class PlaneWaveSM:
         The probability of the antineutrino remaining an antineutrino.
         This is computed according to (find paper!).
         """
-        x = 1.267*self.dm2_31*L/enu
-        return 1. - self.sin22th13*np.sin(x)**2
+        x21 = 1.267*self.dm2_21*L/enu
+        xee = 1.267*self.dm2_ee*L/enu
+        return (1- np.cos(self.th13)**4*np.sin(2*self.th12)**2*np.sin(x21)**2
+                - np.sin(2*self.th13)**2*np.sin(xee)**2)
+
+# -----------------------------------------------------------
+# Wave packet Standard Model: 3 neutrinos, decoherence due to wave packet separation
+# Uses the approximate formula from Daya Bay. No matter effects.
+# -----------------------------------------------------------
+class WavePacketSM:
+    def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+        self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
+        self.th12 = 0.583763
+        self.dm2_31 = DM2_31
+        self.dm2_21 = 7.42e-5
+        self.dm2_32 = self.dm2_31 - self.dm2_21
+        nm = 50677.308*1e-7 # 1/eV
+        self.sigmax = 2.1e-4*nm # after multiplying by nm, sigmax in 1/eV
+
+    def fosc(self,enu,L,deltam):
+        return np.cos(L*deltam/(2*enu))*np.exp(-L**2*deltam**2/(32.*enu**4*self.sigmax**2))
+
+    def oscProbability(self,E,l):
+        """
+        Input:
+        enu (float): the energy of the electron antineutrino, in MeV.
+        L (float): the length travelled by the antineutrino, in meters.
+
+        Output:
+        The probability of the antineutrino remaining an antineutrino.
+        This is computed according to (find paper!).
+        """
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
+        prob = 1.
+        prob -= np.sin(2*self.th12)**2*np.cos(self.th13)**4*(1-self.fosc(enu,L,self.dm2_21))/2.
+        prob -= np.sin(2*self.th13)**2*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
+                                        np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
+        return prob
+
+# -----------------------------------------------------------
+# Plane wave with sterile neutrino: 4 neutrinos, no decoherence
+# Uses the final formula for computation efficiency. No matter effects.
+# -----------------------------------------------------------
+class PlaneWaveSterile:
+    def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
+        self.th14 = np.arcsin(np.sqrt(Sin22Th14))/2.
+        self.th13 = np.arcsin(np.sqrt(0.0841))/2.
+        self.th12 = 0.583763
+        self.dm2_41 = DM2_41
+        self.dm2_31 = 2.5e-3
+        self.dm2_21 = 7.42e-5
+        self.dm2_32 = self.dm2_31 - self.dm2_21
+        self.dm2_42 = self.dm2_41 - self.dm2_21
+        self.dm2_43 = self.dm2_41 - self.dm2_31
+
+    def fosc(self,enu,L,deltam):
+        return np.cos(L*deltam/(2*enu))
+
+    def oscProbability(self,E,l):
+        """
+        Input:
+        enu (float): the energy of the electron antineutrino, in MeV.
+        L (float): the length travelled by the antineutrino, in meters.
+
+        Output:
+        The probability of the antineutrino remaining an antineutrino.
+        This is computed according to (find paper!).
+        """
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
+        prob = 1.
+        prob -= np.sin(2*self.th12)**2* np.cos(self.th13)**4* np.cos(self.th14)**4*(1-self.fosc(enu,L,self.dm2_21))/2.
+        prob -= np.sin(2*self.th13)**2* np.cos(self.th14)**4*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
+                                                              np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
+        prob -= np.sin(2*self.th14)**2*(np.cos(self.th13)**2*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_41))+
+                                                              np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_42)))+
+                                        np.sin(self.th13)**2*(1-self.fosc(enu,L,self.dm2_43)))/2.
+        return prob
+
+
+# -----------------------------------------------------------
+# Wave packet with sterile neutrino: 4 neutrinos, decoherence due to wave packet separation
+# Uses the final formula for computation efficiency. No matter effects.
+# -----------------------------------------------------------
+class WavePacketSterile:
+    def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
+        self.th14 = np.arcsin(np.sqrt(Sin22Th14))/2.
+        self.th13 = np.arcsin(np.sqrt(0.0841))/2.
+        self.th12 = 0.583763
+        self.dm2_41 = DM2_41
+        self.dm2_31 = 2.5e-3
+        self.dm2_21 = 7.42e-5
+        self.dm2_32 = self.dm2_31 - self.dm2_21
+        self.dm2_42 = self.dm2_41 - self.dm2_21
+        self.dm2_43 = self.dm2_41 - self.dm2_31
+        nm = 50677.308*1e-7 # 1/eV
+        self.sigmax = 2.1e-4*nm # after multiplying by nm, sigmax in 1/eV
+
+    def fosc(self,enu,L,deltam):
+        return np.cos(L*deltam/(2*enu))*np.exp(-L**2*deltam**2/(32.*enu**4*self.sigmax**2))
+
+    def oscProbability(self,E,l):
+        """
+        Input:
+        enu (float): the energy of the electron antineutrino, in MeV.
+        L (float): the length travelled by the antineutrino, in meters.
+
+        Output:
+        The probability of the antineutrino remaining an antineutrino.
+        This is computed according to (find paper!).
+        """
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
+        prob = 1.
+        prob -= np.sin(2*self.th12)**2* np.cos(self.th13)**4* np.cos(self.th14)**4*(1-self.fosc(enu,L,self.dm2_21))/2.
+        prob -= np.sin(2*self.th13)**2* np.cos(self.th14)**4*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
+                                                              np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
+        prob -= np.sin(2*self.th14)**2*(np.cos(self.th13)**2*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_41))+
+                                                              np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_42)))+
+                                        np.sin(self.th13)**2*(1-self.fosc(enu,L,self.dm2_43)))/2.
+        return prob
 
 
 # -----------------------------------------------------------
@@ -122,18 +245,18 @@ class PlaneWaveSM_full:
 # Wave packet Standard Model: 3 neutrinos, decoherence effects allowed.
 # Implements the most general formula and allows for matter effects.
 # -----------------------------------------------------------
-class WavePacketSM:
+class WavePacketSM_full:
     def __init__(self):
         nm = 50677.308*1e-7 # 1/eV
         self.deltaCP = 0
-        self.theta12 = np.arcsin(np.sqrt(0.304))
-        self.theta13 = np.arcsin(np.sqrt(0.02221))
-        self.theta23 = np.arcsin(np.sqrt(0.570))
-        self.dm2_21 = 2.44e-3 # eV^2
-        self.dm2_31 = 7.42e-5 # eV^2
-        self.sigmax = 2.1e-3*nm
+        self.theta12 = np.arcsin(np.sqrt(0.846))/2.
+        self.theta13 = np.arcsin(np.sqrt(0.0841))/2.
+        self.theta23 = np.arcsin(np.sqrt(0.999))/2.
+        self.dm2_31 = 2.44e-3 # eV^2
+        self.dm2_21 = 7.42e-5 # eV^2
         self.V = 0
         self.VCC = 0
+        self.sigmax = 2.1e-4*nm
 
     def get_mixing_matrix(self):
         """ Returns the PMNS matrix"""
@@ -158,7 +281,7 @@ class WavePacketSM:
         massmat = np.matrix([[0,0,0],[0,self.dm2_21,0],[0,0,self.dm2_31]])
         U3 = self.get_mixing_matrix()
         return (1/(2*enu)*np.dot(U3,np.dot(massmat,U3.getH())) +
-                np.matrix([[VCC+V,0,0],[0,V,0],[0,0,0]]))
+                np.matrix([[self.VCC+self.V,0,0],[0,self.V,0],[0,0,0]]))
 
     def DeltaEij(self,enu):
         """This function returns the difference in energies of
@@ -184,12 +307,14 @@ class WavePacketSM:
         vels = (vapspost-vapspre)/(2*eps)
         return np.array([vels[1]-vels[0],vels[2]-vels[0],vels[2]-vels[1]])
 
-    def oscProbability(self,enu,L):
+    def oscProbability(self,E,l):
         """This function returns the probability of an electron neutrino
         with energy E remaining an electron neutrino after travelling a
         distance L, in the wave packet formalism."""
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
         argosc = -1j*self.DeltaEij(enu)*L-self.sigmax**2*self.DeltaEij(enu)**2
-        argcoh = -L**2/(8*self.sigmax**2)*self.deltavels(E)**2
+        argcoh = -L**2/(8*self.sigmax**2)*self.deltavels(enu)**2
         arg = argcoh + argosc
         U2 = np.square(np.abs(self.get_matter_mixing_matrix(enu)))
         return U2[0,0]**2+U2[0,1]**2+U2[0,2]**2 + 2*np.real(

@@ -25,7 +25,9 @@ DB_test = DB.DayaBay()
 Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
 # Model_osc = Models.PlaneWaveSM(Sin22Th13 = 0.07821,DM2_31 = 2.5e-3)
+# Model_full = Models.PlaneWaveSM_full()
 Model_full = Models.PlaneWaveSM_full()
+Model_coh = Models.WavePacketSM()
 
 # -------------------------------------------------------
 # Event expectations
@@ -37,7 +39,7 @@ deltaE = (DB_test.DataUpperBinEdges-DB_test.DataLowerBinEdges)
 figev,axev = plt.subplots(1,3,figsize = (20,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.93))
 
 begin_time = time.time()
-pred = DB_test.get_expectation(Model_osc)
+pred = DB_test.get_expectation(Model_coh)
 end_time = time.time()
 print(begin_time-end_time)
 
@@ -58,7 +60,7 @@ for i in range(3):
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figev.savefig("Figures/Event expectation.png")
+figev.savefig("Figures/Event expectation_decoh.png")
 # As we can see, both ways of computing the event expectations give the same result.
 
 
