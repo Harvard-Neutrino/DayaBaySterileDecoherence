@@ -22,18 +22,23 @@ Model_coh4 = Models.WavePacketSterile()
 # ------------------------------------------------
 
 datx = np.arange(0.7,12,0.01)
-DBosc = [Model_osc.oscProbability(x,1265.61) for x in datx]
-DBcoh = [Model_coh.oscProbability(x,1265.61) for x in datx]
-DBosc4 = [Model_osc4.oscProbability(x,1265.61) for x in datx]
-DBcoh4 = [Model_coh4.oscProbability(x,1265.61) for x in datx]
+c = 23.7
+dx = 0.3
+# DBosc = [np.sum(np.array([Model_osc.oscProbability(x,L) for L in np.linspace(23.4,24.0,100)]))/100 for x in datx]
+# DBcoh = [Model_coh.oscProbability(x,23) for x in datx]
+DBosc4 = [Model_osc4.oscProbability(x,c) for x in datx]
+DBosc4av = [np.sum(np.array([Model_osc4.oscProbability(x,L) for L in np.linspace(c-dx,c+dx,100)]))/100 for x in datx]
+DBcoh4 = [Model_coh4.oscProbability(x,c) for x in datx]
+DBcoh4av = [np.sum(np.array([Model_coh4.oscProbability(x,L) for L in np.linspace(c-dx,c+dx,100)]))/100 for x in datx]
+
 
 figprob, axprob = plt.subplots(figsize=(10,7))
-axprob.plot(datx,DBosc,label="PW")
-axprob.plot(datx,DBcoh,label="WP")
-axprob.plot(datx,DBosc4,label="PW4")
-axprob.plot(datx,DBcoh4,label="WP4")
+axprob.plot(datx,DBosc4,label="PW")
+axprob.plot(datx,DBosc4av,label="PW av")
+axprob.plot(datx,DBcoh4,label="WP")
+axprob.plot(datx,DBcoh4av,label="WP av")
 axprob.legend(loc="lower right",fontsize=16)
-figprob.savefig(path+"Probabilities.png")
+figprob.savefig(path+"Probabilities w-wout average.png")
 
 
 # ------------------------------------------------
