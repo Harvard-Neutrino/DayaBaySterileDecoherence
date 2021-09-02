@@ -24,8 +24,6 @@ NEOS_test = NEOS.Neos()
 Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
 # Model_osc = Models.PlaneWaveSM(Sin22Th13 = 0.07821,DM2_31 = 2.5e-3)
-# Model_full = Models.PlaneWaveSM_full()
-# Model_full = Models.PlaneWaveSM_full()
 # Model_coh = Models.WavePacketSM()
 
 # -------------------------------------------------------
@@ -35,24 +33,21 @@ Model_osc = Models.PlaneWaveSM()
 x_ax = (NEOS_test.DataLowerBinEdges+NEOS_test.DataUpperBinEdges)/2
 deltaE = (NEOS_test.DataUpperBinEdges-NEOS_test.DataLowerBinEdges)
 
-figev,axev = plt.subplots(1,1,figsize = (8,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.93))
+figev,axev = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
 
 begin_time = time.time()
-pred = NEOS_test.get_expectation_unnorm_nobkg(Model_osc)
+pred = NEOS_test.get_expectation(Model_osc)
 end_time = time.time()
-print(begin_time-end_time)
+print(end_time-begin_time)
 
-print(pred['NEOS'],pred['NEOS'])
-
-axev.scatter(x_ax,pred['NEOS']/deltaE/1.e5, label = "Our prediction")
-# axev[i].scatter(x_ax,NEOS_test.AllData[NEOS_test.sets_names[i]][:,3]/deltaE/1.e5, label = "NEOS data")
-# axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
-# axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
+axev.scatter(x_ax,pred['NEOS'][:,0], label = "Our prediction")
+axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:,1], label = "NEOS prediction", marker = "_")
+axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:,2], label = "NEOS background", marker = "_")
 axev.set_xlabel("Energy (MeV)", fontsize = 16)
 axev.set_ylabel("Events/(MeV$\ \cdot 10^{5}$)", fontsize = 16)
 axev.tick_params(axis='x', labelsize=13)
 axev.tick_params(axis='y', labelsize=13)
-# ax.axis([0.7,12,0.,2.5])
+axev.axis([1.,9.,0.,60.])
 axev.grid(linestyle="--")
 axev.legend(loc="upper right",fontsize=16)
 

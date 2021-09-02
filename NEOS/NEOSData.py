@@ -31,6 +31,9 @@ dir = "Data/"
 def gaussian(x,mu,sig):
     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
 
+def sharp(x,mu,sig):
+    return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**4/sig**4)
+
 def reconstruct_matrix_function(etrue,erec):
     mu1 = -0.84082 + 0.99172*etrue
     mu2 = -1.48036 + 1.06333*etrue
@@ -80,8 +83,38 @@ def txt_to_array(filename, sep = ","):
 
 # Contains the full data from 1610.04802 for all three experimental halls.
 # Columns:
+# 0: Number of events, per day, per 100 keV;
+# 1: Number of expected events, per day, per 100 keV
+# 2: Number of background events, per day, per 100 keV
+# 3: Ratio of NEOS data to DayaBay data
+# 4: Error of ratio of NEOS data to DayaBay data
+all_data = {'NEOS': txt_to_array(dir+"AllData.dat")}
+observed_data  = {'NEOS': txt_to_array(dir+"AllData.dat")[:,0]}
+predicted_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:,1]}
+predicted_bkg = {'NEOS': txt_to_array(dir+"AllData.dat")[:,2]}
+
+
+ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:,3]}
+ratio_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:,4]}
+
+# -------------------------------------------------------------------
+#  DAYA BAY DATA
+# -------------------------------------------------------------------
+
+# Contains the full data from 1610.04802 for all three experimental halls.
+# Columns:
 # 0: Emin; 1: Emax, 2: Ecentral
 # 3: Nobs  4: Npred (including background)
 # 5: Nprednoosc; 6: Nbkg
-observed_data = {'NEOS': txt_to_array(dir+"RatioNEOSDayaBay.dat")[:,0]}
-observed_error = {'NEOS': txt_to_array(dir+"RatioNEOSDayaBay.dat")[:,1]}
+DB_all_data = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,0:7],
+            'EH2': txt_to_array(dir+"DataEH2.dat")[:,0:7],
+            'EH3': txt_to_array(dir+"DataEH3.dat")[:,0:7]}
+
+
+DB_observed_data = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,3],
+                 'EH2': txt_to_array(dir+"DataEH2.dat")[:,3],
+                 'EH3': txt_to_array(dir+"DataEH3.dat")[:,3]}
+
+DB_predicted_bkg = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,6],
+                 'EH2': txt_to_array(dir+"DataEH2.dat")[:,6],
+                 'EH3': txt_to_array(dir+"DataEH3.dat")[:,6]}

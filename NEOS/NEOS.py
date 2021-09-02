@@ -44,8 +44,10 @@ class Neos:
         self.n_bins = NEOSD.number_of_bins
         self.FromEtrueToErec = NEOSP.reconstruct_mat
 
+        self.AllData = NEOSD.all_data
+        self.PredictedData = NEOSD.predicted_data
         self.ObservedData = NEOSD.observed_data
-        self.ObservedError = NEOSD.observed_error
+        self.PredictedBackground = NEOSD.predicted_bkg
 
     # FUNCTIONS TO MAKE HISTOGRAMS
     # -----------------------------------
@@ -218,28 +220,28 @@ class Neos:
         min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
         max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
-        W = self.get_width(set_name) # in meters
+        W = self.get_width(set_name) # in meters, the detector total width is 2W
         ndL = 3
         dL = (2*W)/(ndL-1)
 
         for reactor in self.reactor_names:
             #L = self.get_distance(set_name,reactor) # in meters
-            for i in range(ndL):
+            for j in range(ndL):
                 Lmin = self.get_distance(set_name,reactor) - W
                 Lmax = self.get_distance(set_name,reactor) + W
-                L = Lmin + i*dL
+                L = Lmin + j*dL
                 for erf in range(min_energy_fine_index,max_energy_fine_index):
 
                     for etf in range(0,len(self.FromEtrueToErec[1])):
-                        enu = (etf+0.5)*self.deltaEfine + (
-                              DeltaNeutronToProtonMass - ElectronMass)
+                        enu = (etf+0.5)*self.deltaEfine# + (
+                              #DeltaNeutronToProtonMass - 2*ElectronMass)
                         oscprob = model.oscProbability(enu,L)
                         flux = self.get_flux(enu)
 
                         # Here we perform trapezoidal integration, the extremes contribute 1/2.
                         if ((etf == 0) or (etf == len(self.FromEtrueToErec[1]-1)) or
                             (erf == min_energy_fine_index) or (erf == max_energy_fine_index-1) or
-                            (i == 0) or (i == ndL - 1)):
+                            (j == 0) or (j == ndL - 1)):
                             expectation += (flux * self.get_cross_section(enu) *
                                             self.FromEtrueToErec[erf][etf] * oscprob)/L**2/2.
                         else:
@@ -352,12 +354,14 @@ class Neos:
 
         Output:
         norm: a normalisation factor with which to multiply events such that the total
-        number of events of "events" is the same as the one from DB data.
+        number of events of "events" is the same as the one from NEOS data.
         """
-        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.ObservedData[set_name]))
+        deltaE = self.DataUpperBinEdges - self.DataLowerBinEdges
+        # deltaE = 1.
+        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.ObservedData[set_name]*deltaE))
                                             for set_name in self.sets_names])
-        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
-                                 for set_name in self.sets_names])
+        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]*deltaE))
+                                for set_name in self.sets_names])
         norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
                      for set_name in self.sets_names])
         return norm
@@ -377,12 +381,15 @@ class Neos:
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
+        deltaE = self.DataUpperBinEdges - self.DataLowerBinEdges
+        # deltaE = 1.
         norm = self.normalization_to_data(exp_events)
-        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
+        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]/deltaE) for set_name in self.sets_names])
 
         # We construct the nuissance parameters which minimise the Poisson probability
         # alpha_i = (dataEH1_i+dataEH2_i+dataEH3_i)/(expEH1_i+expEH2_i+expEH3_i)
-        nuissances = self.get_nuissance_parameters(exp_events)
+        # nuissances = self.get_nuissance_parameters(exp_events)
+        nuissances = 1.
 
         # We apply the nuissance parameters to the data and obtain
         exp_events = dict([(set_name,exp_events[set_name]*nuissances+self.PredictedBackground[set_name])

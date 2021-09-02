@@ -22,7 +22,7 @@ fudge_factors = {'NEOS':1.0}
 # -----------------------------
 # This has been taken from Table IX (nueve) on 1607.05378.
 # One might want to differentiate between different halls (slight diff.)
-mean_fis_frac = {'U235':0.55825,'U238':0.07600,'PU239':0.30975,'PU241':0.05575}
+mean_fis_frac = {'U235':0.655,'U238':0.0720,'PU239':0.235,'PU241':0.038}
 
 
 # EFFICIENCY AND QUANTITY OF DETECTORS
@@ -98,6 +98,7 @@ nuupperbin = np.array([2.125, 2.375, 2.625, 2.875, 3.125, 3.375, 3.625, 3.875, 4
 # -------------------------------------------------------
 # NEUTRINO SPECTRUM FROM DAYA BAY
 # -------------------------------------------------------
+# From 1607.05378
 # The bins are the ones up above.
 # This is weighted with the IBD cross-section.
 # Units cm^2/fission/MeV × 10^−46

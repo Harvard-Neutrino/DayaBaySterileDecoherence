@@ -23,3 +23,17 @@ He de fer una taula amb binning de 50keV aplicant-hi aquesta funció, i escriure
 He de fer una interpolació del histograma que hi ha a NEOSParameters.py.
 Un cop fet això, el que hem de fer és implementar aquesta funció del flux dins de la funció que calcula el nombre d'esdeveniments esperats.
 Això ho hauríem de fer tant a DayaBay com a NEOS (?). Aleshores, un cop impementat això, hem de fer el càlcul del nombre esperat de neutrins per DayaBay i per NEOS, per 3neutrins i per 4, i calcular el ràtio que fa Kopp.
+
+---
+
+07 de juliol
+El que s'hauria de fer primer de tot és convertir les dades (esdeveniments per dia per 100 keV) en dades absolutes,
+és a dir, multiplicar-les totes per 100 keV (i s'hauria de mirar el tema dels dies).
+Després s'han de normalitzar la nostra predicció per què quadri amb la predicció.
+Finalment, s'ha de comparar la nostra predicció amb la seva. Probablement s'haurà de retallar la matriu de reconstrucció.
+
+---
+
+01 de setembre
+Ja he aterrat i sembla que en general tot és força correcte. Crec que el problema principal recau en la manera com hem reconstruït la matriu de reconstrucció. Ara per ara, sembla que té una cua massa curta a eprompt baixes i que el centre de la gaussiana petita no acaba de quadrar.
+El que hauria de fer és penjar el que he fet al portàtil (el jupyter notebook d'ajustar i escriure la matriu) al dropbox i implementar-ho al programa principal.
