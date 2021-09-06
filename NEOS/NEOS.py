@@ -138,15 +138,17 @@ class Neos:
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
 
-    def calculate_naked_event_expectation_noLint(self,model,set_name,i):
+    def calculate_naked_event_expectation_noLint(self,model,set_name,i, bins = None):
         """
         This function implements formula (A.2) from 1709.04294.
+        Here, we assume the detector is very thin and can be approximated to constant L.
 
         Input:
         model: a class containing the information of the model.
                Must contain a method oscProbability (+info on Models.py)
         set_name (str): name of the experimental hall studied.
         i (int): the data bin we want to compute the expectation of.
+        bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
@@ -154,15 +156,17 @@ class Neos:
         if (set_name not in self.sets_names):
             print("Cannot calculate naked rate. Invalid set.")
             return None
-        elif (i > self.n_bins):
-            print("Cannot calculate naked rate. Bin number is invalid.")
-            return None
 
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
-        min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-        max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+        # We allow for the possibility of custom bins, using the argument bins
+        if isinstance(bins,np.ndarray): #Check whether the user has introduced a numpy array of custom bins
+            min_energy_fine_index = self.FindFineBinIndex(bins[:-1][i])
+            max_energy_fine_index = self.FindFineBinIndex(bins[ 1:][i])
+        else:
+            min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+            max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         for reactor in self.reactor_names:
             L = self.get_distance(set_name,reactor) # in meters
@@ -194,15 +198,17 @@ class Neos:
         return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
 
-    def calculate_naked_event_expectation_simple(self,model,set_name,i):
+    def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None):
         """
         This function implements formula (A.2) from 1709.04294.
+        Here we don't neglect the width of the detector, and integrate over it.
 
         Input:
         model: a class containing the information of the model.
                Must contain a method oscProbability (+info on Models.py)
         set_name (str): name of the experimental hall studied.
         i (int): the data bin we want to compute the expectation of.
+        bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
@@ -210,15 +216,18 @@ class Neos:
         if (set_name not in self.sets_names):
             print("Cannot calculate naked rate. Invalid set.")
             return None
-        elif (i > self.n_bins):
-            print("Cannot calculate naked rate. Bin number is invalid.")
-            return None
 
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
-        min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-        max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+        # We allow for the possibility of custom bins, using the argument bins
+        if isinstance(bins,np.ndarray): #Check whether the user has introduced a numpy array of custom bins
+            min_energy_fine_index = self.FindFineBinIndex(bins[:-1][i])
+            max_energy_fine_index = self.FindFineBinIndex(bins[ 1:][i])
+        else:
+            min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+            max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+
 
         W = self.get_width(set_name) # in meters, the detector total width is 2W
         ndL = 3
@@ -266,9 +275,10 @@ class Neos:
                 self.FromEtrueToErec[erf][etf] *
                 model.oscProbability(enu,L))
 
-    def calculate_naked_event_expectation_integr(self,model,set_name,i):
+    def calculate_naked_event_expectation_integr(self,model,set_name,i, bins = None):
         """
         This function implements formula (A.2) from 1709.04294.
+        Here we don't neglect the width of the detector, and integrate over it.
         In this case, however, we perform an integral inside the fine energy
         bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
 
@@ -284,15 +294,19 @@ class Neos:
         if (set_name not in self.sets_names):
             print("Cannot calculate naked rate. Invalid set.")
             return None
-        elif (i > self.n_bins):
-            print("Cannot calculate naked rate. Bin number is invalid.")
-            return None
+
 
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
-        min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-        max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+        # We allow for the possibility of custom bins, using the argument bins
+        if isinstance(bins,np.ndarray): #Check whether the user has introduced a numpy array of custom bins
+            min_energy_fine_index = self.FindFineBinIndex(bins[:-1][i])
+            max_energy_fine_index = self.FindFineBinIndex(bins[ 1:][i])
+        else:
+            min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+            max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+
 
         for reactor in self.reactor_names:
             L = self.get_distance(set_name,reactor) #in meters
@@ -321,7 +335,7 @@ class Neos:
         # reactor loop ends
         return expectation #* self.TotalNumberOfProtons
 
-    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False):
+    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,custom_bins = None):
         """
         Computes the histogram of expected number of events without normalisation
         to the real data, and without summing the predicted background.
@@ -335,13 +349,26 @@ class Neos:
         numpy array with the expected events for each histogram bin.
         """
         if do_we_integrate == False:
-            Expectation = dict([(set_name,
-                                 np.array([self.calculate_naked_event_expectation_simple(model,set_name,i) for i in range(0,self.n_bins)]))
-                                for set_name in self.sets_names])
-        elif do_we_integrate == True:
-            Expectation = dict([(set_name,
-                                 np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(0,self.n_bins)]))
-                                for set_name in self.sets_names])
+            if isinstance(custom_bins,np.ndarray):
+                imax = len(custom_bins)-1
+                Expectation = dict([(set_name,
+                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i,DB_binning = custom_bins) for i in range(0,imax)]))
+                                    for set_name in self.sets_names])
+            else:
+                Expectation = dict([(set_name,
+                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i) for i in range(0,self.n_bins)]))
+                                    for set_name in self.sets_names])
+
+        if do_we_integrate == True:
+            if isinstance(custom_bins,np.ndarray):
+                imax = len(custom_bins)
+                Expectation = dict([(set_name,
+                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,DB_binning = custom_bins) for i in range(0,imax)]))
+                                    for set_name in self.sets_names])
+            else:
+                Expectation = dict([(set_name,
+                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(0,self.n_bins)]))
+                                    for set_name in self.sets_names])
         return Expectation
 
 
@@ -408,6 +435,15 @@ class Neos:
 # ----------------------------------------------------------
 
     def get_poisson_chi2(self,model):
+        """
+        Computes the chi2 value from the Poisson probability, taking into account
+        every bin from the NEOS detector.
+
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output: (float) the chi2 value.
+        """
         Exp = self.get_expectation(model)
         Data = self.ObservedData
         #Bkg = self.PredictedBackground

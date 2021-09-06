@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 # To understand the information on the bins, we must understand the physical process.
 # An electron antineutrino arrives to the detector with an energy which can go between
@@ -22,7 +23,7 @@ import numpy as np
 #     in the IBD cross-section, which is set to be 0 if the antineutrino does not
 #     have enough energy.
 
-dir = "Data/"
+dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 
 # -------------------------------------------------------------
 #  RECONSTRUCTION MATRIX FUNCTION
@@ -81,7 +82,7 @@ def txt_to_array(filename, sep = ","):
     mat = np.array(mat).astype(np.float)
     return mat
 
-# Contains the full data from 1610.04802 for all three experimental halls.
+# Contains the full data from 1610.05134 for all three experimental halls.
 # Columns:
 # 0: Number of events, per day, per 100 keV;
 # 1: Number of expected events, per day, per 100 keV

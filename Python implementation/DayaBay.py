@@ -242,7 +242,7 @@ class DayaBay:
         # reactor loop ends
         return expectation #* self.TotalNumberOfProtons
 
-    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False):
+    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,imin = 0,imax = DBD.number_of_bins):
         """
         Computes the histogram of expected number of events without normalisation
         to the real data, and without summing the predicted background.
@@ -250,6 +250,7 @@ class DayaBay:
         Input:
         model: a Models.py class with which to compute oscillation probabilities.
         do_we_integrate: whether to integrate inside each energy bin or not.
+        imin, imax = indexs of the lowest and "uppest" bins to compute. Only useful for GlobalFit.py.
 
         Output:
         A dictionary with a string key for each experimental hall, linking to a
@@ -257,11 +258,11 @@ class DayaBay:
         """
         if do_we_integrate == False:
             Expectation = dict([(set_name,
-                                 np.array([self.calculate_naked_event_expectation_simple(model,set_name,i) for i in range(0,self.n_bins)]))
+                                 np.array([self.calculate_naked_event_expectation_simple(model,set_name,i) for i in range(imin,imax)]))
                                 for set_name in self.sets_names])
         elif do_we_integrate == True:
             Expectation = dict([(set_name,
-                                 np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(0,self.n_bins)]))
+                                 np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(imin,imax)]))
                                 for set_name in self.sets_names])
         return Expectation
 
@@ -347,6 +348,15 @@ class DayaBay:
 # ----------------------------------------------------------
 
     def get_poisson_chi2(self,model):
+        """
+        Computes the chi2 value from the Poisson probability, taking into account
+        every bin from every DayaBay detector.
+
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output: (float) the chi2 value.
+        """
         Exp = self.get_expectation(model)
         Data = self.ObservedData
         #Bkg = self.PredictedBackground

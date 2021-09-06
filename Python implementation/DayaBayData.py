@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 # To understand the information on the bins, we must understand the physical process.
 # An electron antineutrino arrives to the detector with an energy which can go between
@@ -22,7 +23,7 @@ import numpy as np
 #     in the IBD cross-section, which is set to be 0 if the antineutrino does not
 #     have enough energy.
 
-dir = "Data/"
+dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 
 
 # -------------------------------------------------------------

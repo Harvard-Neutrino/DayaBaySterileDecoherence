@@ -1,8 +1,5 @@
 import time
-import InverseBetaDecayCrossSection as IBD
 import NEOS
-import NEOSParameters as NEOSP
-import NEOSData as NEOSD
 import Models
 
 import numpy as np

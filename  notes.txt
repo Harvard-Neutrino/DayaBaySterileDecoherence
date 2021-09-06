@@ -1,6 +1,0 @@
-Per estudiar la data de NEOS utilitza el ràtio amb DayaBay.
-Com està estudiant un ràtio, en realitat les incerteses de flux afecten poc.
-Per tant, es poden utilitzar els fluxes de HuberMullerFlux
-L'únic problema que tindrem aquí és que no tindrem moltes dades del reactor
-(o potser les podem intentar trobar si busquem de manera bastant turbia).
-Cal trobar eficiències, fraccions de fissió, etc, o passar d'elles.

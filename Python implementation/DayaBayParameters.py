@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 
 # -----------------------------------------------------
@@ -98,7 +99,7 @@ def txt_to_array(filename, sep = ","):
 # We use the previous function to read the neutrino covariance matrix used in the
 # chi2 test and the reconstruction matrix, which is used to transform from real
 # energies to reconstruted energies.
-dir = "Data/"
+dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 neutrino_covariance_matrix = txt_to_array(dir+"NeutrinoCovMatrix.dat")
 reconstruct_mat = txt_to_array(dir+"ReconstructMatrix.dat")
 

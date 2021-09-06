@@ -37,3 +37,15 @@ Finalment, s'ha de comparar la nostra predicció amb la seva. Probablement s'hau
 01 de setembre
 Ja he aterrat i sembla que en general tot és força correcte. Crec que el problema principal recau en la manera com hem reconstruït la matriu de reconstrucció. Ara per ara, sembla que té una cua massa curta a eprompt baixes i que el centre de la gaussiana petita no acaba de quadrar.
 El que hauria de fer és penjar el que he fet al portàtil (el jupyter notebook d'ajustar i escriure la matriu) al dropbox i implementar-ho al programa principal.
+
+---
+
+03 de setembre
+En Jordi diu que no ho veu gaire malament, quedem a l'espera de comentar-ho amb en Carlos (sobretot hi ha el darrer bin, que queda una mica raro perquè la predicció està per sota del background).
+Què queda per fer ara? El global fit dels 4 experimental halls alhora.
+Quins problemes hi ha?
+  - El nombre de bins de DayaBay no concorda amb el nombre de bins de NEOS. És necessari que coincideixin per poder utilitzar els mateixos nuissance parameters per tots ells. Per solucionar-ho, cal retallar bins de DayaBay (començar a 1.3 i acabar a 7.0 o 6.9), retallar els de NEOS (començar a 1.3 i acabar a 6.9), i juntar els de NEOS de manera que vagin cada 0.2 i no cada 0.1.
+  - El nombre de dades de NEOS és molt menor que el nombre de dades de DayaBay. Això fa que, segons el tractament que vam fer per DB, NEOS no influeixi gairebé res en el càlculs dels nuissance parameters (i aleshores no tindrà gaire importància?).
+Què queda per fer?
+  - A banda de resoldre aquests dos problemes, cal implementar la darrera funció, la que calculi el chi2.
+  - Fer diferents càlculs de chi2 amb diferents valors dels paràmetres.
