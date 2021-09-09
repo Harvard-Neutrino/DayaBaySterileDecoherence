@@ -32,16 +32,23 @@ dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 def gaussian(x,mu,sig):
     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
 
-def sharp(x,mu,sig):
-    return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**4/sig**4)
-
 def reconstruct_matrix_function(etrue,erec):
     mu1 = -0.84082 + 0.99172*etrue
     mu2 = -1.48036 + 1.06333*etrue
     sig1 = 0.025*etrue + 0.09
-    sig2 = 0.055*etrue + 0.08
-    factor = (0.055*etrue + 0.08)/0.4
-    return np.maximum(gaussian(erec,mu1,sig1),factor*gaussian(erec,mu2,sig2))
+    sig2 = 0.055*etrue + 0.033
+    factor_g = (0.055*etrue + 0.035)/0.4
+    factor_s = (0.025*etrue + 0.85)
+    cut = -0.042*etrue + 1.3206
+    if erec > mu1+1.5*sig1:
+        return 0.
+    elif erec > etrue - 1.022:
+        return factor_s*gaussian(erec,mu1,sig1)
+    elif erec > etrue -cut:
+        return factor_g*gaussian(etrue-cut,mu2,sig2)+0.01
+    else:
+        return factor_g*gaussian(erec,mu2,sig2)+0.01
+
 
 
 # -------------------------------------------------------------

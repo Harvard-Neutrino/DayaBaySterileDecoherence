@@ -245,7 +245,8 @@ class Neos:
                         enu = (etf+0.5)*self.deltaEfine# + (
                               #DeltaNeutronToProtonMass - 2*ElectronMass)
                         oscprob = model.oscProbability(enu,L)
-                        flux = self.get_flux(enu)
+                        # flux = self.get_flux(enu) # this slows down the program A LOT
+                        flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope] for isotope in self.isotopes_to_consider]))
 
                         # Here we perform trapezoidal integration, the extremes contribute 1/2.
                         if ((etf == 0) or (etf == len(self.FromEtrueToErec[1]-1)) or
@@ -352,7 +353,7 @@ class Neos:
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i,DB_binning = custom_bins) for i in range(0,imax)]))
+                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
             else:
                 Expectation = dict([(set_name,
@@ -363,7 +364,7 @@ class Neos:
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,DB_binning = custom_bins) for i in range(0,imax)]))
+                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
             else:
                 Expectation = dict([(set_name,

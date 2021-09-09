@@ -49,3 +49,8 @@ Quins problemes hi ha?
 Què queda per fer?
   - A banda de resoldre aquests dos problemes, cal implementar la darrera funció, la que calculi el chi2.
   - Fer diferents càlculs de chi2 amb diferents valors dels paràmetres.
+
+---
+
+06 de setembre
+Si estic fent un global fit, la cosa seria utilitzar el HubberMullerFlux tant per DayaBay com per NEOS, no?
