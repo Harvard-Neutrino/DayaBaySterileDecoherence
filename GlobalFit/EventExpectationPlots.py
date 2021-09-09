@@ -33,14 +33,15 @@ print(begin_time-end_time)
 axis = [[1.3,6.9,0.,3.5],[1.3,6.9,0.,3.],[1.3,6.9,0.,0.9],[1.3,6.9,0.,0.6]]
 norm = [1e5,1e5,1e5,1e3]
 
+print(pred[fitter.sets_names[3]][:,1]/deltaE/norm[3])
 
 for i in range(4):
-    axev[i].scatter(x_ax,pred[fitter.sets_names[i]][:,0]/deltaE/norm[i], label = "Our prediction")
-    axev[i].scatter(x_ax,fitter.AllData[fitter.sets_names[i]][:,0]/deltaE/norm[i], label = "DB+NEOS data")
+    axev[i].errorbar(x_ax,pred[fitter.sets_names[i]][:,0]/deltaE/norm[i], yerr = pred[fitter.sets_names[i]][:,1]/deltaE/norm[i], xerr = 0.1, label = "Our prediction", fmt = "_", elinewidth = 2)
+    axev[i].scatter(x_ax,fitter.AllData[fitter.sets_names[i]][:,0]/deltaE/norm[i], label = "DB+NEOS data",color = "black")
     # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
     # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
     axev[i].set_xlabel("Energy (MeV)", fontsize = 16)
-    axev[i].set_ylabel("Events/(MeV$\ \cdot 10^{5}$)", fontsize = 16)
+    axev[i].set_ylabel("Events/(MeV$\ \cdot 10^{%i}$)"%(np.log10(norm[i])), fontsize = 16)
     axev[i].tick_params(axis='x', labelsize=13)
     axev[i].tick_params(axis='y', labelsize=13)
     axev[i].axis(axis[i])
@@ -63,7 +64,7 @@ for i in range(4):
     evex = pred[fitter.sets_names[i]][:,0]
     axchi[i].scatter(x_ax,-2*(data-evex+data*np.log(evex/data)), label = "Chi2")
     # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
-    # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
+    # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")  
     axchi[i].set_xlabel("Energy (MeV)", fontsize = 16)
     axchi[i].set_ylabel("Arbitrary units", fontsize = 16)
     axchi[i].tick_params(axis='x', labelsize=13)

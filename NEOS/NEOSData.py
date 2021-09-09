@@ -29,6 +29,9 @@ dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 #  RECONSTRUCTION MATRIX FUNCTION
 # -------------------------------------------------------------
 
+
+# The reconstruction matrix has a long tail at low energies, as is
+# explained in 1609.03910. 
 def gaussian(x,mu,sig):
     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
 
