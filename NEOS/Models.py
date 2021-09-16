@@ -119,6 +119,25 @@ class PlaneWaveSterile:
                                         np.sin(self.th13)**2*(1-self.fosc(enu,L,self.dm2_43)))/2.
         return prob
 
+    def oscProbability_av(self,E,l):
+        """
+        Input:
+        enu (float): the energy of the electron antineutrino, in MeV.
+        L (float): the length travelled by the antineutrino, in meters.
+
+        Output:
+        The probability of the antineutrino remaining an antineutrino.
+        This is computed according to (find paper!).
+        """
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
+        prob = 1.
+        prob -= np.sin(2*self.th12)**2* np.cos(self.th13)**4* np.cos(self.th14)**4*(1-self.fosc(enu,L,self.dm2_21))/2.
+        prob -= np.sin(2*self.th13)**2* np.cos(self.th14)**4*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
+                                                              np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
+        prob -= np.sin(2*self.th14)**2/2.
+        return prob
+
 
 # -----------------------------------------------------------
 # Wave packet with sterile neutrino: 4 neutrinos, decoherence due to wave packet separation
@@ -160,6 +179,25 @@ class WavePacketSterile:
         prob -= np.sin(2*self.th14)**2*(np.cos(self.th13)**2*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_41))+
                                                               np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_42)))+
                                         np.sin(self.th13)**2*(1-self.fosc(enu,L,self.dm2_43)))/2.
+        return prob
+
+    def oscProbability_av(self,E,l):
+        """
+        Input:
+        enu (float): the energy of the electron antineutrino, in MeV.
+        L (float): the length travelled by the antineutrino, in meters.
+
+        Output:
+        The probability of the antineutrino remaining an antineutrino.
+        This is computed according to (find paper!).
+        """
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
+        prob = 1.
+        prob -= np.sin(2*self.th12)**2* np.cos(self.th13)**4* np.cos(self.th14)**4*(1-self.fosc(enu,L,self.dm2_21))/2.
+        prob -= np.sin(2*self.th13)**2* np.cos(self.th14)**4*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
+                                                              np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
+        prob -= np.sin(2*self.th14)**2/2.
         return prob
 
 

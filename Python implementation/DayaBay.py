@@ -167,8 +167,18 @@ class DayaBay:
                     for isotope in self.isotopes_to_consider:
                         flux += (self.mean_fission_fractions[isotope]*
                                  self.get_flux(enu,isotope))
-                    expectation += (flux * self.get_cross_section(enu) *
-                                    self.FromEtrueToErec[erf][etf] * oscprob)/L**2
+
+                    # Here we perform trapezoidal integration, the extremes contribute 1/2.
+                    if ((etf == 0) or (etf == len(self.FromEtrueToErec[1])-1) or
+                        (erf == min_energy_fine_index) or (erf == max_energy_fine_index-1)):
+                        expectation += (flux * self.get_cross_section(enu) *
+                                        self.FromEtrueToErec[erf][etf] * oscprob)/L**2/2.
+                    else:
+                        expectation += (flux * self.get_cross_section(enu) *
+                                        self.FromEtrueToErec[erf][etf] * oscprob)/L**2
+
+                    # expectation += (flux * self.get_cross_section(enu) *
+                    #                 self.FromEtrueToErec[erf][etf] * oscprob)/L**2
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
@@ -180,10 +190,10 @@ class DayaBay:
         # the two deltaEfine are to realise a trapezoidal numeric integration
         return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
-    def integrand(self,enu,L,model,isotope,erf,etf):
-        return (self.mean_fission_fractions[isotope]*
-                self.get_flux(enu,isotope)*
-                self.get_cross_section(enu) *
+    def integrand(self,enu,L,model,erf,etf):
+        flux = np.sum(np.array([self.get_flux(enu,isotope)*self.mean_fission_fractions[isotope]
+                                for isotope in self.isotopes_to_consider]))
+        return (flux*self.get_cross_section(enu) *
                 self.FromEtrueToErec[erf][etf] *
                 model.oscProbability(enu,L))
 
@@ -226,21 +236,18 @@ class DayaBay:
                     enu_max = (etf+1)*self.deltaEfine + (
                           DeltaNeutronToProtonMass - ElectronMass) # in MeV
 
-                    for isotope in self.isotopes_to_consider:
-                        expectation += integrate.quad(self.integrand,enu_min,enu_max,
-                                                      args=(L,model,isotope,erf,etf))[0]
+                    expectation += (integrate.quad(self.integrand,enu_min,enu_max,
+                                                   args=(L,model,erf,etf))[0]/L**2)
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
 
             # reconstructed energies loop ends
-            # only one trapezoidal numeric integration has been done
-            expectation *= self.deltaEfine
-            expectation *= self.EfficiencyOfHall[set_name]
-            expectation /= L**2
+            # expectation /= L**2
 
         # reactor loop ends
-        return expectation #* self.TotalNumberOfProtons
+        # only one trapezoidal numeric integration has been done
+        return expectation*self.deltaEfine*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
     def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,imin = 0,imax = DBD.number_of_bins):
         """

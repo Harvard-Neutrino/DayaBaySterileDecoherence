@@ -17,6 +17,7 @@ flux_test = HMF.reactor_isotope_flux('U235',HMF.huber_muller)
 #print(flux_test.GetFlux(1.))
 
 DB_test = DB.DayaBay()
+print(len(DB_test.FromEtrueToErec))
 #print(DB.DayaBay().num_bins())
 #print(DB_test.set_ignore_oscillations(True))
 #print(DB_test.are_we_ignoring_oscillations())

@@ -249,7 +249,7 @@ class Neos:
                         flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope] for isotope in self.isotopes_to_consider]))
 
                         # Here we perform trapezoidal integration, the extremes contribute 1/2.
-                        if ((etf == 0) or (etf == len(self.FromEtrueToErec[1]-1)) or
+                        if ((etf == 0) or (etf == len(self.FromEtrueToErec[1])-1) or
                             (erf == min_energy_fine_index) or (erf == max_energy_fine_index-1) or
                             (j == 0) or (j == ndL - 1)):
                             expectation += (flux * self.get_cross_section(enu) *
@@ -322,7 +322,7 @@ class Neos:
 
                     for isotope in self.isotopes_to_consider:
                         expectation += integrate.quad(self.integrand,enu_min,enu_max,
-                                                      args=(L,model,isotope,erf,etf))[0]
+                                                      args=(L,model,isotope,erf,etf))[0]/L**2
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
@@ -331,7 +331,6 @@ class Neos:
             # only one trapezoidal numeric integration has been done
             expectation *= self.deltaEfine
             expectation *= self.EfficiencyOfHall[set_name]
-            expectation /= L**2
 
         # reactor loop ends
         return expectation #* self.TotalNumberOfProtons
@@ -362,7 +361,7 @@ class Neos:
 
         if do_we_integrate == True:
             if isinstance(custom_bins,np.ndarray):
-                imax = len(custom_bins)
+                imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
                                      np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
