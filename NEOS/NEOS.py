@@ -7,6 +7,7 @@ import numpy as np
 from scipy import integrate as integrate
 import scipy.special
 from scipy import interpolate as interpolate
+import vegas
 
 
 class Neos:
@@ -134,11 +135,30 @@ class Neos:
         """
         return self.WidthOfHall[experiment]
 
+    def reconstruct_matrix_function(self,etrue,erec):
+        def gaussian(x,mu,sig):
+            return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
+        mu1 = -0.84082 + 0.99172*etrue
+        mu2 = -1.48036 + 1.06333*etrue
+        sig1 = 0.025*etrue + 0.09
+        sig2 = 0.055*etrue + 0.033
+        factor_g = (0.055*etrue + 0.035)/0.4
+        factor_s = (0.025*etrue + 0.85)
+        cut = -0.042*etrue + 1.3206
+        if erec > mu1+1.5*sig1:
+            return 0.
+        elif erec > etrue - 1.022:
+            return factor_s*gaussian(erec,mu1,sig1)
+        elif erec > etrue -cut:
+            return factor_g*gaussian(etrue-cut,mu2,sig2)+0.01
+        else:
+            return factor_g*gaussian(erec,mu2,sig2)+0.01
+
 
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
 
-    def calculate_naked_event_expectation_noLint(self,model,set_name,i, bins = None):
+    def calculate_naked_event_expectation_noLint(self,model,set_name,i, bins = None, average = False):
         """
         This function implements formula (A.2) from 1709.04294.
         Here, we assume the detector is very thin and can be approximated to constant L.
@@ -175,7 +195,10 @@ class Neos:
                 for etf in range(0,len(self.FromEtrueToErec[1])):
                     enu = (etf+0.5)*self.deltaEfine + (
                           DeltaNeutronToProtonMass - ElectronMass)
-                    oscprob = model.oscProbability(enu,L)
+                    if average == False:
+                        oscprob = model.oscProbability(enu,L)
+                    elif average == True:
+                        oscprob = model.oscProbability_av(enu,L)
                     flux = self.get_flux(enu)
 
                     # Here we perform trapezoidal integration, the extremes contribute 1/2.
@@ -198,7 +221,7 @@ class Neos:
         return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
 
-    def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None):
+    def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None, average = False):
         """
         This function implements formula (A.2) from 1709.04294.
         Here we don't neglect the width of the detector, and integrate over it.
@@ -213,10 +236,6 @@ class Neos:
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
 
-        if (set_name not in self.sets_names):
-            print("Cannot calculate naked rate. Invalid set.")
-            return None
-
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
@@ -228,9 +247,8 @@ class Neos:
             min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
             max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
-
         W = self.get_width(set_name) # in meters, the detector total width is 2W
-        ndL = 3
+        ndL = 3 #OJUT! Això són molt poques integracions per NEOS.
         dL = (2*W)/(ndL-1)
 
         for reactor in self.reactor_names:
@@ -244,7 +262,10 @@ class Neos:
                     for etf in range(0,len(self.FromEtrueToErec[1])):
                         enu = (etf+0.5)*self.deltaEfine# + (
                               #DeltaNeutronToProtonMass - 2*ElectronMass)
-                        oscprob = model.oscProbability(enu,L)
+                        if average == False:
+                            oscprob = model.oscProbability(enu,L)
+                        elif average == True:
+                            oscprob = model.oscProbability_av(enu,L)
                         # flux = self.get_flux(enu) # this slows down the program A LOT
                         flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope] for isotope in self.isotopes_to_consider]))
 
@@ -270,11 +291,24 @@ class Neos:
             # we divide by the total width 2W because we want an intensive quantity! It is an average, not a total sum.
         return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
-    def integrand(self,enu,L,model,isotope,erf,etf):
-        return (self.get_flux(enu)*
+    # def integrand(self,enu,L,model,erf,etf):
+    #     flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
+    #                             for isotope in self.isotopes_to_consider]))
+    #     return (flux*
+    #             self.get_cross_section(enu) *
+    #             self.FromEtrueToErec[erf][etf] *
+    #             model.oscProbability(enu,L))
+
+
+
+    def integrand(self,enu,L,model,erf,etf):
+        flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
+                                for isotope in self.isotopes_to_consider]))
+        return (flux*1e50* #This is kind of stupid but trying to see if it works
                 self.get_cross_section(enu) *
                 self.FromEtrueToErec[erf][etf] *
                 model.oscProbability(enu,L))
+
 
     def calculate_naked_event_expectation_integr(self,model,set_name,i, bins = None):
         """
@@ -292,11 +326,6 @@ class Neos:
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
 
-        if (set_name not in self.sets_names):
-            print("Cannot calculate naked rate. Invalid set.")
-            return None
-
-
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
@@ -308,34 +337,98 @@ class Neos:
             min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
             max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
+        W = self.get_width(set_name) # in meters, the detector total width is 2W
+        ndL = 3 #OJUT! Això són poques integracions per NEOS!
+        dL = (2*W)/(ndL-1)
+
 
         for reactor in self.reactor_names:
             L = self.get_distance(set_name,reactor) #in meters
+            for j in range(ndL):
+                Lmin = self.get_distance(set_name,reactor) - W
+                Lmax = self.get_distance(set_name,reactor) + W
+                L = Lmin + j*dL
 
-            for erf in range(min_energy_fine_index,max_energy_fine_index):
+                for erf in range(min_energy_fine_index,max_energy_fine_index):
 
-                for etf in range(0,len(self.FromEtrueToErec[1])):
-                    enu_min = (etf)*self.deltaEfine + (
-                          DeltaNeutronToProtonMass - ElectronMass)
-                    enu_max = (etf+1)*self.deltaEfine + (
-                          DeltaNeutronToProtonMass - ElectronMass) # in MeV
+                    for etf in range(0,len(self.FromEtrueToErec[1])):
+                        enu_min = (etf)*self.deltaEfine
+                        enu_max = (etf+1)*self.deltaEfine # in MeV
 
-                    for isotope in self.isotopes_to_consider:
-                        expectation += integrate.quad(self.integrand,enu_min,enu_max,
-                                                      args=(L,model,isotope,erf,etf))[0]/L**2
+                        if ((erf == min_energy_fine_index) or (erf == max_energy_fine_index-1) or
+                            (j == 0) or (j == ndL - 1)):
+                            expectation += integrate.quad(self.integrand,enu_min,enu_max,
+                                                          args=(L,model,erf,etf))[0]/L**2/2
+                        else:
+                            expectation += integrate.quad(self.integrand,enu_min,enu_max,
+                                                          args=(L,model,erf,etf))[0]/L**2
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
 
             # reconstructed energies loop ends
             # only one trapezoidal numeric integration has been done
-            expectation *= self.deltaEfine
-            expectation *= self.EfficiencyOfHall[set_name]
 
         # reactor loop ends
-        return expectation #* self.TotalNumberOfProtons
+        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
-    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,custom_bins = None):
+    def integrand_vegas(self,enu,L,model,erec):
+        flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
+                                for isotope in self.isotopes_to_consider]))
+        # flux = self.get_flux(enu)
+        return (flux*1e50* #This is kind of stupid but trying to see if it works
+                self.get_cross_section(enu) *
+                self.reconstruct_matrix_function(enu,erec) *
+                model.oscProbability(enu,L))
+
+    def calculate_naked_event_expectation_vegas(self,model,set_name,i, bins = None):
+        """
+        This function implements formula (A.2) from 1709.04294.
+        Here we don't neglect the width of the detector, and integrate over it.
+        In this case, however, we perform an integral inside the fine energy
+        bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
+
+        Input:
+        model: a class containing the information of the model.
+               Must contain a method oscProbability (+info on Models.py)
+        set_name (str): name of the experimental hall studied.
+        i (int): the data bin we want to compute the expectation of.
+        """
+        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
+        ElectronMass = 0.511 # MeV
+
+        expectation = 0.0
+        if isinstance(bins,np.ndarray):
+            min_energy = bins[:-1][i]
+            max_energy = bins[ 1:][i]
+        else:
+            min_energy = self.DataLowerBinEdges[i]
+            max_energy = self.DataUpperBinEdges[i]
+
+        W = self.get_width(set_name) # in meters, the detector total width is 2W
+
+        expecation = 0.0
+        for reactor in self.reactor_names:
+            Lmin = self.get_distance(set_name,reactor) - W
+            Lmax = self.get_distance(set_name,reactor) + W
+
+            integ = vegas.Integrator([[min_energy,max_energy],[0,12],[Lmin,Lmax]])
+
+            def f(x):
+                erec = x[0]
+                etrue = x[1]
+                L = x[2]
+                return self.integrand_vegas(etrue,L,model,erec)
+
+            result = integ(f,nitn = 10,neval = 1000)
+            expectation += result # Vegas returns a weird format, such as '1.6171(24)'
+
+        # reactor loop ends
+        return expectation*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
+
+
+
+    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,custom_bins = None, do_we_average = False):
         """
         Computes the histogram of expected number of events without normalisation
         to the real data, and without summing the predicted background.
@@ -352,7 +445,7 @@ class Neos:
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
+                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i,bins = custom_bins, average = do_we_average) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
             else:
                 Expectation = dict([(set_name,
@@ -363,11 +456,11 @@ class Neos:
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
+                                     np.array([self.calculate_naked_event_expectation_vegas(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
             else:
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(0,self.n_bins)]))
+                                     np.array([self.calculate_naked_event_expectation_vegas(model,set_name,i) for i in range(0,self.n_bins)]))
                                     for set_name in self.sets_names])
         return Expectation
 
@@ -407,7 +500,7 @@ class Neos:
         """
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
-        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = True)
         deltaE = self.DataUpperBinEdges - self.DataLowerBinEdges
         # deltaE = 1.
         norm = self.normalization_to_data(exp_events)

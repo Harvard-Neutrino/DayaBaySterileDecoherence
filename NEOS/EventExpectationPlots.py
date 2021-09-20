@@ -37,7 +37,10 @@ pred = NEOS_test.get_expectation(Model_osc)
 end_time = time.time()
 print(end_time-begin_time)
 
-axev.scatter(x_ax,pred['NEOS'][:,0], label = "Our prediction")
+pred = pred['NEOS'][:,0]
+pred = np.array([np.float(np.str(pred[i])[:-4]) for i in range(len(pred))])
+
+axev.scatter(x_ax,pred, label = "Our prediction")
 axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:,1], label = "NEOS prediction", marker = "_")
 axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:,2], label = "NEOS background", marker = "_")
 axev.set_xlabel("Energy (MeV)", fontsize = 16)
@@ -50,12 +53,12 @@ axev.legend(loc="upper right",fontsize=16)
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figev.savefig("Figures/Event expectation_SM_PW.png")
+figev.savefig("Figures/Event expectation_SM_PW_vegas.png")
 # As we can see, both ways of computing the event expectations give the same result.
 
 
 # ----------------------------------------------
-# CHI2 per bin per experimental hall
+# NEUTRINO FLUX
 # ----------------------------------------------
 
 list = []
@@ -66,6 +69,11 @@ for enu in x_nu_ax:
 fig,ax = plt.subplots(1,1)
 ax.plot(x_nu_ax,list)
 fig.savefig('Figures/NeutrinoFlux.png')
+
+
+# ----------------------------------------------
+# CHI2 per bin per experimental hall
+# ----------------------------------------------
 
 # figchi,axchi = plt.subplots(1,3,figsize = (20,7),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.96))
 # for i in range(3):

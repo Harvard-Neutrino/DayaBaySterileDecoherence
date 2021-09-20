@@ -6,6 +6,7 @@ import Models
 import numpy as np
 from scipy import integrate as integrate
 import scipy.special
+import vegas
 
 class DayaBay:
 
@@ -127,7 +128,7 @@ class DayaBay:
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
 
-    def calculate_naked_event_expectation_simple(self,model,set_name,i):
+    def calculate_naked_event_expectation_simple(self,model,set_name,i, average = False):
         """
         This function implements formula (A.2) from 1709.04294.
 
@@ -139,13 +140,6 @@ class DayaBay:
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
-
-        if (set_name not in self.sets_names):
-            print("Cannot calculate naked rate. Invalid set.")
-            return None
-        elif (i > self.n_bins):
-            print("Cannot calculate naked rate. Bin number is invalid.")
-            return None
 
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
@@ -161,7 +155,11 @@ class DayaBay:
                 for etf in range(0,len(self.FromEtrueToErec[1])):
                     enu = (etf+0.5)*self.deltaEfine + (
                           DeltaNeutronToProtonMass - ElectronMass)
-                    oscprob = model.oscProbability(enu,L)
+                    if average == False:
+                        oscprob = model.oscProbability(enu,L)
+                    elif average == True:
+                        oscprob = model.oscProbability_av(enu,L)
+
                     flux = 0.0
 
                     for isotope in self.isotopes_to_consider:
@@ -193,9 +191,12 @@ class DayaBay:
     def integrand(self,enu,L,model,erf,etf):
         flux = np.sum(np.array([self.get_flux(enu,isotope)*self.mean_fission_fractions[isotope]
                                 for isotope in self.isotopes_to_consider]))
-        return (flux*self.get_cross_section(enu) *
+
+        return (flux*1e50*
+                self.get_cross_section(enu) *
                 self.FromEtrueToErec[erf][etf] *
                 model.oscProbability(enu,L))
+
 
     def calculate_naked_event_expectation_integr(self,model,set_name,i):
         """
@@ -211,13 +212,6 @@ class DayaBay:
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
-
-        if (set_name not in self.sets_names):
-            print("Cannot calculate naked rate. Invalid set.")
-            return None
-        elif (i > self.n_bins):
-            print("Cannot calculate naked rate. Bin number is invalid.")
-            return None
 
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
@@ -236,8 +230,14 @@ class DayaBay:
                     enu_max = (etf+1)*self.deltaEfine + (
                           DeltaNeutronToProtonMass - ElectronMass) # in MeV
 
-                    expectation += (integrate.quad(self.integrand,enu_min,enu_max,
-                                                   args=(L,model,erf,etf))[0]/L**2)
+                    # print(enu_min,enu_max,f(enu_min),f(enu_max))
+                    if ((erf == min_energy_fine_index) or (erf == max_energy_fine_index-1)):
+                        expectation += integrate.quad(self.integrand,enu_min,enu_max,
+                                                      args=(L,model,erf,etf))[0]/L**2/2.
+
+                    elif f(enu_max) > 0:
+                        expectation += integrate.quad(self.integrand,enu_min,enu_max,
+                                                      args=(L,model,erf,etf))[0]/L**2
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
@@ -249,7 +249,7 @@ class DayaBay:
         # only one trapezoidal numeric integration has been done
         return expectation*self.deltaEfine*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
 
-    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,imin = 0,imax = DBD.number_of_bins):
+    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,imin = 0,imax = DBD.number_of_bins, do_we_average = False):
         """
         Computes the histogram of expected number of events without normalisation
         to the real data, and without summing the predicted background.
@@ -265,8 +265,9 @@ class DayaBay:
         """
         if do_we_integrate == False:
             Expectation = dict([(set_name,
-                                 np.array([self.calculate_naked_event_expectation_simple(model,set_name,i) for i in range(imin,imax)]))
+                                 np.array([self.calculate_naked_event_expectation_simple(model,set_name,i, average = do_we_average) for i in range(imin,imax)]))
                                 for set_name in self.sets_names])
+
         elif do_we_integrate == True:
             Expectation = dict([(set_name,
                                  np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(imin,imax)]))

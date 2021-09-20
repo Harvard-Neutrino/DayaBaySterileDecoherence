@@ -27,10 +27,10 @@ class GlobalFit:
         self.DBexp = DB.DayaBay()
         self.NEOSexp = NEOS.Neos()
 
-    def get_predicted_obs(self,model,do_integral = False):
+    def get_predicted_obs(self,model,do_integral_DB = False, do_integral_NEOS = False, do_average_DB = False, do_average_NEOS = False):
         """ Returns the predicted observation (inside a dictionary) according to an oscillatory model. """
-        obs_pred = self.DBexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral,imin = 1,imax = self.n_bins+1)
-        obs_pred.update(self.NEOSexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral,custom_bins = self.DataAllBinEdges))
+        obs_pred = self.DBexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral_DB,imin = 1,imax = self.n_bins+1,do_we_average = do_average_DB)
+        obs_pred.update(self.NEOSexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral_NEOS,custom_bins = self.DataAllBinEdges, do_we_average = do_average_NEOS))
         return obs_pred
 
 
@@ -74,7 +74,7 @@ class GlobalFit:
             TotalNumberOfExpEvents += exp_events[set_name]
         return (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
 
-    def get_expectation(self,model,do_we_integrate = False):
+    def get_expectation(self,model,do_we_integrate_DB = False, do_we_integrate_NEOS = False, do_we_average_DB = False, do_we_average_NEOS = False):
         """
         Input:
         model: a model from Models.py for which to compute the expected number of events.
@@ -86,7 +86,9 @@ class GlobalFit:
         the error bars of each bin, the lower limits of each bin, and the upper limits of each bin.
         The error bars are purely statistical, i.e. sqrt(N).
         """
-        exp_events = self.get_predicted_obs(model,do_integral = do_we_integrate)
+        exp_events = self.get_predicted_obs(model,do_integral_DB = do_we_integrate_DB, do_integral_NEOS = do_we_integrate_NEOS,
+                                                  do_average_DB  = do_we_average_DB,   do_average_NEOS =  do_we_average_NEOS)
+
         norm = self.normalization_to_data(exp_events)
         exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
 
@@ -103,7 +105,8 @@ class GlobalFit:
 
         return model_expectations
 
-    def get_poisson_chi2(self,model):
+    def get_poisson_chi2(self,model,integrate_DB = False, integrate_NEOS = False,
+                                    average_DB = False, average_NEOS = False):
         """
         Computes the chi2 value from the Poisson probability, taking into account
         every bin from every detector in the global fit.
@@ -113,7 +116,8 @@ class GlobalFit:
 
         Output: (float) the chi2 value.
         """
-        Exp = self.get_expectation(model)
+        Exp = self.get_expectation(model,do_we_integrate_DB = integrate_DB, do_we_integrate_NEOS = integrate_NEOS,
+                                         do_we_average_DB  =  average_DB,   do_we_average_NEOS =   average_NEOS)
         Data = self.ObservedData
 
         TotalLogPoisson = 0.0
