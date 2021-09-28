@@ -73,12 +73,12 @@ class SterileGlobalFit:
 # Best-fit from DayaBay
 # mass = 2.5e-3,angl = 0.0841
 
-datmass = np.logspace(-2,1,3)
-datangl = np.logspace(-3,0,3)
-print(datmass,datangl)
-
-begin = time.time()
-fit = SterileGlobalFit()
-fit.write_data_table(datmass,datangl,'SMPWSterileChi2_new.dat')
-end = time.time()
-print('Time = '+str(end-begin)[:6]+' s.')
+# datmass = np.logspace(-2,1,3)
+# datangl = np.logspace(-3,0,3)
+# print(datmass,datangl)
+#
+# begin = time.time()
+# fit = SterileGlobalFit()
+# fit.write_data_table(datmass,datangl,'SMPWSterileChi2_new.dat')
+# end = time.time()
+# print('Time = '+str(end-begin)[:6]+' s.')

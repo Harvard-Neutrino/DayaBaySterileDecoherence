@@ -31,7 +31,7 @@ dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 
 
 # The reconstruction matrix has a long tail at low energies, as is
-# explained in 1609.03910. 
+# explained in 1609.03910.
 def gaussian(x,mu,sig):
     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
 
@@ -59,15 +59,15 @@ def reconstruct_matrix_function(etrue,erec):
 # -------------------------------------------------------------
 
 # Histogram bins of the measured data.
-number_of_bins = 61
+number_of_bins = 61-1
 datlowerbin = np.array([1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,
                2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,
                4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.6,5.7,5.8,5.9,6.0,6.1,6.2,6.3,6.4,6.5,6.6,6.7,
-               6.8,6.9,7.0])
+               6.8,6.9,7.0][:-1])
 datupperbin = np.array([1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,
                2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,
                4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.6,5.7,5.8,5.9,6.0,6.1,6.2,6.3,6.4,6.5,6.6,6.7,
-               6.8,6.9,7.0,10.0])
+               6.8,6.9,7.0,10.0][:-1])
 
 
 # -------------------------------------------------------------
@@ -100,13 +100,13 @@ def txt_to_array(filename, sep = ","):
 # 3: Ratio of NEOS data to DayaBay data
 # 4: Error of ratio of NEOS data to DayaBay data
 all_data = {'NEOS': txt_to_array(dir+"AllData.dat")}
-observed_data  = {'NEOS': txt_to_array(dir+"AllData.dat")[:,0]}
-predicted_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:,1]}
-predicted_bkg = {'NEOS': txt_to_array(dir+"AllData.dat")[:,2]}
+observed_data  = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,0]}
+predicted_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,1]}
+predicted_bkg = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,2]}
 
 
-ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:,3]}
-ratio_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:,4]}
+ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,3]}
+ratio_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,4]}
 
 # -------------------------------------------------------------------
 #  DAYA BAY DATA

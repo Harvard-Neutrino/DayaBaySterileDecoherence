@@ -1,8 +1,8 @@
 import sys
 import os
 import numpy as np
-sys.path.append(os.getcwd()+"/NEOS")
-sys.path.append(os.getcwd()+"/Python implementation")
+sys.path.append(os.getcwd()[:-10]+"/NEOS")
+sys.path.append(os.getcwd()[:-10]+"/Python implementation")
 
 import NEOS
 import DayaBay as DB
@@ -15,50 +15,24 @@ class GlobalFit:
         self.n_bins = GFD.number_of_bins
         self.DataLowerBinEdges = GFD.datlowerbin
         self.DataUpperBinEdges = GFD.datupperbin
+        self.DataAllBinEdges   = np.append(GFD.datlowerbin,GFD.datupperbin[-1])
+        self.DeltaE = self.DataUpperBinEdges - self.DataLowerBinEdges
+
+        # For more information on the necessary format of the data, check GlobalFitData.py
         self.AllData = GFD.all_data
+        self.ObservedData = dict([(set_name,self.AllData[set_name][:,0]) for set_name in self.sets_names])
+        self.PredictedData = dict([(set_name,self.AllData[set_name][:,1]) for set_name in self.sets_names])
+        self.PredictedBackground = dict([(set_name,self.AllData[set_name][:,2]) for set_name in self.sets_names])
 
         self.DBexp = DB.DayaBay()
         self.NEOSexp = NEOS.Neos()
 
-    def get_data_lower_bin_edges(self):
-        """ Deprecated. """
-        data_bins = dict([(set_name,self.DBexp.DataLowerBinEdges)
-                        for set_name in self.DBexp.sets_names])
-        data_bins.update({'NEOS':self.NEOSexp.DataLowerBinEdges})
-        return data_bins
-
-    def get_data_upper_bin_edges(self):
-        """ Deprecated. """
-        data_bins = dict([(set_name,self.DBexp.DataUpperBinEdges)
-                        for set_name in self.DBexp.sets_names])
-        data_bins.update({'NEOS':self.NEOSexp.DataUpperBinEdges})
-        return data_bins
-
-    def get_deltaE(self):
-        """ Deprecated. """
-        deltaE = dict([(set_name,self.DBexp.DataUpperBinEdges-self.DBexp.DataLowerBinEdges)
-                        for set_name in self.DBexp.sets_names])
-        deltaE.update({'NEOS':self.NEOSexp.DataUpperBinEdges-self.NEOSexp.DataLowerBinEdges})
-        return deltaE
-
-    def get_predicted_obs(self,model):
-        obs_pred = self.DBexp.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
-        obs_pred.update(self.NEOSexp.get_expectation_unnorm_nobkg(model,do_we_integrate = False))
+    def get_predicted_obs(self,model,do_integral_DB = False, do_integral_NEOS = False, do_average_DB = False, do_average_NEOS = False):
+        """ Returns the predicted observation (inside a dictionary) according to an oscillatory model. """
+        obs_pred = self.DBexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral_DB,imin = 1,imax = self.n_bins+1,do_we_average = do_average_DB)
+        obs_pred.update(self.NEOSexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral_NEOS,custom_bins = self.DataAllBinEdges, do_we_average = do_average_NEOS))
         return obs_pred
 
-    def get_observed_data(self):
-        """ Deprecated. """
-        obs_data = dict([(set_name,self.DBexp.ObservedData[set_name])
-                        for set_name in self.DBexp.sets_names])
-        obs_data.update({'NEOS':self.NEOSexp.ObservedData['NEOS']})
-        return obs_data
-
-    def get_predicted_bkg(self):
-        """ Deprecated. """
-        bkg_data = dict([(set_name,self.DBexp.PredictedBackground[set_name])
-                        for set_name in self.DBexp.sets_names])
-        bkg_data.update({'NEOS':self.NEOSexp.PredictedBackground['NEOS']})
-        return bkg_data
 
     def normalization_to_data(self,events):
         """
@@ -71,20 +45,15 @@ class GlobalFit:
         norm: a normalisation factor with which to multiply events such that the total
         number of events of "events" is the same as the one from DB and NEOS data.
         """
-        deltaE = self.get_deltaE() # Deprecated
-        data_obs = self.get_observed_data() # Deprecated
-        bkg_pred = self.get_predicted_bkg() # Deprecated
-
-
-        TotalNumberOfExpEvents = dict([(set_name,np.sum(data_obs[set_name]*deltaE[set_name]))
+        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.PredictedData[set_name]*self.DeltaE))
                                             for set_name in self.sets_names])
-        TotalNumberOfBkg = dict([(set_name,np.sum(bkg_pred[set_name]*deltaE[set_name]))
+        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]*self.DeltaE))
                                 for set_name in self.sets_names])
         norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
                      for set_name in self.sets_names])
         return norm
 
-    def get_nuissance_parameters(self,exp_events,obs_data,bkg_pred):
+    def get_nuissance_parameters(self,exp_events):
         """
         Input:
         events: a dictionary with a string key for each experimental hall, linking to
@@ -100,33 +69,66 @@ class GlobalFit:
         TotalNumberOfBkgPerBin = 0.
         TotalNumberOfExpEvents = 0.
         for set_name in self.sets_names:
-            # set_name = 'EH1'
-            TotalNumberOfEventsPerBin += obs_data[set_name]
-            TotalNumberOfBkgPerBin += bkg_pred[set_name]
+            TotalNumberOfEventsPerBin += self.ObservedData[set_name]
+            TotalNumberOfBkgPerBin += self.PredictedBackground[set_name]
             TotalNumberOfExpEvents += exp_events[set_name]
         return (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
 
-    def get_expectation(self,model):
-        exp_events = self.get_predicted_obs(model)
+    def get_expectation(self,model,do_we_integrate_DB = False, do_we_integrate_NEOS = False, do_we_average_DB = False, do_we_average_NEOS = False):
+        """
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output:
+        A 2-tuple with the expectation from the model and from a model without oscillations.
+        Each element of a tuple is a dictionary, where each key is an experimental hall.
+        Such key links to a numpy array which contains: the histogram of expected events,
+        the error bars of each bin, the lower limits of each bin, and the upper limits of each bin.
+        The error bars are purely statistical, i.e. sqrt(N).
+        """
+        exp_events = self.get_predicted_obs(model,do_integral_DB = do_we_integrate_DB, do_integral_NEOS = do_we_integrate_NEOS,
+                                                  do_average_DB  = do_we_average_DB,   do_average_NEOS =  do_we_average_NEOS)
         norm = self.normalization_to_data(exp_events)
         exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
 
-        obs_data = self.get_observed_data()
-        bkg_pred = self.get_predicted_bkg()
-        nuissances = self.get_nuissance_parameters(exp_events,obs_data,bkg_pred)
+        nuissances = self.get_nuissance_parameters(exp_events)
 
-        exp_events = dict([(set_name,exp_events[set_name]*nuissances+bkg_pred[set_name])
+        exp_events = dict([(set_name,exp_events[set_name]*nuissances+self.PredictedBackground[set_name])
                                    for set_name in self.sets_names])
 
-        data_lower_bin_edges = self.get_data_lower_bin_edges()
-        data_upper_bin_edges = self.get_data_upper_bin_edges()
 
         model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),
-                                                        data_lower_bin_edges[set_name][i],data_upper_bin_edges[set_name][i])
+                                                        self.DataLowerBinEdges[i],self.DataUpperBinEdges[i])
                                                         for i in range(0,self.n_bins)]))
                                   for set_name in self.sets_names])
 
+        return model_expectations
 
-GF = GlobalFit()
-model = Models.PlaneWaveSM()
-print(GF.get_expectation(model))
+    def get_poisson_chi2(self,model,integrate_DB = False, integrate_NEOS = False,
+                                    average_DB = False, average_NEOS = False):
+        """
+        Computes the chi2 value from the Poisson probability, taking into account
+        every bin from every detector in the global fit.
+
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output: (float) the chi2 value.
+        """
+        Exp = self.get_expectation(model,do_we_integrate_DB = integrate_DB, do_we_integrate_NEOS = integrate_NEOS,
+                                         do_we_average_DB  =  average_DB,   do_we_average_NEOS =   average_NEOS)
+        Data = self.ObservedData
+
+        TotalLogPoisson = 0.0
+        for set_name in self.sets_names:
+            lamb = Exp[set_name][:,0]
+            k = Data[set_name]
+            TotalLogPoisson += (k - lamb + k*np.log(lamb/k))
+
+        return -2*np.sum(TotalLogPoisson)
+
+
+
+# GF = GlobalFit()
+# model = Models.PlaneWaveSM()
+# print(GF.get_expectation(model))

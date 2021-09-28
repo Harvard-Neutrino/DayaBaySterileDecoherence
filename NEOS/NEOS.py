@@ -8,6 +8,7 @@ from scipy import integrate as integrate
 import scipy.special
 from scipy import interpolate as interpolate
 import vegas
+import re
 
 
 class Neos:
@@ -99,6 +100,7 @@ class Neos:
             x = (self.NeutrinoLowerBinEdges+self.NeutrinoUpperBinEdges)/2.
             y = self.NeutrinoFlux
             flux = interpolate.interp1d(x,y,kind = 'quadratic',fill_value = 'extrapolate')
+            # potser es pot utilitzar numpy.interp
             return flux(enu)/self.get_cross_section(enu)
 
     def get_flux_HM(self, enu, isotope_name, flux_parameters = HMF.huber_muller):
@@ -218,7 +220,7 @@ class Neos:
 
             # reactor loop ends
             # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
-        return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
+        return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
 
 
     def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None, average = False):
@@ -289,7 +291,7 @@ class Neos:
             # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
             # the dL is to implement a trapezoidal numeric integration in L
             # we divide by the total width 2W because we want an intensive quantity! It is an average, not a total sum.
-        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
+        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
 
     # def integrand(self,enu,L,model,erf,etf):
     #     flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
@@ -304,7 +306,7 @@ class Neos:
     def integrand(self,enu,L,model,erf,etf):
         flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
                                 for isotope in self.isotopes_to_consider]))
-        return (flux*1e50* #This is kind of stupid but trying to see if it works
+        return (flux* #This is kind of stupid but trying to see if it works
                 self.get_cross_section(enu) *
                 self.FromEtrueToErec[erf][etf] *
                 model.oscProbability(enu,L))
@@ -370,7 +372,7 @@ class Neos:
             # only one trapezoidal numeric integration has been done
 
         # reactor loop ends
-        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
+        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
 
     def integrand_vegas(self,enu,L,model,erec):
         flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
@@ -424,7 +426,17 @@ class Neos:
             expectation += result # Vegas returns a weird format, such as '1.6171(24)'
 
         # reactor loop ends
-        return expectation*self.EfficiencyOfHall[set_name] #* self.TotalNumberOfProtons
+        def remove_uncertainty(num):
+            pattern = re.compile(r"\((\d+)\)")
+            err = pattern.findall(num)
+            if len(err) > 0:
+                err = '('+str(pattern.findall(num)[0])+')'
+                return np.float64(num.replace(err,''))
+            else:
+                return np.float64(num)
+
+        expectation = remove_uncertainty(str(expectation))
+        return expectation*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
 
 
 
@@ -456,11 +468,11 @@ class Neos:
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_vegas(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
+                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
             else:
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_vegas(model,set_name,i) for i in range(0,self.n_bins)]))
+                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(0,self.n_bins)]))
                                     for set_name in self.sets_names])
         return Expectation
 
