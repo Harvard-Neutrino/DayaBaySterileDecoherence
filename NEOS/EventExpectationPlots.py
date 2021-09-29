@@ -59,7 +59,7 @@ axev.legend(loc="upper right",fontsize=16)
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figev.savefig("Figures/Event expectation_SM_PW_vegas.png")
+figev.savefig("Figures/EventExpectation_Ste_PW.png")
 # As we can see, both ways of computing the event expectations give the same result.
 
 

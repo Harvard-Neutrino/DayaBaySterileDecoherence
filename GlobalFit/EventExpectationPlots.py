@@ -16,7 +16,7 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.20
+sin2 = 0.2
 dm2 = 2.5
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
@@ -45,8 +45,8 @@ deltaE = dict([(set_name,(-fitter.DataLowerBinEdges[set_name]+fitter.DataUpperBi
 
 figev,axev = plt.subplots(1,4,figsize = (25,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
 
-axis = [[1.3,6.9,0.,3.5],[1.3,6.9,0.,3.],[1.3,6.9,0.,0.9],[1.3,6.9,0.,0.6]]
-norm = [1e5,1e5,1e5,1e3]
+axis = [[1.3,6.9,0.,3.5],[1.3,6.9,0.,3.],[1.3,6.9,0.,0.9],[1.3,6.9,0.,1.1]]
+norm = [1e5,1e5,1e5,1e5]
 
 
 for i in range(4):
@@ -68,7 +68,7 @@ for i in range(4):
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventExpectation_%.2f_ste.png"%(dm2))
+figev.savefig("Figures/EventExpectation_%.2f_%.2f_ste.png"%(dm2,sin2))
 # As we can see, both ways of computing the event expectations give the same result.
 
 
@@ -77,9 +77,6 @@ figev.savefig("Figures/EventExpectation_%.2f_ste.png"%(dm2))
 # -----------------------------------------------
 
 figev,axev = plt.subplots(1,4,figsize = (25,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
-
-axis = [[1.3,6.9,0.,3.5],[1.3,6.9,0.,3.],[1.3,6.9,0.,0.9],[1.3,6.9,0.,0.6]]
-norm = [1e5,1e5,1e5,1e3]
 
 
 for i in range(4):
@@ -105,7 +102,7 @@ for i in range(4):
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventRatio_%.2f_ste.png"%(dm2))
+figev.savefig("Figures/EventRatio_%.2f_%.2f_ste.png"%(dm2,sin2))
 
 # -----------------------------------------------------
 # ONLY NEOS
@@ -131,7 +128,7 @@ for i in range(2):
     axNEOS[i].plot(x_ax[set],np.ones([fitter.n_bins[set]]),linestyle = 'dashed')
 
 figNEOS.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figNEOS.savefig("Figures/NEOSRatio_%.2f_ste.png"%(dm2))
+figNEOS.savefig("Figures/NEOSRatio_%.2f_%.2f_ste.png"%(dm2,sin2))
 
 # ----------------------------------------------
 # CHI2 per bin per experimental hall
@@ -160,4 +157,4 @@ for i in range(4):
 # figchi.suptitle(r'DayaBay best fit (3 neutrino): $\Delta m^2_{ee} = 2.5\times 10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$. Total $\chi^2 = 41.98$', fontsize = 17)
 # figchi.suptitle(r'Sterile best fit (3+1): $\Delta m^2_{41} = 0.067 eV^2$, $\sin^2 2\theta_{13} = 8.29\times 10^{-3}$. Total $\chi^2 = 39.16$', fontsize = 17)
 figchi.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figchi.savefig("Figures/Chi2_%.2f_ste.png"%(dm2))
+figchi.savefig("Figures/Chi2_%.2f_%.2f_ste.png"%(dm2,sin2))

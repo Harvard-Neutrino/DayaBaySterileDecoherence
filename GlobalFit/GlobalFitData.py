@@ -69,9 +69,8 @@ def txt_to_array(filename, sep = ","):
 dir = os.path.dirname(os.path.abspath(__file__))[:-10]
 dirDB = dir+"/Python implementation/Data/"
 dirNEOS = dir+"/NEOS/Data/"
-fudge = 161.1
-fudge = 1.
+fudge = 180. #total of days the detector was on     
 all_data = {'EH1': np.concatenate((txt_to_array(dirDB+"DataEH1.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH1.dat")[1:29,6:7]),axis=1),
             'EH2': np.concatenate((txt_to_array(dirDB+"DataEH2.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH2.dat")[1:29,6:7]),axis=1),
             'EH3': np.concatenate((txt_to_array(dirDB+"DataEH3.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH3.dat")[1:29,6:7]),axis=1),
-            'NEOS':txt_to_array(dirNEOS+'AllData.dat')[3:-2,0:3]}
+            'NEOS':fudge*txt_to_array(dirNEOS+'AllData.dat')[3:-2,0:3]}

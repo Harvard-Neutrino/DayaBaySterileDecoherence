@@ -99,14 +99,17 @@ def txt_to_array(filename, sep = ","):
 # 2: Number of background events, per day, per 100 keV
 # 3: Ratio of NEOS data to DayaBay data
 # 4: Error of ratio of NEOS data to DayaBay data
+fudge = 180.
 all_data = {'NEOS': txt_to_array(dir+"AllData.dat")}
-observed_data  = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,0]}
-predicted_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,1]}
-predicted_bkg = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,2]}
+observed_data  = {'NEOS': fudge* txt_to_array(dir+"AllData.dat")[:-1,0]}
+predicted_data = {'NEOS': fudge*txt_to_array(dir+"AllData.dat")[:-1,1]}
+predicted_bkg = {'NEOS': fudge*txt_to_array(dir+"AllData.dat")[:-1,2]}
+# predicted_bkg = {'NEOS': np.zeros([number_of_bins])}
 
 
 ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,3]}
 ratio_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,4]}
+
 
 # -------------------------------------------------------------------
 #  DAYA BAY DATA

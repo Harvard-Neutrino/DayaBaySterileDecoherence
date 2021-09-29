@@ -13,51 +13,40 @@ reac_names = ['H5']
 isotopes = ['U235','U238','PU239','PU241']
 
 
-
-# FUDGE FACTORS:
-# These are just some factors Carlos entered in case something didn't work right.
-fudge_factors = {'NEOS':1.0}
-
-
 # AVERAGE OF FISSION FRACTIONS:
 # -----------------------------
 # This has been taken from Table IX (nueve) on 1607.05378.
-# One might want to differentiate between different halls (slight diff.)
+# In principle this only applies to DayaBay, but we have assumed the same works for NEOS.
+# It is important to keep this because we must use the same initial flux function for all reactors,
+# in order for the nuissance parameters in our global fit to be reasonable.
 mean_fis_frac = {'U235':0.655,'U238':0.0720,'PU239':0.235,'PU241':0.038}
 
 
 # EFFICIENCY AND QUANTITY OF DETECTORS
 # ------------------------------------
-# We have used the same efficiency as in EH1 from DB
+# We have used the same efficiency as in EH1 from DB.
+# In principle, this is not important. Any change on this would be
+# absorbed by a normalisation to the observed data.
 efficiency = {'NEOS': 0.82*0.97}
 
 
 # DISTANCE FROM REACTORS TO EXP. HALLS
 # ------------------------------------
+# NEOS only has one reactor and one detector.
+# However, since they are very near, we cannot consider the detector puntual,
+# and must integrate over its width. That's why we must consider its width.
 distance = {'NEOS': {'H5': 23.7}}
 width = {'NEOS': 0.3} # this is half-width, i.e. NEOS has L = (23.7 +- 0.3) m.
 
 
-# Here we define a function to easily access the square of this distance.
-def get_distance2(experiment,reactor):
-    """
-    Input:
-    experiment (str): name of the experimental hall.
-    reactor (str): name of the reactor.
-
-    Output:
-    The square distance between these EH and reactor.
-    """
-    return distance[experiment][reactor]**2
-
 
 
 # -----------------------------------------------------
-#   MATRICES (Covariance matrix and reconstruction matrix)
+#   RECONSTRUCTION/RESPONSE MATRIX
 # -----------------------------------------------------
 
-# This information is saved in separate files 'NeutrinoCovMatrix.dat' and
-# 'ReconstructMatrix.dat'. We define this function to access their info.
+# This information is saved in a separate file 'ReconstructMatrix.dat'.
+# We define this function to read and save the info on the file.
 def txt_to_array(filename, sep = ","):
     """
     Input:
@@ -77,9 +66,11 @@ def txt_to_array(filename, sep = ","):
     return mat
 
 # We use the previous function to read the reconstruction matrix, which is used
-# to transform from real energies to reconstruted energies.
+# to transform from real energies to reconstructed energies.
 dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 reconstruct_mat = txt_to_array(dir+"ReconstructMatrix.dat")
+
+# In order to 
 
 
 # -------------------------------------------------------------

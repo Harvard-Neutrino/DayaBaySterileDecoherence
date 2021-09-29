@@ -42,8 +42,8 @@ def txt_to_array(filename, sep = ","):
 
 def getChi2(mass = 2.5e-3,angl = 0.0841):
     model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)
-    # chi2 = fitter.get_poisson_chi2(model)
-    chi2 = DB_test.get_poisson_chi2(model)
+    chi2 = fitter.get_poisson_chi2(model)
+    # chi2 = DB_test.get_poisson_chi2(model)
     print(mass,angl,chi2)
     return chi2
 
@@ -51,7 +51,7 @@ def getChi2(mass = 2.5e-3,angl = 0.0841):
 # Sterile stuff - plane wave
 # -------------------------------------------
 
-data = txt_to_array('PWSterileChi2_vegas.dat')
+data = txt_to_array('PWSterileChi2_22.dat')
 # data[:,2] = data[:,2]-np.min(data[:,2])
 
 data = np.unique(data,axis=0)
@@ -61,8 +61,8 @@ null_hyp = getChi2(0,0)
 bestfit = data[min_index]
 print(bestfit)
 print(null_hyp)
-nang = 40
-nmas = 40
+nang = 5
+nmas = 5
 
 figSt,axSt = plt.subplots(figsize = (7,7))
 axSt.contour(data[:,1].reshape(nmas,nang),data[:,0].reshape(nmas,nang),(data[:,2]-bestfit[2]).reshape(nmas,nang),levels = [2.30,6.18,11.83])

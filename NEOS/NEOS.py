@@ -35,7 +35,6 @@ class Neos:
         self.EfficiencyOfHall = NEOSP.efficiency
         self.DistanceFromReactorToHall = NEOSP.distance
         self.WidthOfHall = NEOSP.width
-        self.FudgeFactorPerHall = NEOSP.fudge_factors
 
         self.NeutrinoLowerBinEdges = NEOSP.nulowerbin
         self.NeutrinoUpperBinEdges = NEOSP.nuupperbin
@@ -306,7 +305,7 @@ class Neos:
     def integrand(self,enu,L,model,erf,etf):
         flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
                                 for isotope in self.isotopes_to_consider]))
-        return (flux* #This is kind of stupid but trying to see if it works
+        return (flux*
                 self.get_cross_section(enu) *
                 self.FromEtrueToErec[erf][etf] *
                 model.oscProbability(enu,L))
@@ -512,7 +511,7 @@ class Neos:
         """
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
-        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = True)
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
         deltaE = self.DataUpperBinEdges - self.DataLowerBinEdges
         # deltaE = 1.
         norm = self.normalization_to_data(exp_events)
