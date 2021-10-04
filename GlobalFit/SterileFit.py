@@ -37,9 +37,9 @@ class SterileGlobalFit:
 
     def what_do_we_do(self,mass):
         """Mass must be in eV^2. """
-        if mass <= 0.15:
+        if mass <= 0.0299:
             return {'DB':{'integrate':False,'average':False},'NEOS':{'integrate':False,'average':False}}
-        elif (mass > 0.15) and (mass <= 1.):
+        elif (mass > 0.0299) and (mass <= 1.):
             return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':False,'average':False}}
         elif (mass > 1.) and (mass <= 2.):
             return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':True,'average':False}}
@@ -48,7 +48,6 @@ class SterileGlobalFit:
         elif (mass > 10.):
             return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':False,'average':True}}
 
-# From here on this needs implementation
     def getChi2(self,mass,angl):
         if self.WavePacket == False:
             model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)

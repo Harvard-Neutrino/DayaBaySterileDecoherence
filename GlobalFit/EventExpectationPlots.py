@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import numpy as np
 import time
 import GlobalFit as GF
@@ -16,14 +17,14 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.2
-dm2 = 2.5
+sin2 = 0.08
+dm2 = 0.1
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
 begin_time = time.time()
 predDB = fitter.get_expectation(Model_osc)
-pred = fitter.get_expectation(Model_ste,do_we_integrate_DB = False,do_we_average_DB = True, do_we_integrate_NEOS = True,do_we_average_NEOS = False)
+pred = fitter.get_expectation(Model_ste,do_we_integrate_DB = True,do_we_average_DB = True, do_we_integrate_NEOS = True,do_we_average_NEOS = False)
 end_time = time.time()
 print(begin_time-end_time)
 

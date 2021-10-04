@@ -40,7 +40,7 @@ deltaE = (DB_test.DataUpperBinEdges-DB_test.DataLowerBinEdges)
 figev,axev = plt.subplots(1,3,figsize = (20,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
 
 begin_time = time.time()
-pred = DB_test.get_expectation(Model_ste)
+pred = DB_test.get_expectation(Model_ste, integrate = True)
 end_time = time.time()
 print(begin_time-end_time)
 

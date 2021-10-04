@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 #import pandas as pd
 
-from scipy import interpolate
-import os
-cwd = os.getcwd()
-path_to_style=cwd+'/Figures'
+# import os
+# cwd = os.getcwd()
+# path_to_style=cwd+'/Figures'
 # plt.style.use(path_to_style+r"/paper.mplstyle")
 
 
@@ -18,21 +17,12 @@ path_to_style=cwd+'/Figures'
 
 
 NEOS_test = NEOS.Neos()
-Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
 Model_ste = Models.PlaneWaveSterile(DM2_41 = 1.73,Sin22Th14 = 0.05)
 Model_ste2 = Models.PlaneWaveSterile(DM2_41 = 2.32,Sin22Th14 = 0.142)
 # Model_osc = Models.PlaneWaveSM(Sin22Th13 = 0.07821,DM2_31 = 2.5e-3)
 # Model_coh = Models.WavePacketSM()
 
-# -------------------------------------------------------
-# Event expectations
-# -------------------------------------------------------
-
-x_ax = (NEOS_test.DataLowerBinEdges+NEOS_test.DataUpperBinEdges)/2
-deltaE = (NEOS_test.DataUpperBinEdges-NEOS_test.DataLowerBinEdges)
-
-figev,axev = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
 
 begin_time = time.time()
 predDB = NEOS_test.get_expectation(Model_osc)
@@ -44,6 +34,17 @@ print(end_time-begin_time)
 pred = pred['NEOS'][:,0]
 predDB = predDB['NEOS'][:,0]
 pred2 = pred2['NEOS'][:,0]
+
+# -------------------------------------------------------
+# Event expectations
+# -------------------------------------------------------
+
+x_ax = (NEOS_test.DataLowerBinEdges+NEOS_test.DataUpperBinEdges)/2
+deltaE = (NEOS_test.DataUpperBinEdges-NEOS_test.DataLowerBinEdges)
+
+figev,axev = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
+
+
 # pred = np.array([np.float(np.str(pred[i])[:-4]) for i in range(len(pred))])
 
 axev.scatter(x_ax,pred, label = "Our prediction", marker = "_")
@@ -53,7 +54,7 @@ axev.set_xlabel("Energy (MeV)", fontsize = 16)
 axev.set_ylabel("Events/(MeV$\ \cdot 10^{5}$)", fontsize = 16)
 axev.tick_params(axis='x', labelsize=13)
 axev.tick_params(axis='y', labelsize=13)
-axev.axis([1.,9.,0.,60.])
+axev.axis([1.,7.,0.,60.])
 axev.grid(linestyle="--")
 axev.legend(loc="upper right",fontsize=16)
 
@@ -100,19 +101,18 @@ figev.savefig("Figures/EventRatioDB_Ste_PW.png")
 # CHI2 per bin per experimental hall
 # ----------------------------------------------
 
-# figchi,axchi = plt.subplots(1,3,figsize = (20,7),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.96))
-# for i in range(3):
-#     data = DB_test.AllData[DB_test.sets_names[i]][:,3]
-#     evex = pred[DB_test.sets_names[i]][:,0]
-#     axchi[i].scatter(x_ax,-2*(data-evex+data*np.log(evex/data)), label = "Chi2")
-#     # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
-#     # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
-#     axchi[i].set_xlabel("Energy (MeV)", fontsize = 16)
-#     axchi[i].set_ylabel("Arbitrary units", fontsize = 16)
-#     axchi[i].tick_params(axis='x', labelsize=13)
-#     axchi[i].tick_params(axis='y', labelsize=13)
-#     # axev.axis([0.7,12,0.,2.5])
-#     axchi[i].grid(linestyle="--")
-#     axchi[i].legend(loc="upper right",fontsize=16)
-#
-# figchi.savefig("Figures/Chi2.png")
+figchi,axchi = plt.subplots(1,1,figsize = (12,8),,gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
+data = NEOS_test.AllData['NEOS'][:-1,3]
+evex = pred
+axchi.scatter(x_ax,-2*(data-evex+data*np.log(evex/data)), label = "Chi2")
+# axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
+# axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
+axchi.set_xlabel("Energy (MeV)", fontsize = 16)
+axchi.set_ylabel("Arbitrary units", fontsize = 16)
+axchi.tick_params(axis='x', labelsize=13)
+axchi.tick_params(axis='y', labelsize=13)
+# axev.axis([0.7,12,0.,2.5])
+axchi.grid(linestyle="--")
+axchi.legend(loc="upper right",fontsize=16)
+
+figchi.savefig("Figures/Chi2.png")

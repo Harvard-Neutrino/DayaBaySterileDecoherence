@@ -6,8 +6,9 @@ import Models
 import numpy as np
 from scipy import integrate as integrate
 import scipy.special
-import vegas
-import re
+# import vegas
+# import re
+#import Integrand
 
 class DayaBay:
 
@@ -250,66 +251,66 @@ class DayaBay:
         # only one trapezoidal numeric integration has been done
         return expectation*self.deltaEfine*self.EfficiencyOfHall[set_name]*1e53 #* self.TotalNumberOfProtons
 
-    def integrand_vegas(self,enu,L,model,erec):
-        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
-        ElectronMass = 0.511 # MeV
-        E = enu + DeltaNeutronToProtonMass - ElectronMass
-        flux = np.sum(np.array([self.get_flux(E,isotope)*self.mean_fission_fractions[isotope]
-                                for isotope in self.isotopes_to_consider]))
-        etf = self.FindFineBinIndex(enu)
-        erf = self.FindFineBinIndex(erec)
-        # flux = self.get_flux(enu)
-        return (flux*1e50* #This is kind of stupid but trying to see if it works
-                self.get_cross_section(E) *
-                self.FromEtrueToErec[erf,etf] *
-                model.oscProbability(E,L))
-
-    def calculate_naked_event_expectation_vegas(self,model,set_name,i, bins = None):
-        """
-        This function implements formula (A.2) from 1709.04294.
-        Here we don't neglect the width of the detector, and integrate over it.
-        In this case, however, we perform an integral inside the fine energy
-        bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
-
-        Input:
-        model: a class containing the information of the model.
-               Must contain a method oscProbability (+info on Models.py)
-        set_name (str): name of the experimental hall studied.
-        i (int): the data bin we want to compute the expectation of.
-        """
-        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
-        ElectronMass = 0.511 # MeV
-
-        expectation = 0.0
-        min_energy = self.DataLowerBinEdges[i]
-        max_energy = self.DataUpperBinEdges[i]
-
-        for reactor in self.reactor_names:
-            L = self.get_distance(set_name,reactor)
-
-            integ = vegas.Integrator([[min_energy,max_energy],[0,12]]) # This 12 seems arbitrary
-
-            def f(x):
-                erec = x[0]
-                etrue = x[1]
-                return self.integrand_vegas(etrue,L,model,erec)
-
-            result = integ(f,nitn = 10,neval = 41000)
-            expectation += result
-
-        # reactor loop ends
-        def remove_uncertainty(num):
-            # Vegas returns a weird format, such as '1.6171(24)'. Gotta remove the (24).
-            pattern = re.compile(r"\((\d+)\)")
-            err = pattern.findall(num)
-            if len(err) > 0:
-                err = '('+str(pattern.findall(num)[0])+')'
-                return np.float64(num.replace(err,''))
-            else:
-                return np.float64(num)
-
-        expectation = remove_uncertainty(str(expectation))
-        return expectation*self.EfficiencyOfHall[set_name]*1e53 #* self.TotalNumberOfProtons
+    # def integrand_vegas(self,enu,L,model,erec):
+    #     DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
+    #     ElectronMass = 0.511 # MeV
+    #     E = enu + DeltaNeutronToProtonMass - ElectronMass
+    #     flux = np.sum(np.array([self.get_flux(E,isotope)*self.mean_fission_fractions[isotope]
+    #                             for isotope in self.isotopes_to_consider]))
+    #     etf = self.FindFineBinIndex(enu)
+    #     erf = self.FindFineBinIndex(erec)
+    #     # flux = self.get_flux(enu)
+    #     return (flux*1e50* #This is kind of stupid but trying to see if it works
+    #             self.get_cross_section(E) *
+    #             self.FromEtrueToErec[erf,etf] *
+    #             model.oscProbability(E,L))
+    #
+    # def calculate_naked_event_expectation_vegas(self,model,set_name,i, bins = None):
+    #     """
+    #     This function implements formula (A.2) from 1709.04294.
+    #     Here we don't neglect the width of the detector, and integrate over it.
+    #     In this case, however, we perform an integral inside the fine energy
+    #     bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
+    #
+    #     Input:
+    #     model: a class containing the information of the model.
+    #            Must contain a method oscProbability (+info on Models.py)
+    #     set_name (str): name of the experimental hall studied.
+    #     i (int): the data bin we want to compute the expectation of.
+    #     """
+    #     DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
+    #     ElectronMass = 0.511 # MeV
+    #
+    #     expectation = 0.0
+    #     min_energy = self.DataLowerBinEdges[i]
+    #     max_energy = self.DataUpperBinEdges[i]
+    #
+    #     for reactor in self.reactor_names:
+    #         L = self.get_distance(set_name,reactor)
+    #
+    #         integ = vegas.Integrator([[min_energy,max_energy],[0,12]]) # This 12 seems arbitrary
+    #
+    #         def f(x):
+    #             erec = x[0]
+    #             etrue = x[1]
+    #             return self.integrand_vegas(etrue,L,model,erec)
+    #
+    #         result = integ(f,nitn = 10,neval = 41000)
+    #         expectation += result
+    #
+    #     # reactor loop ends
+    #     def remove_uncertainty(num):
+    #         # Vegas returns a weird format, such as '1.6171(24)'. Gotta remove the (24).
+    #         pattern = re.compile(r"\((\d+)\)")
+    #         err = pattern.findall(num)
+    #         if len(err) > 0:
+    #             err = '('+str(pattern.findall(num)[0])+')'
+    #             return np.float64(num.replace(err,''))
+    #         else:
+    #             return np.float64(num)
+    #
+    #     expectation = remove_uncertainty(str(expectation))
+    #     return expectation*self.EfficiencyOfHall[set_name]*1e53 #* self.TotalNumberOfProtons
 
 
     def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,imin = 0,imax = DBD.number_of_bins, do_we_average = False):
@@ -380,7 +381,7 @@ class DayaBay:
             TotalNumberOfExpEvents += exp_events[set_name]
         return (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
 
-    def get_expectation(self,model):
+    def get_expectation(self,model, integrate = False):
         """
         Input:
         model: a model from Models.py for which to compute the expected number of events.
@@ -394,7 +395,7 @@ class DayaBay:
         """
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
-        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate)
         norm = self.normalization_to_data(exp_events)
         exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
 
