@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.getcwd()[:-5]+"/Common")
+
 import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF
 import NEOSParameters as NEOSP
@@ -5,10 +9,7 @@ import NEOSData as NEOSD
 import Models
 import numpy as np
 from scipy import integrate as integrate
-import scipy.special
 from scipy import interpolate as interpolate
-import vegas
-import re
 
 
 class Neos:
@@ -19,20 +20,23 @@ class Neos:
         """
         Initialises the class.
         No numeric information is found here. All parameters and data are
-        gathered in files 'DayaBayParameters.py' or 'DayaBayData.py',
+        gathered in files 'NEOSParameters.py' or 'NEOSData.py',
         in order to have a better organisation and to make tuning easier.
         For more information on these data, check the files.
         """
         # Physical quantities
-        self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix
-        self.TotalNumberOfProtons = 1.
+        self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix.
+        # In principle, our analysis is flux-free, i.e. independent of the flux.
+        # Therefore, the total normalisation of the flux is not important.
+        # However, we consider an arbitrary large number of targets to prevent very small event expectations.
+        self.TotalNumberOfProtons = 1e50
 
         self.sets_names = NEOSP.exp_names
         self.reactor_names = NEOSP.reac_names
         self.isotopes_to_consider = NEOSP.isotopes
 
         self.mean_fission_fractions = NEOSP.mean_fis_frac
-        self.EfficiencyOfHall = NEOSP.efficiency
+        self.EfficiencyOfHall = NEOSP.efficiency # Not quite useful in NEOS, but yes in general.
         self.DistanceFromReactorToHall = NEOSP.distance
         self.WidthOfHall = NEOSP.width
 
@@ -42,6 +46,7 @@ class Neos:
 
         self.DataLowerBinEdges = NEOSD.datlowerbin
         self.DataUpperBinEdges = NEOSD.datupperbin
+        self.DeltaEData = (self.DataUpperBinEdges-self.DataLowerBinEdges)
         self.n_bins = NEOSD.number_of_bins
         self.FromEtrueToErec = NEOSP.reconstruct_mat
 
@@ -93,6 +98,14 @@ class Neos:
         return IBD.CrossSection(enu)
 
     def get_flux(self,enu):
+        """
+        Input:
+        enu (float): energy of the outgoing antineutrino.
+
+        Output:
+        The flux of neutrinos with energy enu coming from reactor,
+        according to the DB data from table 12 at https://doi.org/10.1088/1674-1137/41/1/013002
+        """
         if enu < 1.806: # MeV
             return 0
         else:
@@ -136,95 +149,13 @@ class Neos:
         """
         return self.WidthOfHall[experiment]
 
-    def reconstruct_matrix_function(self,etrue,erec):
-        def gaussian(x,mu,sig):
-            return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
-        mu1 = -0.84082 + 0.99172*etrue
-        mu2 = -1.48036 + 1.06333*etrue
-        sig1 = 0.025*etrue + 0.09
-        sig2 = 0.055*etrue + 0.033
-        factor_g = (0.055*etrue + 0.035)/0.4
-        factor_s = (0.025*etrue + 0.85)
-        cut = -0.042*etrue + 1.3206
-        if erec > mu1+1.5*sig1:
-            return 0.
-        elif erec > etrue - 1.022:
-            return factor_s*gaussian(erec,mu1,sig1)
-        elif erec > etrue -cut:
-            return factor_g*gaussian(etrue-cut,mu2,sig2)+0.01
-        else:
-            return factor_g*gaussian(erec,mu2,sig2)+0.01
-
 
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
 
-    def calculate_naked_event_expectation_noLint(self,model,set_name,i, bins = None, average = False):
-        """
-        This function implements formula (A.2) from 1709.04294.
-        Here, we assume the detector is very thin and can be approximated to constant L.
-
-        Input:
-        model: a class containing the information of the model.
-               Must contain a method oscProbability (+info on Models.py)
-        set_name (str): name of the experimental hall studied.
-        i (int): the data bin we want to compute the expectation of.
-        bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
-        """
-        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
-        ElectronMass = 0.511 # MeV
-
-        if (set_name not in self.sets_names):
-            print("Cannot calculate naked rate. Invalid set.")
-            return None
-
-        expectation = 0.0
-        # We want to know what are the fine reconstructed energies for which
-        # we want to make events inside the data bin i.
-        # We allow for the possibility of custom bins, using the argument bins
-        if isinstance(bins,np.ndarray): #Check whether the user has introduced a numpy array of custom bins
-            min_energy_fine_index = self.FindFineBinIndex(bins[:-1][i])
-            max_energy_fine_index = self.FindFineBinIndex(bins[ 1:][i])
-        else:
-            min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-            max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
-
-        for reactor in self.reactor_names:
-            L = self.get_distance(set_name,reactor) # in meters
-            for erf in range(min_energy_fine_index,max_energy_fine_index):
-
-                for etf in range(0,len(self.FromEtrueToErec[1])):
-                    enu = (etf+0.5)*self.deltaEfine + (
-                          DeltaNeutronToProtonMass - ElectronMass)
-                    if average == False:
-                        oscprob = model.oscProbability(enu,L)
-                    elif average == True:
-                        oscprob = model.oscProbability_av(enu,L)
-                    flux = self.get_flux(enu)
-
-                    # Here we perform trapezoidal integration, the extremes contribute 1/2.
-                    if ((etf == 0) or (etf == len(self.FromEtrueToErec[1]-1)) or
-                        (erf == min_energy_fine_index) or (erf == max_energy_fine_index-1)):
-                        expectation += (flux * self.get_cross_section(enu) *
-                                        self.FromEtrueToErec[erf][etf] * oscprob)/L**2/2.
-                    else:
-                        expectation += (flux * self.get_cross_section(enu) *
-                                    self.FromEtrueToErec[erf][etf] * oscprob)/L**2
-                    # isotope loop ends
-
-                    # real antineutrino energies loop ends
-                # L distances loop ends
-            # reconstructed energies loop ends
-            # expectation /= L**2 # this is an error, and the root of all evil in the world
-
-            # reactor loop ends
-            # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
-        return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
-
-
     def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None, average = False):
         """
-        This function implements formula (A.2) from 1709.04294.
+        This function implements formula (A.2) from 1709.04294, adapted to NEOS.
         Here we don't neglect the width of the detector, and integrate over it.
 
         Input:
@@ -233,11 +164,13 @@ class Neos:
         set_name (str): name of the experimental hall studied.
         i (int): the data bin we want to compute the expectation of.
         bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
+        average (bool): whether to pick oscProbability_av or not from the model.
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
 
         expectation = 0.0
+
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
         # We allow for the possibility of custom bins, using the argument bins
@@ -249,15 +182,16 @@ class Neos:
             max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         W = self.get_width(set_name) # in meters, the detector total width is 2W
-        ndL = 3 #OJUT! Això són molt poques integracions per NEOS.
+        ndL = 3 # We only integrate through L with three points. It is probably enough.
         dL = (2*W)/(ndL-1)
 
         for reactor in self.reactor_names:
-            #L = self.get_distance(set_name,reactor) # in meters
+            Lmin = self.get_distance(set_name,reactor) - W
+            Lmax = self.get_distance(set_name,reactor) + W
+
             for j in range(ndL):
-                Lmin = self.get_distance(set_name,reactor) - W
-                Lmax = self.get_distance(set_name,reactor) + W
                 L = Lmin + j*dL
+
                 for erf in range(min_energy_fine_index,max_energy_fine_index):
 
                     for etf in range(0,len(self.FromEtrueToErec[1])):
@@ -267,7 +201,9 @@ class Neos:
                             oscprob = model.oscProbability(enu,L)
                         elif average == True:
                             oscprob = model.oscProbability_av(enu,L)
-                        # flux = self.get_flux(enu) # this slows down the program A LOT
+
+                        # flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
+                        # if it is not necessary, better use the HM flux:
                         flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope] for isotope in self.isotopes_to_consider]))
 
                         # Here we perform trapezoidal integration, the extremes contribute 1/2.
@@ -290,19 +226,20 @@ class Neos:
             # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
             # the dL is to implement a trapezoidal numeric integration in L
             # we divide by the total width 2W because we want an intensive quantity! It is an average, not a total sum.
-        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
-
-    # def integrand(self,enu,L,model,erf,etf):
-    #     flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
-    #                             for isotope in self.isotopes_to_consider]))
-    #     return (flux*
-    #             self.get_cross_section(enu) *
-    #             self.FromEtrueToErec[erf][etf] *
-    #             model.oscProbability(enu,L))
-
+        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]* self.TotalNumberOfProtons
 
 
     def integrand(self,enu,L,model,erf,etf):
+        """
+        This function returns the integrand of formula (A.2) from 1709.04294.
+
+        Input:
+        erf, etf: indices of reconstructed and true energies, in the response matrix.
+        enu: true energy of the neutrino. This will be the parameter of integration.
+        L: the length between experimental hall and reactor.
+        model: the model with which to compute the oscillation probability.
+        """
+        # Computes the HM flux for all isotopes
         flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
                                 for isotope in self.isotopes_to_consider]))
         return (flux*
@@ -322,6 +259,7 @@ class Neos:
         model: a class containing the information of the model.
                Must contain a method oscProbability (+info on Models.py)
         set_name (str): name of the experimental hall studied.
+        bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
         i (int): the data bin we want to compute the expectation of.
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
@@ -339,15 +277,15 @@ class Neos:
             max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         W = self.get_width(set_name) # in meters, the detector total width is 2W
-        ndL = 3 #OJUT! Això són poques integracions per NEOS!
+        ndL = 3 # We only integrate through L with three points. It is probably enough.
         dL = (2*W)/(ndL-1)
 
 
         for reactor in self.reactor_names:
-            L = self.get_distance(set_name,reactor) #in meters
+            Lmin = self.get_distance(set_name,reactor) - W
+            Lmax = self.get_distance(set_name,reactor) + W
+
             for j in range(ndL):
-                Lmin = self.get_distance(set_name,reactor) - W
-                Lmax = self.get_distance(set_name,reactor) + W
                 L = Lmin + j*dL
 
                 for erf in range(min_energy_fine_index,max_energy_fine_index):
@@ -371,72 +309,7 @@ class Neos:
             # only one trapezoidal numeric integration has been done
 
         # reactor loop ends
-        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
-
-    def integrand_vegas(self,enu,L,model,erec):
-        flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
-                                for isotope in self.isotopes_to_consider]))
-        # flux = self.get_flux(enu)
-        return (flux*1e50* #This is kind of stupid but trying to see if it works
-                self.get_cross_section(enu) *
-                self.reconstruct_matrix_function(enu,erec) *
-                model.oscProbability(enu,L))
-
-    def calculate_naked_event_expectation_vegas(self,model,set_name,i, bins = None):
-        """
-        This function implements formula (A.2) from 1709.04294.
-        Here we don't neglect the width of the detector, and integrate over it.
-        In this case, however, we perform an integral inside the fine energy
-        bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
-
-        Input:
-        model: a class containing the information of the model.
-               Must contain a method oscProbability (+info on Models.py)
-        set_name (str): name of the experimental hall studied.
-        i (int): the data bin we want to compute the expectation of.
-        """
-        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
-        ElectronMass = 0.511 # MeV
-
-        expectation = 0.0
-        if isinstance(bins,np.ndarray):
-            min_energy = bins[:-1][i]
-            max_energy = bins[ 1:][i]
-        else:
-            min_energy = self.DataLowerBinEdges[i]
-            max_energy = self.DataUpperBinEdges[i]
-
-        W = self.get_width(set_name) # in meters, the detector total width is 2W
-
-        expecation = 0.0
-        for reactor in self.reactor_names:
-            Lmin = self.get_distance(set_name,reactor) - W
-            Lmax = self.get_distance(set_name,reactor) + W
-
-            integ = vegas.Integrator([[min_energy,max_energy],[0,12],[Lmin,Lmax]])
-
-            def f(x):
-                erec = x[0]
-                etrue = x[1]
-                L = x[2]
-                return self.integrand_vegas(etrue,L,model,erec)
-
-            result = integ(f,nitn = 10,neval = 1000)
-            expectation += result # Vegas returns a weird format, such as '1.6171(24)'
-
-        # reactor loop ends
-        def remove_uncertainty(num):
-            pattern = re.compile(r"\((\d+)\)")
-            err = pattern.findall(num)
-            if len(err) > 0:
-                err = '('+str(pattern.findall(num)[0])+')'
-                return np.float64(num.replace(err,''))
-            else:
-                return np.float64(num)
-
-        expectation = remove_uncertainty(str(expectation))
-        return expectation*self.EfficiencyOfHall[set_name]*1e47 #* self.TotalNumberOfProtons
-
+        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name]*self.TotalNumberOfProtons
 
 
     def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,custom_bins = None, do_we_average = False):
@@ -447,12 +320,15 @@ class Neos:
         Input:
         model: a Models.py class with which to compute oscillation probabilities.
         do_we_integrate: whether to integrate inside each energy bin or not.
+        do_we_average: whether to use the oscProbability_av from the model.
+        custom_bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
 
         Output:
         A dictionary with a string key for each experimental hall, linking to a
         numpy array with the expected events for each histogram bin.
         """
         if do_we_integrate == False:
+            # Once we know we don't integrate, we check whether the user has introduced a custom binning
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
@@ -464,6 +340,7 @@ class Neos:
                                     for set_name in self.sets_names])
 
         if do_we_integrate == True:
+            # Once we know we don't integrate, we check whether the user has introduced a custom binning
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
@@ -487,17 +364,18 @@ class Neos:
         norm: a normalisation factor with which to multiply events such that the total
         number of events of "events" is the same as the one from NEOS data.
         """
-        deltaE = self.DataUpperBinEdges - self.DataLowerBinEdges
-        # deltaE = 1.
-        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.ObservedData[set_name]*deltaE))
-                                            for set_name in self.sets_names])
-        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]*deltaE))
-                                for set_name in self.sets_names])
-        norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
+
+        TotalNumberOfEvents = dict([(set_name,np.sum(self.ObservedData[set_name]))
+                                     for set_name in self.sets_names])
+        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
+                                  for set_name in self.sets_names])
+
+        norm = dict([(set_name,(TotalNumberOfEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
                      for set_name in self.sets_names])
         return norm
 
-    def get_expectation(self,model):
+
+    def get_expectation(self,model, integrate = False, average = False):
         """
         Input:
         model: a model from Models.py for which to compute the expected number of events.
@@ -511,21 +389,12 @@ class Neos:
         """
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
-        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = False)
-        deltaE = self.DataUpperBinEdges - self.DataLowerBinEdges
-        # deltaE = 1.
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = False)
+
         norm = self.normalization_to_data(exp_events)
-        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]/deltaE) for set_name in self.sets_names])
+        exp_events = dict([(set_name,(exp_events[set_name]*norm[set_name]) +self.PredictedBackground[set_name]) for set_name in self.sets_names])
 
-        # We construct the nuissance parameters which minimise the Poisson probability
-        # alpha_i = (dataEH1_i+dataEH2_i+dataEH3_i)/(expEH1_i+expEH2_i+expEH3_i)
-        # nuissances = self.get_nuissance_parameters(exp_events)
-        nuissances = 1.
-
-        # We apply the nuissance parameters to the data and obtain
-        exp_events = dict([(set_name,exp_events[set_name]*nuissances+self.PredictedBackground[set_name])
-                           for set_name in self.sets_names])
-
+        # For the NEOS single fit, there are no nuissance parameters. We just return the data.
         model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),
                                                         self.DataLowerBinEdges[i],self.DataUpperBinEdges[i])
                                                         for i in range(0,self.n_bins)]))
@@ -548,9 +417,10 @@ class Neos:
 
         Output: (float) the chi2 value.
         """
+        # Honestly, have never tried this. Probably, it should work.
         Exp = self.get_expectation(model)
         Data = self.ObservedData
-        #Bkg = self.PredictedBackground
+
         TotalLogPoisson = 0.0
         for set_name in self.sets_names:
             lamb = Exp[set_name][:,0]#+Bkg[set_name]

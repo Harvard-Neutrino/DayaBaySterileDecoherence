@@ -1,10 +1,14 @@
+import sys
+import os
+sys.path.append(os.getcwd()[:-10]+"/Common")
+sys.path.append(os.getcwd()[:-10]+"/NEOS")
+sys.path.append(os.getcwd()[:-10]+"/DayaBay")
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
 from matplotlib import rc
-import os
-import sys
-sys.path.append(os.getcwd()[:-10]+"/NEOS")
 
 import Models
 import GlobalFit as GF

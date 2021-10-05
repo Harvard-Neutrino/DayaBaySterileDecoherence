@@ -1,17 +1,26 @@
 import sys
 import os
-import numpy as np
+sys.path.append(os.getcwd()[:-10]+"/Common")
 sys.path.append(os.getcwd()[:-10]+"/NEOS")
-sys.path.append(os.getcwd()[:-10]+"/Python implementation")
+sys.path.append(os.getcwd()[:-10]+"/DayaBay")
 
 import NEOS
 import DayaBay as DB
 import Models
 import GlobalFitData as GFD
+import numpy as np
+
 
 class GlobalFit:
+
+    # INITIALISATION OF THE CLASS
+    # ---------------------------
     def __init__(self):
         self.sets_names = ['EH1','EH2','EH3','NEOS']
+
+        # We allow for different number of bins between different experiments.
+        # However, the edges of the bins should coincide.
+        # For example, in the present case, there's two NEOS bins for each of DB.
         self.n_bins = GFD.number_of_bins
         self.DataLowerBinEdges = GFD.datlowerbin
         self.DataUpperBinEdges = GFD.datupperbin
@@ -24,15 +33,25 @@ class GlobalFit:
         self.PredictedData = dict([(set_name,self.AllData[set_name][:,1]) for set_name in self.sets_names])
         self.PredictedBackground = dict([(set_name,self.AllData[set_name][:,2]) for set_name in self.sets_names])
 
+        # These are the objects which allow to compute the event expectations for each experiment.
         self.DBexp = DB.DayaBay()
         self.NEOSexp = NEOS.Neos()
 
     def get_predicted_obs(self,model,do_integral_DB = False, do_integral_NEOS = False, do_average_DB = False, do_average_NEOS = False):
-        """ Returns the predicted observation (inside a dictionary) according to an oscillatory model. """
+        """
+        Returns the predicted observation (inside a dictionary)
+        according to an oscillatory model. No background, and no normalisation.
+
+        Input:
+        model: a class containing the information of the model.
+               Must contain a method oscProbability (+info on Models.py)
+        do_integral_DB et al: whether to integrate/average for DB/NEOS.
+               For more information, check each class DayaBay.py and NEOS.py
+
+        """
         obs_pred = self.DBexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral_DB,imin = 1,imax = self.n_bins['EH1']+1,do_we_average = do_average_DB)
         obs_pred.update(self.NEOSexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral_NEOS,custom_bins = self.DataAllBinEdges['NEOS'], do_we_average = do_average_NEOS))
         return obs_pred
-
 
     def normalization_to_data(self,events):
         """
@@ -45,11 +64,12 @@ class GlobalFit:
         norm: a normalisation factor with which to multiply events such that the total
         number of events of "events" is the same as the one from DB and NEOS data.
         """
-        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.PredictedData[set_name]*self.DeltaE[set_name]))
+        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.PredictedData[set_name]))
                                             for set_name in self.sets_names])
-        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]*self.DeltaE[set_name]))
+        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
                                 for set_name in self.sets_names])
-        norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]*self.DeltaE[set_name]))
+
+        norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
                      for set_name in self.sets_names])
 
         return norm
@@ -69,23 +89,33 @@ class GlobalFit:
         TotalNumberOfEventsPerBin = 0.
         TotalNumberOfBkgPerBin = 0.
         TotalNumberOfExpEvents = 0.
-        for set_name in self.sets_names[:-1]:
+
+        for set_name in self.sets_names[:-1]: # Not considering NEOS
+            # We sum the contribution to the nuissance from DB.
             TotalNumberOfEventsPerBin += self.ObservedData[set_name]
             TotalNumberOfBkgPerBin += self.PredictedBackground[set_name]
             TotalNumberOfExpEvents += exp_events[set_name]
+
+        # One has to consider that NEOS has twice as many bins.
+        # We decided that two consecutive bin contributed to and had the same nuissance parameter.
         TotalNumberOfEventsPerBin += self.ObservedData['NEOS'][::2]+self.ObservedData['NEOS'][1::2]
         TotalNumberOfBkgPerBin += self.PredictedBackground['NEOS'][::2]+self.PredictedBackground['NEOS'][1::2]
         TotalNumberOfExpEvents += exp_events['NEOS'][::2]+exp_events['NEOS'][1::2]
 
         nuissances = (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
+
+        # As we said, each nuissance corresponds to two consecutive bins in NEOS.
         nuissancesdict = dict([(set_name,nuissances) for set_name in self.sets_names[:-1]])
         nuissancesdict.update({'NEOS':np.repeat(nuissances,2)})
+
         return nuissancesdict
 
     def get_expectation(self,model,do_we_integrate_DB = False, do_we_integrate_NEOS = False, do_we_average_DB = False, do_we_average_NEOS = False):
         """
         Input:
         model: a model from Models.py for which to compute the expected number of events.
+        do_we_integrate_DB et al: whether to integrate/average for DB/NEOS.
+               For more information, check each class DayaBay.py and NEOS.py
 
         Output:
         A 2-tuple with the expectation from the model and from a model without oscillations.
@@ -96,14 +126,17 @@ class GlobalFit:
         """
         exp_events = self.get_predicted_obs(model,do_integral_DB = do_we_integrate_DB, do_integral_NEOS = do_we_integrate_NEOS,
                                                   do_average_DB  = do_we_average_DB,   do_average_NEOS =  do_we_average_NEOS)
+
+        # We normalise the data from each experimental hall to its own data.
         norm = self.normalization_to_data(exp_events)
         exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
 
+        # We compute and apply the nuissances parameters to all experiments.
         nuissances = self.get_nuissance_parameters(exp_events)
-
         exp_events = dict([(set_name,exp_events[set_name]*nuissances[set_name]+self.PredictedBackground[set_name])
                                    for set_name in self.sets_names])
 
+        # We build the result inside a dictionary.
         model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),
                                                         self.DataLowerBinEdges[set_name][i],self.DataUpperBinEdges[set_name][i])
                                                         for i in range(0,self.n_bins[set_name])]))
@@ -122,6 +155,7 @@ class GlobalFit:
 
         Output: (float) the chi2 value.
         """
+
         Exp = self.get_expectation(model,do_we_integrate_DB = integrate_DB, do_we_integrate_NEOS = integrate_NEOS,
                                          do_we_average_DB  =  average_DB,   do_we_average_NEOS =   average_NEOS)
         Data = self.ObservedData
@@ -133,9 +167,3 @@ class GlobalFit:
             TotalLogPoisson += np.sum(k - lamb + k*np.log(lamb/k))
 
         return -2*TotalLogPoisson
-
-
-
-# GF = GlobalFit()
-# model = Models.PlaneWaveSM()
-# print(GF.get_expectation(model))

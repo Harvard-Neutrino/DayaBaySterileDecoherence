@@ -35,7 +35,17 @@ dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 def gaussian(x,mu,sig):
     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
 
-def reconstruct_matrix_function(etrue,erec):
+def reconstruct_matrix_function(self,etrue,erec):
+    """
+    This function tries to mimic the response matrix in inset from figure 3(a)
+    in 1610.05134. More information on the fit in 1609.03910.
+    
+    Input:
+    etrue, erec (float): the true and reconstructed energies.
+
+    Output:
+    value (in arbitrary units) of the response matrix at such energies.
+    """
     mu1 = -0.84082 + 0.99172*etrue
     mu2 = -1.48036 + 1.06333*etrue
     sig1 = 0.025*etrue + 0.09
@@ -53,7 +63,6 @@ def reconstruct_matrix_function(etrue,erec):
         return factor_g*gaussian(erec,mu2,sig2)+0.01
 
 
-
 # -------------------------------------------------------------
 #   HISTOGRAM BINS
 # -------------------------------------------------------------
@@ -68,6 +77,7 @@ datupperbin = np.array([1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,
                2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,
                4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.6,5.7,5.8,5.9,6.0,6.1,6.2,6.3,6.4,6.5,6.6,6.7,
                6.8,6.9,7.0,10.0][:-1])
+deltaE = datupperbin - datlowerbin
 
 
 # -------------------------------------------------------------
@@ -99,13 +109,17 @@ def txt_to_array(filename, sep = ","):
 # 2: Number of background events, per day, per 100 keV
 # 3: Ratio of NEOS data to DayaBay data
 # 4: Error of ratio of NEOS data to DayaBay data
-fudge_data = 180.
-fudge_bkg = 180/46.
+
+norm = 180.
+# It is important to say: this normalisation factor must not include the deltaE
+
+fudge_data = 1.
+fudge_bkg = 1.
 all_data = {'NEOS': txt_to_array(dir+"AllData.dat")}
-observed_data  = {'NEOS': fudge_data* txt_to_array(dir+"AllData.dat")[:-1,0]}
-predicted_data = {'NEOS': fudge_data*txt_to_array(dir+"AllData.dat")[:-1,1]}
-predicted_bkg = {'NEOS': fudge_data*fudge_bkg*txt_to_array(dir+"AllData.dat")[:-1,2]}
-# predicted_bkg = {'NEOS': np.zeros([number_of_bins])}
+observed_data  = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,0]}
+predicted_data = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,1]}
+predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:-1,2]}
+# predicted_bkg = {'NEOS':np.zeros([number_of_bins])}
 
 
 ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,3]}

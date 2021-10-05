@@ -1,3 +1,13 @@
+# To be done
+- Include an argument which allows to choose between HM flux and DB flux in NEOS.
+- Include the chi2 computation, using the covariance matrix.
+- Put in common how DB and NEOS adapt to a custom binning.
+
+Miscellanious:
+- Edit "Python implementation/EventExpectationPlots.py" so that it looks as well as GlobalFit plots.
+
+### Notes
+
 He descobert que el Poisson que faig dóna molt més pes al EH1 que als altres, i en concret, al EH3 li'n dona molt poca. Això fa que, al final, el fit es faci al que fita millor a l'EH1, i que l'EH3 no quedi ben fitat.
 
 Crec que el més complicat de recrear hauria de ser la matriu de reconstrucció/resposta. Tenen fets uns slices en el https://zenodo.org/record/1286994#.YNnMRhMza-o on pots comparar. Bàsicament són dues gaussianes.

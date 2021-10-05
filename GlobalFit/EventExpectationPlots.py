@@ -1,4 +1,10 @@
 #!/usr/bin/python3
+import sys
+import os
+sys.path.append(os.getcwd()[:-10]+"/Common")
+sys.path.append(os.getcwd()[:-10]+"/NEOS")
+sys.path.append(os.getcwd()[:-10]+"/DayaBay")
+
 import numpy as np
 import time
 import GlobalFit as GF
@@ -17,14 +23,34 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.08
-dm2 = 0.1
+sin2 = 0.060
+dm2 = 6.00
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
+# -------------------------------------------------------------
+# INITIAL COMPUTATIONS
+# ------------------------------------------------------------
+
+
+def what_do_we_do(mass):
+    """Mass must be in eV^2. """
+    if mass <= 0.0299:
+        return {'DB':{'integrate':False,'average':False},'NEOS':{'integrate':False,'average':False}}
+    elif (mass > 0.0299) and (mass <= 1.):
+        return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':False,'average':False}}
+    elif (mass > 1.) and (mass <= 2.):
+        return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':True,'average':False}}
+    elif (mass > 2.) and (mass <= 10.):
+        return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':True,'average':False}}
+    elif (mass > 10.):
+        return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':False,'average':True}}
+
+wdwd = what_do_we_do(dm2)
 begin_time = time.time()
 predDB = fitter.get_expectation(Model_osc)
-pred = fitter.get_expectation(Model_ste,do_we_integrate_DB = True,do_we_average_DB = True, do_we_integrate_NEOS = True,do_we_average_NEOS = False)
+pred = fitter.get_expectation(Model_ste,do_we_integrate_DB = wdwd['DB']['integrate'],do_we_average_DB = wdwd['DB']['average'],
+                                        do_we_integrate_NEOS = wdwd['NEOS']['integrate'],do_we_average_NEOS = wdwd['NEOS']['integrate'])
 end_time = time.time()
 print(begin_time-end_time)
 
@@ -69,7 +95,7 @@ for i in range(4):
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventExpectation_%.2f_%.2f_ste.png"%(dm2,sin2))
+figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
 # As we can see, both ways of computing the event expectations give the same result.
 
 
@@ -103,7 +129,7 @@ for i in range(4):
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventRatio_%.2f_%.2f_ste.png"%(dm2,sin2))
+figev.savefig("Figures/EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 # -----------------------------------------------------
 # ONLY NEOS
@@ -129,7 +155,7 @@ for i in range(2):
     axNEOS[i].plot(x_ax[set],np.ones([fitter.n_bins[set]]),linestyle = 'dashed')
 
 figNEOS.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figNEOS.savefig("Figures/NEOSRatio_%.2f_%.2f_ste.png"%(dm2,sin2))
+figNEOS.savefig("Figures/NEOSRatio/NEOSRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 # ----------------------------------------------
 # CHI2 per bin per experimental hall
@@ -158,4 +184,4 @@ for i in range(4):
 # figchi.suptitle(r'DayaBay best fit (3 neutrino): $\Delta m^2_{ee} = 2.5\times 10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$. Total $\chi^2 = 41.98$', fontsize = 17)
 # figchi.suptitle(r'Sterile best fit (3+1): $\Delta m^2_{41} = 0.067 eV^2$, $\sin^2 2\theta_{13} = 8.29\times 10^{-3}$. Total $\chi^2 = 39.16$', fontsize = 17)
 figchi.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figchi.savefig("Figures/Chi2_%.2f_%.2f_ste.png"%(dm2,sin2))
+figchi.savefig("Figures/Chi2/Chi2_%.2f_%.3f_ste.png"%(dm2,sin2))

@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.getcwd()[:-5]+"/Common")
+
 import time
 import NEOS
 import Models
@@ -5,61 +9,96 @@ import Models
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-#import pandas as pd
 
-# import os
 # cwd = os.getcwd()
 # path_to_style=cwd+'/Figures'
 # plt.style.use(path_to_style+r"/paper.mplstyle")
-
-
 # matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
-
 
 NEOS_test = NEOS.Neos()
 Model_osc = Models.PlaneWaveSM()
-Model_ste = Models.PlaneWaveSterile(DM2_41 = 1.73,Sin22Th14 = 0.05)
-Model_ste2 = Models.PlaneWaveSterile(DM2_41 = 2.32,Sin22Th14 = 0.142)
 # Model_osc = Models.PlaneWaveSM(Sin22Th13 = 0.07821,DM2_31 = 2.5e-3)
 # Model_coh = Models.WavePacketSM()
 
+# Sterile data
+# ------------
+sin2 = 0.05
+dm2 = 1.73
+Model_ste = Models.PlaneWaveSterile(DM2_41 = dm2,Sin22Th14 = sin2)
+
+Model_ste2 = Models.PlaneWaveSterile(DM2_41 = 2.32,Sin22Th14 = 0.142)
+
+
+
+
+# -----------------------------------------------------
+# PRELIMINAR COMPUTATIONS
+# -----------------------------------------------------
 
 begin_time = time.time()
-predDB = NEOS_test.get_expectation(Model_osc)
-pred = NEOS_test.get_expectation(Model_ste)
-pred2 = NEOS_test.get_expectation(Model_ste2)
+predDB = NEOS_test.get_expectation(Model_osc, integrate = False)
+pred = NEOS_test.get_expectation(Model_ste, integrate = True)
+pred2 = NEOS_test.get_expectation(Model_ste2, integrate = True)
 end_time = time.time()
 print(end_time-begin_time)
 
-pred = pred['NEOS'][:,0]
-predDB = predDB['NEOS'][:,0]
-pred2 = pred2['NEOS'][:,0]
+pred = pred['NEOS']
+predDB = predDB['NEOS']
+pred2 = pred2['NEOS']
+
+evex = pred[:,0]
+data = NEOS_test.ObservedData['NEOS']
+chi2_per_exp = np.sum(-2*(data-evex+data*np.log(evex/data)))
+
+
+# -------------------------------------------------------
+# Event expectations in SM, comparison with NEOS prediction
+# -------------------------------------------------------
+
+x_ax = (NEOS_test.DataLowerBinEdges+NEOS_test.DataUpperBinEdges)/2
+deltaE = (NEOS_test.DataUpperBinEdges -NEOS_test.DataLowerBinEdges)
+
+# CAUTION! Probably this expectation is computed according to the HM flux.
+# Therefore, it needn't be equal to the NEOS expectaction, computed according
+# to the flux from DayaBay.
+
+figSM,axSM = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
+axSM.errorbar(x_ax,predDB[:,0], xerr = 0.05, label = "Our prediction", fmt = "_", elinewidth = 2)
+axSM.errorbar(x_ax,NEOS_test.PredictedData['NEOS'], xerr  = 0.05, label = "NEOS prediction", fmt = "_", elinewidth = 2)
+axSM.errorbar(x_ax,NEOS_test.PredictedBackground['NEOS'], xerr = 0.05, label = "NEOS background", fmt = "_", elinewidth = 2)
+axSM.set_xlabel("Energy (MeV)", fontsize = 16)
+
+axSM.set_ylabel("Events/(0.1 MeV)", fontsize = 16)
+axSM.tick_params(axis='x', labelsize=13)
+axSM.tick_params(axis='y', labelsize=13)
+# axSM.axis([1.,7.,0.,60.])
+axSM.grid(linestyle="--")
+axSM.legend(loc="upper right",fontsize=16)
+
+figSM.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
+figSM.savefig("Figures/EventExpectation_SM_PW.png")
+
 
 # -------------------------------------------------------
 # Event expectations
 # -------------------------------------------------------
 
-x_ax = (NEOS_test.DataLowerBinEdges+NEOS_test.DataUpperBinEdges)/2
-deltaE = (NEOS_test.DataUpperBinEdges-NEOS_test.DataLowerBinEdges)
-
 figev,axev = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
 
+axev.errorbar(x_ax,pred[:,0], yerr = pred[:,1], xerr = 0.1, label = "Our prediction", fmt = "_", elinewidth = 2)
+axev.errorbar(x_ax,data, fmt = 'ok', label = "NEOS data")
 
-# pred = np.array([np.float(np.str(pred[i])[:-4]) for i in range(len(pred))])
-
-axev.scatter(x_ax,pred, label = "Our prediction", marker = "_")
-axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:-1,0], label = "NEOS data")
-axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:-1,1], label = "NEOS prediction", marker = "_")
 axev.set_xlabel("Energy (MeV)", fontsize = 16)
-axev.set_ylabel("Events/(MeV$\ \cdot 10^{5}$)", fontsize = 16)
+axev.set_ylabel("Events/(0.1 MeV)", fontsize = 16)
 axev.tick_params(axis='x', labelsize=13)
 axev.tick_params(axis='y', labelsize=13)
-axev.axis([1.,7.,0.,60.])
+# axev.axis([1.,7.,0.,60.])
 axev.grid(linestyle="--")
 axev.legend(loc="upper right",fontsize=16)
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
+figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,chi2_per_exp), fontsize = 17)
 figev.savefig("Figures/EventExpectation_Ste_PW.png")
 # As we can see, both ways of computing the event expectations give the same result.
 
@@ -69,13 +108,10 @@ figev.savefig("Figures/EventExpectation_Ste_PW.png")
 # Event expectations - ratio to DB
 # -------------------------------------------------------
 
-x_ax = (NEOS_test.DataLowerBinEdges+NEOS_test.DataUpperBinEdges)/2
-deltaE = (NEOS_test.DataUpperBinEdges-NEOS_test.DataLowerBinEdges)
-
 figev,axev = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
 
-axev.errorbar(x_ax,pred/predDB, xerr = 0.05, label = r'$\Delta m^2_{41} = 1.73 eV^2, \sin^2 2\theta_{14} = 0.05$', fmt = "_g", elinewidth = 2)
-axev.errorbar(x_ax,pred2/predDB, xerr = 0.05, label = r'$\Delta m^2_{41} = 2.32 eV^2, \sin^2 2\theta_{14} = 0.142$', fmt = "_r", elinewidth = 2)
+axev.errorbar(x_ax,pred[:,0]/predDB[:,0], xerr = 0.05, label = r'$\Delta m^2_{41} = 1.73 eV^2, \sin^2 2\theta_{14} = 0.05$', fmt = "_g", elinewidth = 2)
+axev.errorbar(x_ax,pred2[:,0]/predDB[:,0], xerr = 0.05, label = r'$\Delta m^2_{41} = 2.32 eV^2, \sin^2 2\theta_{14} = 0.142$', fmt = "_r", elinewidth = 2)
 axev.errorbar(x_ax,NEOS_test.AllData['NEOS'][:-1,3], yerr = NEOS_test.AllData['NEOS'][:-1,4], label = "NEOS data", fmt = "ok")
 # axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:-1,1]/predDB, label = "NEOS prediction", marker = "_")
 axev.plot(x_ax,[1 for x in x_ax], linestyle = 'dashed', color = 'yellow')
@@ -95,24 +131,22 @@ figev.savefig("Figures/EventRatioDB_Ste_PW.png")
 
 
 
-
-
 # ----------------------------------------------
 # CHI2 per bin per experimental hall
 # ----------------------------------------------
 
-figchi,axchi = plt.subplots(1,1,figsize = (12,8),,gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
-data = NEOS_test.AllData['NEOS'][:-1,3]
-evex = pred
-axchi.scatter(x_ax,-2*(data-evex+data*np.log(evex/data)), label = "Chi2")
+figchi,axchi = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
+# axchi[i].bar(x_ax[set],-2*(data-evex+data*np.log(evex/data)),width = 3/4*deltaE[set])
+axchi.bar(x_ax,-2*(data-evex+data*np.log(evex/data)),width = 3/4*deltaE)
 # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
 # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
 axchi.set_xlabel("Energy (MeV)", fontsize = 16)
-axchi.set_ylabel("Arbitrary units", fontsize = 16)
+axchi.set_ylabel("NEOS $\chi^2$ per bin", fontsize = 16)
 axchi.tick_params(axis='x', labelsize=13)
 axchi.tick_params(axis='y', labelsize=13)
 # axev.axis([0.7,12,0.,2.5])
 axchi.grid(linestyle="--")
-axchi.legend(loc="upper right",fontsize=16)
+# axchi.legend(loc="upper right",fontsize=16)
 
+figchi.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,chi2_per_exp), fontsize = 17)
 figchi.savefig("Figures/Chi2.png")
