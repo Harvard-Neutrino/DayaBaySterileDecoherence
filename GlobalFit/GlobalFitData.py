@@ -83,3 +83,43 @@ all_data = {'EH1': np.concatenate((txt_to_array(dirDB+"DataEH1.dat")[1:29,3:5],t
             'EH2': np.concatenate((txt_to_array(dirDB+"DataEH2.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH2.dat")[1:29,6:7]),axis=1),
             'EH3': np.concatenate((txt_to_array(dirDB+"DataEH3.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH3.dat")[1:29,6:7]),axis=1),
             'NEOS':fudge*txt_to_array(dirNEOS+'AllData.dat')[3:-2,0:3]}
+
+
+# RECONSTRUCTION MATRIX
+# ---------------------
+
+reconstruct_mat = {'EH1': txt_to_array(dirDB+"ReconstructMatrix.dat"),
+                   'EH2': txt_to_array(dirDB+"ReconstructMatrix.dat"),
+                   'EH3': txt_to_array(dirDB+"ReconstructMatrix.dat"),
+                   'NEOS': txt_to_array(dirNEOS+"ReconstructMatrix.dat")}
+
+
+# NEUTRINO BIN EDGES
+# ---------------------
+
+# Histogram bins of the neutrino real energies
+# The histogram bins begin at 1.800 since it is the minimum energy allowed for
+# neutrinos obtained from inverse beta decay.
+nulowerbin = np.array([1.800, 2.125, 2.375, 2.625, 2.875, 3.125, 3.375, 3.625, 3.875, 4.125, 4.375, 4.625, 4.875,
+              5.125, 5.375, 5.625, 5.875, 6.125, 6.375, 6.625, 6.875, 7.125, 7.375, 7.625, 7.875, 8.125])
+nuupperbin = np.array([2.125, 2.375, 2.625, 2.875, 3.125, 3.375, 3.625, 3.875, 4.125, 4.375, 4.625, 4.875, 5.125,
+              5.375, 5.625, 5.875, 6.125, 6.375, 6.625, 6.875, 7.125, 7.375, 7.625, 7.875, 8.125, 12.00])
+
+neutrino_lower_bin_edges = {'EH1': nulowerbin,
+                            'EH2': nulowerbin,
+                            'EH3': nulowerbin,
+                            'NEOS': nulowerbin}
+
+neutrino_upper_bin_edges = {'EH1': nuupperbin,
+                            'EH2': nuupperbin,
+                            'EH3': nuupperbin,
+                            'NEOS': nuupperbin}
+
+# NEUTRINO COVARIANCE MATRIX
+# --------------------------
+
+
+neutrino_cov_mat = {'EH1': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
+                    'EH2': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
+                    'EH3': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
+                    'NEOS': txt_to_array(dirNEOS+"NeutrinoCovMatrix.dat")}

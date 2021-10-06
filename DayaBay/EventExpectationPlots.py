@@ -40,7 +40,7 @@ print(begin_time-end_time)
 chi2_per_exp = []
 for exp in DB_test.sets_names:
     evex = pred[exp][:,0]
-    data = DB_test.AllData[exp][:,3]
+    data = DB_test.ObservedData[exp]
     chi2_per_exp.append(np.sum(-2*(data-evex+data*np.log(evex/data))))
 
 axis = [[0.7,12,0.,3.5],[0.7,12,0.,3.],[0.7,12,0.,0.9],[0.7,12,0.,0.6]]

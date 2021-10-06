@@ -108,9 +108,6 @@ cov_lower_edges = np.array([1.800, 2.125, 2.375, 2.625, 2.875, 3.125, 3.375, 3.6
 cov_upper_edges = np.array([2.125, 2.375, 2.625, 2.875, 3.125, 3.375, 3.625, 3.875, 4.125, 4.375, 4.625, 4.875, 5.125, 5.375, 5.625, 5.875, 6.125, 6.375, 6.625, 6.875, 7.125, 7.375, 7.625, 7.875, 8.125, 12.000])
 
 reconstruct_mat = txt_to_array(dir+"ReconstructMatrix.dat")
-for i in range(len(reconstruct_mat)):
-    print(np.sum(reconstruct_mat[i]),np.sum(reconstruct_mat[:,i]))
-print(np.sum(reconstruct_mat))
 
 
 
