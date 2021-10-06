@@ -15,11 +15,11 @@ datangl2 = np.logspace(np.log10(0.002),np.log10(0.2),30)
 
 datmass8 = np.logspace(np.log10(2.3),np.log10(3.),20)
 datmass9 = np.logspace(np.log10(4.6),np.log10(7.),25)
-datangl3 = np.logspace(-2,0,90)
+datangl3 = np.logspace(-3,0,90)
 
 
 begin = time.time()
-fit = SF.SterileGlobalFit()
-fit.write_data_table(datmass8,datangl3,'PWSterileChi2_8.dat')
+fit = SF.SterileGlobalFit(wave_packet = True)
+fit.write_data_table(datmass8,datangl3,'WPSterileChi2_8.dat')
 end = time.time()
 print('Time = '+str(end-begin)[:6]+' s.')
