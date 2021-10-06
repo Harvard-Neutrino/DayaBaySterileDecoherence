@@ -39,13 +39,14 @@ def reconstruct_matrix_function(self,etrue,erec):
     """
     This function tries to mimic the response matrix in inset from figure 3(a)
     in 1610.05134. More information on the fit in 1609.03910.
-    
+
     Input:
     etrue, erec (float): the true and reconstructed energies.
 
     Output:
     value (in arbitrary units) of the response matrix at such energies.
     """
+    norm = 1/20.062665 # This normalises the matrix to the same value as the DB response mat
     mu1 = -0.84082 + 0.99172*etrue
     mu2 = -1.48036 + 1.06333*etrue
     sig1 = 0.025*etrue + 0.09
@@ -56,11 +57,11 @@ def reconstruct_matrix_function(self,etrue,erec):
     if erec > mu1+1.5*sig1:
         return 0.
     elif erec > etrue - 1.022:
-        return factor_s*gaussian(erec,mu1,sig1)
+        return factor_s*gaussian(erec,mu1,sig1)*norm
     elif erec > etrue -cut:
-        return factor_g*gaussian(etrue-cut,mu2,sig2)+0.01
+        return (factor_g*gaussian(etrue-cut,mu2,sig2)+0.01)*norm
     else:
-        return factor_g*gaussian(erec,mu2,sig2)+0.01
+        return (factor_g*gaussian(erec,mu2,sig2)+0.01)*norm
 
 
 # -------------------------------------------------------------
