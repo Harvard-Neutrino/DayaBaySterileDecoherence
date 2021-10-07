@@ -10,7 +10,7 @@ datangl1 = np.logspace(-3,-1,30)
 
 datmass5 = np.logspace(np.log10(1.23),np.log10(1.55),9)
 datmass6 = np.logspace(np.log10(1.58),np.log10(1.90),9)
-datmass7 = np.logspace(np.log10(1.93),np.log10(2.2),12)
+datmass7 = np.logspace(np.log10(7.1),np.log10(10.),12)
 datangl2 = np.logspace(-3,0,30)
 
 datmass8 = np.logspace(np.log10(2.3),np.log10(3.),20)
