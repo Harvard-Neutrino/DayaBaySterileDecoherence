@@ -24,8 +24,8 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.601
-dm2 = 0.50
+sin2 = 0.117
+dm2 = 0.1
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
