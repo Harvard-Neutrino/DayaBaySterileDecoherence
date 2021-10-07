@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.append(os.getcwd()[:-10]+"/Common")
+common_dir = '/Common_cython'
+sys.path.append(os.getcwd()[:-10]+common_dir)
 
 import GlobalFit as GF
 import Models

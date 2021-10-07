@@ -11,7 +11,7 @@ path_to_style=cwd+'/Figures'
 # matplotlib.rcParams.update({'text.usetex': True})
 
 # matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
-
+dir = 'PlotData/'
 
 def txt_to_array(filename, sep = ","):
     """
@@ -31,7 +31,7 @@ def txt_to_array(filename, sep = ","):
     mat = np.array(mat).astype(np.float)
     return mat
 
-data = txt_to_array('SMChi2.dat')
+data = txt_to_array(dir+'SMChi2.dat')
 # data[:,2] = data[:,2]-np.min(data[:,2])
 data[:,0] *= 1e3
 min_index = np.where(data[:,2] == np.min(data[:,2]))[0][0]
@@ -60,7 +60,7 @@ figSM.savefig('Figures/SMContour.png')
 # Same thing, but with decoherence
 # -------------------------------------------
 
-data = txt_to_array('SMWPChi2.dat')
+data = txt_to_array(dir+'SMWPChi2.dat')
 # data[:,2] = data[:,2]-np.min(data[:,2])
 data[:,0] *= 1e3
 min_index = np.where(data[:,2] == np.min(data[:,2]))[0][0]
@@ -89,7 +89,7 @@ figSM.savefig('Figures/WPContour.png')
 # Sterile stuff - plane wave
 # -------------------------------------------
 
-data = txt_to_array('SterilePWChi2.dat')
+data = txt_to_array(dir+'SterilePWChi2.dat')
 # data[:,2] = data[:,2]-np.min(data[:,2])
 min_index = np.where(data[:,2] == np.min(data[:,2]))[0][0]
 bestfit = data[min_index]
@@ -117,7 +117,7 @@ figSt.savefig('Figures/SterilePWContour.png')
 # Sterile stuff - wave packer
 # -------------------------------------------
 
-data = txt_to_array('SterileWPChi2.dat')
+data = txt_to_array(dir+'SterileWPChi2.dat')
 # data[:,2] = data[:,2]-np.min(data[:,2])
 min_index = np.where(data[:,2] == np.min(data[:,2]))[0][0]
 bestfit = data[min_index]
@@ -143,8 +143,8 @@ figSt.savefig('Figures/SterileWPContour.png')
 
 # ---------
 # Comparar steriles
-dataPW = txt_to_array('SterilePWChi2.dat')
-dataWP = txt_to_array('SterileWPChi2.dat')
+dataPW = txt_to_array(dir+'SterilePWChi2.dat')
+dataWP = txt_to_array(dir+'SterileWPChi2.dat')
 
 figSt,axSt = plt.subplots(figsize = (7,7))
 axSt.contour(dataPW[:,1].reshape(nmas,nang),dataPW[:,0].reshape(nmas,nang),(dataPW[:,2]-np.min(data[:,2])).reshape(nmas,nang),levels = [6.18],colors='red')

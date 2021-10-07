@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.append(os.getcwd()[:-8]+"/Common")
+common_dir = '/Common_cython'
+sys.path.append(os.getcwd()[:-8]+common_dir)
 
 import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF

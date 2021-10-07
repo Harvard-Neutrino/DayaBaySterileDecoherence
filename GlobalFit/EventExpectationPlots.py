@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 import sys
 import os
-sys.path.append(os.getcwd()[:-10]+"/Common")
+common_dir = '/Common_cython'
+sys.path.append(os.getcwd()[:-10]+common_dir)
 sys.path.append(os.getcwd()[:-10]+"/NEOS")
 sys.path.append(os.getcwd()[:-10]+"/DayaBay")
 
@@ -23,8 +24,8 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.060
-dm2 = 6.00
+sin2 = 0.601
+dm2 = 0.50
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
