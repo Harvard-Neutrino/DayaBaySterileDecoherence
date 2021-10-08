@@ -38,7 +38,7 @@ class DayaBay:
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
         # However, we consider an arbitrary large number of targets to prevent very small event expectations.
-        self.TotalNumberOfProtons = 1e53
+        self.TotalNumberOfProtons = {'EH1': 16.968688565113972e53, 'EH2': 15.783625798930741e53, 'EH3': 16.21670112543282e53}
 
         self.sets_names = DBP.exp_names
         self.reactor_names = DBP.reac_names
@@ -60,6 +60,7 @@ class DayaBay:
 
         self.AllData = DBD.all_data
         self.ObservedData = DBD.observed_data
+        self.PredictedDataNoOsc = DBD.predicted_data_noosc
         self.PredictedBackground = DBD.predicted_bkg
 
 
@@ -196,7 +197,7 @@ class DayaBay:
 
         # reactor loop ends
         # the two deltaEfine are to realise a trapezoidal numeric integration
-        return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name]* self.TotalNumberOfProtons
+        return expectation*self.deltaEfine**2*self.EfficiencyOfHall[set_name]* self.TotalNumberOfProtons[set_name]
 
     def integrand(self,enu,L,model,erf,etf):
         """
@@ -267,7 +268,7 @@ class DayaBay:
 
         # reactor loop ends
         # only one trapezoidal numeric integration has been done
-        return expectation*self.deltaEfine*self.EfficiencyOfHall[set_name]*self.TotalNumberOfProtons
+        return expectation*self.deltaEfine*self.EfficiencyOfHall[set_name]*self.TotalNumberOfProtons[set_name]
 
 
     def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,imin = 0,imax = DBD.number_of_bins, do_we_average = False):
@@ -309,12 +310,14 @@ class DayaBay:
         number of events of "events" is the same as the one from observed data.
         Each experimental hall has a different factor.
         """
-        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.ObservedData[set_name]))
+        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.PredictedDataNoOsc[set_name]))
                                             for set_name in self.sets_names])
         TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
                                  for set_name in self.sets_names])
         norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
                      for set_name in self.sets_names])
+
+        print('norms: ', norm)
         return norm
 
 
@@ -354,8 +357,8 @@ class DayaBay:
 
         # We build the expected number of events for our model and we normalise so it has the same number of events of the data.
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = average)
-        norm = self.normalization_to_data(exp_events)
-        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
+        # norm = self.normalization_to_data(exp_events)
+        # exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
 
         # We construct the nuissance parameters which minimise the Poisson probability
         # alpha_i = (dataEH1_i+dataEH2_i+dataEH3_i)/(expEH1_i+expEH2_i+expEH3_i)

@@ -30,7 +30,7 @@ class Neos:
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
         # However, we consider an arbitrary large number of targets to prevent very small event expectations.
-        self.TotalNumberOfProtons = 1e50
+        self.TotalNumberOfProtons = 4.76567e50
 
         self.sets_names = NEOSP.exp_names
         self.reactor_names = NEOSP.reac_names
@@ -53,6 +53,7 @@ class Neos:
 
         self.AllData = NEOSD.all_data
         self.PredictedData = NEOSD.predicted_data
+        self.PredictedDataHM = NEOSD.predicted_data_HM
         self.ObservedData = NEOSD.observed_data
         self.PredictedBackground = NEOSD.predicted_bkg
 
@@ -227,7 +228,7 @@ class Neos:
             # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
             # the dL is to implement a trapezoidal numeric integration in L
             # we divide by the total width 2W because we want an intensive quantity! It is an average, not a total sum.
-        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]* self.TotalNumberOfProtons
+        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]*self.TotalNumberOfProtons
 
 
     def integrand(self,enu,L,model,erf,etf):
@@ -356,6 +357,9 @@ class Neos:
 
     def normalization_to_data(self,events):
         """
+        Returns a normalization factor with which to normalise the expected events
+        to the predicated data according to SM.
+
         Input:
         events: a dictionary with a string key for each experimental hall, linking to
         a numpy array for some histogram of events. In principle, it should be
@@ -366,13 +370,15 @@ class Neos:
         number of events of "events" is the same as the one from NEOS data.
         """
 
-        TotalNumberOfEvents = dict([(set_name,np.sum(self.ObservedData[set_name]))
+        TotalNumberOfEvents = dict([(set_name,np.sum(self.PredictedDataHM[set_name]))
                                      for set_name in self.sets_names])
         TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
                                   for set_name in self.sets_names])
 
         norm = dict([(set_name,(TotalNumberOfEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
                      for set_name in self.sets_names])
+        print(events)
+        print('norm: ', norm)
         return norm
 
 
@@ -392,8 +398,8 @@ class Neos:
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = False)
 
-        norm = self.normalization_to_data(exp_events)
-        exp_events = dict([(set_name,(exp_events[set_name]*norm[set_name]) +self.PredictedBackground[set_name]) for set_name in self.sets_names])
+        # norm = self.normalization_to_data(exp_events) # Huge mistake!
+        exp_events = dict([(set_name,exp_events[set_name] +self.PredictedBackground[set_name]) for set_name in self.sets_names])
 
         # For the NEOS single fit, there are no nuissance parameters. We just return the data.
         model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),

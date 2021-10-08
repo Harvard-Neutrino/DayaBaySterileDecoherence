@@ -39,7 +39,7 @@ def reconstruct_matrix_function(self,etrue,erec):
     """
     This function tries to mimic the response matrix in inset from figure 3(a)
     in 1610.05134. More information on the fit in 1609.03910.
-    
+
     Input:
     etrue, erec (float): the true and reconstructed energies.
 
@@ -109,6 +109,7 @@ def txt_to_array(filename, sep = ","):
 # 2: Number of background events, per day, per 100 keV
 # 3: Ratio of NEOS data to DayaBay data
 # 4: Error of ratio of NEOS data to DayaBay data
+# 5: Number of expected events according to HM flux, per day, per 100 keV
 
 norm = 180.
 # It is important to say: this normalisation factor must not include the deltaE
@@ -118,6 +119,7 @@ fudge_bkg = 1.
 all_data = {'NEOS': txt_to_array(dir+"AllData.dat")}
 observed_data  = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,0]}
 predicted_data = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,1]}
+predicted_data_HM = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,5]}
 predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:-1,2]}
 # predicted_bkg = {'NEOS':np.zeros([number_of_bins])}
 

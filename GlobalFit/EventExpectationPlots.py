@@ -24,9 +24,9 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.117
-dm2 = 0.1
-Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
+sin2 = 0.0
+dm2 = 0.0
+Model_ste = Models.WavePacketSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
 # -------------------------------------------------------------
@@ -36,9 +36,9 @@ Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 def what_do_we_do(mass):
     """Mass must be in eV^2. """
-    if mass <= 0.0299:
+    if mass <= 0.15:
         return {'DB':{'integrate':False,'average':False},'NEOS':{'integrate':False,'average':False}}
-    elif (mass > 0.0299) and (mass <= 1.):
+    elif (mass > 0.15) and (mass <= 1.):
         return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':False,'average':False}}
     elif (mass > 1.) and (mass <= 2.):
         return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':True,'average':False}}

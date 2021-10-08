@@ -129,8 +129,8 @@ class GlobalFit:
                                                   do_average_DB  = do_we_average_DB,   do_average_NEOS =  do_we_average_NEOS)
 
         # We normalise the data from each experimental hall to its own data.
-        norm = self.normalization_to_data(exp_events)
-        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
+        # norm = self.normalization_to_data(exp_events) # Huge mistake
+        # exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
 
         # We compute and apply the nuissances parameters to all experiments.
         nuissances = self.get_nuissance_parameters(exp_events)

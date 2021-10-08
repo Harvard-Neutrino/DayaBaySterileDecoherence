@@ -74,6 +74,10 @@ observed_data = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,3],
                  'EH2': txt_to_array(dir+"DataEH2.dat")[:,3],
                  'EH3': txt_to_array(dir+"DataEH3.dat")[:,3]}
 
+predicted_data_noosc = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,5],
+                        'EH2': txt_to_array(dir+"DataEH2.dat")[:,5],
+                        'EH3': txt_to_array(dir+"DataEH3.dat")[:,5]}
+
 predicted_bkg = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,6],
                  'EH2': txt_to_array(dir+"DataEH2.dat")[:,6],
                  'EH3': txt_to_array(dir+"DataEH3.dat")[:,6]}
