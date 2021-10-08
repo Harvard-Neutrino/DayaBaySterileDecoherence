@@ -67,10 +67,10 @@ def txt_to_array(filename, sep = ","):
 
 # We use the previous function to read the reconstruction matrix, which is used
 # to transform from real energies to reconstructed energies.
+# This response matrix is normalised to the same total sum as DB response matrix.
 dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 reconstruct_mat = txt_to_array(dir+"ReconstructMatrix.dat")
 
-# In order to 
 
 
 # -------------------------------------------------------------
@@ -97,3 +97,13 @@ spectrum = np.array([344.19, 770.96, 1080.9, 1348.4, 1528.8, 1687.0, 1746.6, 176
                      1719.3, 1617.6, 1466.5, 1309.3, 1203.0, 1105.4, 976.50, 852.31,
                      713.19, 573.90, 463.54, 368.70, 274.56, 190.00, 132.08, 92.114,
                      56.689, 4.0214])
+
+# -----------------------------------------------------------
+# NEUTRINO COVARIANCE MATRIX
+# -----------------------------------------------------------
+
+# The neutrino flux covariance matrix is obtained from 1607.05378 Table 13.
+# Units (cm^2/fission/MeV)^2 x 10^{-92}
+neutrino_covariance_matrix = txt_to_array(dir+"NeutrinoCovMatrix.dat")
+cov_lower_edges = np.array([1.800, 2.125, 2.375, 2.625, 2.875, 3.125, 3.375, 3.625, 3.875, 4.125, 4.375, 4.625, 4.875, 5.125, 5.375, 5.625, 5.875, 6.125, 6.375, 6.625, 6.875, 7.125, 7.375, 7.625, 7.875, 8.125])
+cov_upper_edges = np.array([2.125, 2.375, 2.625, 2.875, 3.125, 3.375, 3.625, 3.875, 4.125, 4.375, 4.625, 4.875, 5.125, 5.375, 5.625, 5.875, 6.125, 6.375, 6.625, 6.875, 7.125, 7.375, 7.625, 7.875, 8.125, 12.000])

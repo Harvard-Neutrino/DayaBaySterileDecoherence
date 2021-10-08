@@ -18,6 +18,7 @@ class GlobalFit:
     # ---------------------------
     def __init__(self):
         self.sets_names = ['EH1','EH2','EH3','NEOS']
+        self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix
 
         # We allow for different number of bins between different experiments.
         # However, the edges of the bins should coincide.
@@ -28,6 +29,12 @@ class GlobalFit:
         self.DataAllBinEdges   = GFD.datallbin
         self.DeltaE = GFD.deltaE
 
+
+        self.NeutrinoLowerBinEdges = GFD.neutrino_lower_bin_edges
+        self.NeutrinoUpperBinEdges = GFD.neutrino_upper_bin_edges
+        self.NeutrinoCovarianceMatrix = GFD.neutrino_cov_mat
+        self.FromEtrueToErec = GFD.reconstruct_mat
+
         # For more information on the necessary format of the data, check GlobalFitData.py
         self.AllData = GFD.all_data
         self.ObservedData = dict([(set_name,self.AllData[set_name][:,0]) for set_name in self.sets_names])
@@ -37,6 +44,23 @@ class GlobalFit:
         # These are the objects which allow to compute the event expectations for each experiment.
         self.DBexp = DB.DayaBay()
         self.NEOSexp = NEOS.Neos()
+
+    def FindFineBinIndex(self,energy):
+        """
+        Input:
+        energy (float): prompt energy or neutrino true energy.
+
+        Output:
+        An integer telling us the index of the true_energy_bin_centers
+        bin in which the input energy is found.
+        """
+        dindex = np.int(np.floor(energy/self.deltaEfine - 0.5))
+        if dindex<0:
+            return 0
+        else:
+            return dindex
+
+
 
     def get_predicted_obs(self,model,do_integral_DB = False, do_integral_NEOS = False, do_average_DB = False, do_average_NEOS = False):
         """
@@ -145,6 +169,12 @@ class GlobalFit:
 
         return model_expectations
 
+
+
+# ----------------------------------------------------------
+# FITTING THE DATA
+# ----------------------------------------------------------
+
     def get_poisson_chi2(self,model,integrate_DB = False, integrate_NEOS = False,
                                     average_DB = False, average_NEOS = False):
         """
@@ -168,3 +198,57 @@ class GlobalFit:
             TotalLogPoisson += np.sum(k - lamb + k*np.log(lamb/k))
 
         return -2*TotalLogPoisson
+
+
+# ----------------------------------------------------------
+# FITTING THE DATA WITH THE COVARIANCE MATRIX
+# ----------------------------------------------------------
+
+    def get_inverse_flux_covariance(self):
+        """
+        Returns the inverse of the neutrino covariance matrix, V^-1.
+        The output is a dictionary with the different covariances matrices for every experiment.
+        """
+        vinv = dict([(set_name,np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix[set_name])))
+                      for set_name in self.sets_names])
+
+        return vinv
+
+    def get_resolution_matrix_underdim(self):
+        """
+        Returns an underdimension of the response matrix.
+        The output is a dictionary with the different response matrices for every experiment.
+        """
+        resmats = {}
+        for set_name in self.sets_names:
+            mat = np.zeros((len(self.NeutrinoLowerBinEdges[set_name]),self.n_bins[set_name]))
+            for i in range(0,self.n_bins[set_name]):
+                minrec = self.FindFineBinIndex(self.DataLowerBinEdges[set_name][i])
+                maxrec = self.FindFineBinIndex(self.DataUpperBinEdges[set_name][i])
+                for j in range(0,len(self.NeutrinoLowerBinEdges[set_name])):
+                    mintrue = self.FindFineBinIndex(self.NeutrinoLowerBinEdges[set_name][j])
+                    maxtrue = self.FindFineBinIndex(self.NeutrinoUpperBinEdges[set_name][j])
+                    mat[j,i] = np.mean(self.FromEtrueToErec[set_name][mintrue:maxtrue,minrec:maxrec])
+            resmats.update({set_name:mat})
+        return resmats
+
+    def get_chi2(self,model, integrate_DB = False, integrate_NEOS = False,
+                             average_DB = False, average_NEOS = False):
+        """
+        Input: a  model with which to compute expectations.
+        Output: a chi2 statistic comparing data and expectations.
+        """
+        U = self.get_resolution_matrix_underdim()
+        Vinv = self.get_inverse_flux_covariance()
+
+        Exp = self.get_expectation(model,do_we_integrate_DB = integrate_DB, do_we_integrate_NEOS = integrate_NEOS,
+                                         do_we_average_DB  =  average_DB,   do_we_average_NEOS =   average_NEOS)
+        Data = self.ObservedData
+        chi2 = 0.
+        for set_name in self.sets_names:
+            exp_i = Exp[set_name][:,0]
+            dat_i = Data[set_name]
+
+            chi2 += (dat_i-exp_i).dot((U[set_name].transpose()).dot(Vinv[set_name].dot(U[set_name].dot(dat_i-exp_i))))
+
+        return chi2

@@ -380,7 +380,7 @@ class DayaBay:
 # FITTING THE DATA
 # ----------------------------------------------------------
 
-    def get_poisson_chi2(self,model):
+    def get_poisson_chi2(self,model, do_we_integrate = False, do_we_average = False):
         """
         Computes the "chi2" value from the Poisson probability, taking into account
         every bin from every DayaBay detector.
@@ -390,7 +390,7 @@ class DayaBay:
 
         Output: (float) the log Poisson "chi2" value.
         """
-        Exp = self.get_expectation(model)
+        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
         Data = self.ObservedData
         #Bkg = self.PredictedBackground
         TotalLogPoisson = 0.0
@@ -403,17 +403,19 @@ class DayaBay:
 
 
 # ----------------------------------------------------------
-# Up to now, the following methods should not be useful
+# FITTING THE DATA WITH THE COVARIANCE MATRIX
 # ----------------------------------------------------------
 
     def get_inverse_flux_covariance(self):
+        """
+        Returns the inverse of the neutrino covariance matrix, V^-1.
+        """
         return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
 
-    def get_inverse_resolution_matrix(self):
-        return np.linalg.inv(np.array(self.FromEtrueToErec))
-
-    def get_inverse_resolution_matrix_underdim(self):
-        M = self.get_inverse_resolution_matrix()
+    def get_resolution_matrix_underdim(self):
+        """
+        Returns an underdimension of the response matrix.
+        """
         mat = np.zeros((len(self.NeutrinoLowerBinEdges),self.n_bins))
         for i in range(0,self.n_bins):
             minrec = self.FindFineBinIndex(self.DataLowerBinEdges[i])
@@ -424,14 +426,21 @@ class DayaBay:
                 mat[j,i] = np.mean(self.FromEtrueToErec[mintrue:maxtrue,minrec:maxrec])
         return mat
 
-    def get_chi2(self,model):
+    def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
         """
         Input: a  model with which to compute expectations.
         Output: a chi2 statistic comparing data and expectations.
         """
-        U = self.get_inverse_resolution_matrix_underdim()
+        U = self.get_resolution_matrix_underdim()
         UT = U.transpose()
-        data = self.get_data()[0,:,0]
-        expectation = self.get_expectation(model)[0,:,0]
         Vinv = self.get_inverse_flux_covariance()
-        return (data-expectation).dot(UT.dot(Vinv.dot(U.dot(data-expectation))))
+
+        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
+        Data = self.ObservedData
+        chi2 = 0.
+        for set_name in self.sets_names:
+            exp_i = Exp[set_name][:,0]#+Bkg[set_name]
+            dat_i = Data[set_name]
+            chi2 += (dat_i-exp_i).dot(UT.dot(Vinv.dot(U.dot(dat_i-exp_i))))
+
+        return chi2

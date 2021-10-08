@@ -42,6 +42,7 @@ class Neos:
         self.DistanceFromReactorToHall = NEOSP.distance
         self.WidthOfHall = NEOSP.width
 
+        self.NeutrinoCovarianceMatrix = NEOSP.neutrino_covariance_matrix
         self.NeutrinoLowerBinEdges = NEOSP.nulowerbin
         self.NeutrinoUpperBinEdges = NEOSP.nuupperbin
         self.NeutrinoFlux = NEOSP.spectrum
@@ -434,13 +435,13 @@ class Neos:
 
     def get_poisson_chi2(self,model, integrate = False, average = False, use_HM = True):
         """
-        Computes the chi2 value from the Poisson probability, taking into account
-        every bin from the NEOS detector.
+        Computes the "chi2" value from the Poisson probability, taking into account
+        every bin from every DayaBay detector.
 
         Input:
         model: a model from Models.py for which to compute the expected number of events.
 
-        Output: (float) the chi2 value.
+        Output: (float) the log Poisson "chi2" value.
         """
         # Honestly, have never tried this. Probably, it should work.
         Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
@@ -465,4 +466,45 @@ class Neos:
 
         chi2 = (teo[:,0]-ratio)**2/ratio_err**2
         chi2 = np.sum(chi2)
+# ----------------------------------------------------------
+# FITTING THE DATA WITH THE COVARIANCE MATRIX
+# ----------------------------------------------------------
+
+    def get_inverse_flux_covariance(self):
+        """
+        Returns the inverse of the neutrino covariance matrix, V^-1.
+        """
+        return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
+
+    def get_resolution_matrix_underdim(self):
+        """
+        Returns an underdimension of the response matrix.
+        """
+        mat = np.zeros((len(self.NeutrinoLowerBinEdges),self.n_bins))
+        for i in range(0,self.n_bins):
+            minrec = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+            maxrec = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+            for j in range(0,len(self.NeutrinoLowerBinEdges)):
+                mintrue = self.FindFineBinIndex(self.NeutrinoLowerBinEdges[j])
+                maxtrue = self.FindFineBinIndex(self.NeutrinoUpperBinEdges[j])
+                mat[j,i] = np.mean(self.FromEtrueToErec[mintrue:maxtrue,minrec:maxrec])
+        return mat
+
+    def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
+        """
+        Input: a  model with which to compute expectations.
+        Output: a chi2 statistic comparing data and expectations.
+        """
+        U = self.get_resolution_matrix_underdim()
+        UT = U.transpose()
+        Vinv = self.get_inverse_flux_covariance()
+
+        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
+        Data = self.ObservedData
+        chi2 = 0.
+        for set_name in self.sets_names:
+            exp_i = Exp[set_name][:,0]#+Bkg[set_name]
+            dat_i = Data[set_name]
+            chi2 += (dat_i-exp_i).dot(UT.dot(Vinv.dot(U.dot(dat_i-exp_i))))
+
         return chi2
