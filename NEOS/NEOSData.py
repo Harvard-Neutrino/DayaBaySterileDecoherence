@@ -111,7 +111,7 @@ def txt_to_array(filename, sep = ","):
 # 4: Error of ratio of NEOS data to DayaBay data
 # 5: Number of expected events according to HM flux, per day, per 100 keV
 
-norm = 180.
+norm = 180.#-46.
 # It is important to say: this normalisation factor must not include the deltaE
 
 fudge_data = 1.

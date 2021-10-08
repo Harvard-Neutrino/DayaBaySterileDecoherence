@@ -23,8 +23,8 @@ Model_osc = Models.PlaneWaveSM()
 
 # Sterile data
 # ------------
-sin2 = 0.05
-dm2 = 1.73
+sin2 = 0.00
+dm2 = 0.0
 Model_ste = Models.PlaneWaveSterile(DM2_41 = dm2,Sin22Th14 = sin2)
 
 Model_ste2 = Models.PlaneWaveSterile(DM2_41 = 2.32,Sin22Th14 = 0.142)
@@ -37,14 +37,16 @@ Model_ste2 = Models.PlaneWaveSterile(DM2_41 = 2.32,Sin22Th14 = 0.142)
 # -----------------------------------------------------
 
 begin_time = time.time()
-predDB = NEOS_test.get_expectation(Model_osc, integrate = False)
-pred = NEOS_test.get_expectation(Model_ste, integrate = True)
-pred2 = NEOS_test.get_expectation(Model_ste2, integrate = True)
+predDB_DB = NEOS_test.get_expectation(Model_osc, integrate = False, use_HM = False)
+# predDB_HM =  NEOS_test.get_expectation(Model_osc, integrate = False, use_HM = True)
+pred = NEOS_test.get_expectation(Model_ste, integrate = True, use_HM = False)
+pred2 = NEOS_test.get_expectation(Model_ste2, integrate = True, use_HM = False)
 end_time = time.time()
 print(end_time-begin_time)
 
 pred = pred['NEOS']
-predDB = predDB['NEOS']
+predDB_DB = predDB_DB['NEOS']
+# predDB_HM = predDB_HM['NEOS']
 pred2 = pred2['NEOS']
 
 evex = pred[:,0]
@@ -64,11 +66,12 @@ deltaE = (NEOS_test.DataUpperBinEdges -NEOS_test.DataLowerBinEdges)
 # to the flux from DayaBay.
 
 figSM,axSM = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
-axSM.errorbar(x_ax,predDB[:,0], xerr = 0.05, label = "Our prediction", fmt = "_", elinewidth = 2)
+axSM.errorbar(x_ax,predDB_DB[:,0], yerr = predDB_DB[:,1], xerr = 0.05, label = "Our prediction", fmt = "_", elinewidth = 2)
 axSM.errorbar(x_ax,NEOS_test.PredictedData['NEOS'], xerr  = 0.05, label = "NEOS prediction", fmt = "_", elinewidth = 2)
 axSM.errorbar(x_ax,NEOS_test.PredictedBackground['NEOS'], xerr = 0.05, label = "NEOS background", fmt = "_", elinewidth = 2)
-axSM.set_xlabel("Energy (MeV)", fontsize = 16)
+axSM.errorbar(x_ax,data, fmt = 'ok', label = "NEOS data")
 
+axSM.set_xlabel("Energy (MeV)", fontsize = 16)
 axSM.set_ylabel("Events/(0.1 MeV)", fontsize = 16)
 axSM.tick_params(axis='x', labelsize=13)
 axSM.tick_params(axis='y', labelsize=13)
@@ -111,8 +114,8 @@ figev.savefig("Figures/EventExpectation_Ste_PW.png")
 
 figev,axev = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
 
-axev.errorbar(x_ax,pred[:,0]/predDB[:,0], xerr = 0.05, label = r'$\Delta m^2_{41} = 1.73 eV^2, \sin^2 2\theta_{14} = 0.05$', fmt = "_g", elinewidth = 2)
-axev.errorbar(x_ax,pred2[:,0]/predDB[:,0], xerr = 0.05, label = r'$\Delta m^2_{41} = 2.32 eV^2, \sin^2 2\theta_{14} = 0.142$', fmt = "_r", elinewidth = 2)
+axev.errorbar(x_ax,pred[:,0]/predDB_DB[:,0], xerr = 0.05, label = r'$\Delta m^2_{41} = 1.73 eV^2, \sin^2 2\theta_{14} = 0.05$', fmt = "_g", elinewidth = 2)
+axev.errorbar(x_ax,pred2[:,0]/predDB_DB[:,0], xerr = 0.05, label = r'$\Delta m^2_{41} = 2.32 eV^2, \sin^2 2\theta_{14} = 0.142$', fmt = "_r", elinewidth = 2)
 axev.errorbar(x_ax,NEOS_test.AllData['NEOS'][:-1,3], yerr = NEOS_test.AllData['NEOS'][:-1,4], label = "NEOS data", fmt = "ok")
 # axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:-1,1]/predDB, label = "NEOS prediction", marker = "_")
 axev.plot(x_ax,[1 for x in x_ax], linestyle = 'dashed', color = 'yellow')

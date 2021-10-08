@@ -30,7 +30,8 @@ class Neos:
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
         # However, we consider an arbitrary large number of targets to prevent very small event expectations.
-        self.TotalNumberOfProtons = 4.76567e50
+        self.TotalNumberOfProtonsHM = 4.76567e50
+        self.TotalNumberOfProtonsDB = 5.27683e04
 
         self.sets_names = NEOSP.exp_names
         self.reactor_names = NEOSP.reac_names
@@ -56,6 +57,8 @@ class Neos:
         self.PredictedDataHM = NEOSD.predicted_data_HM
         self.ObservedData = NEOSD.observed_data
         self.PredictedBackground = NEOSD.predicted_bkg
+        self.RatioData = NEOSD.ratio_data
+        self.RatioError = NEOSD.ratio_error
 
     # FUNCTIONS TO MAKE HISTOGRAMS
     # -----------------------------------
@@ -113,9 +116,8 @@ class Neos:
         else:
             x = (self.NeutrinoLowerBinEdges+self.NeutrinoUpperBinEdges)/2.
             y = self.NeutrinoFlux
-            flux = interpolate.interp1d(x,y,kind = 'quadratic',fill_value = 'extrapolate')
-            # potser es pot utilitzar numpy.interp
-            return flux(enu)/self.get_cross_section(enu)
+            flux = np.interp(enu,x,y)
+            return flux/self.get_cross_section(enu)
 
     def get_flux_HM(self, enu, isotope_name, flux_parameters = HMF.huber_muller):
         """
@@ -155,7 +157,7 @@ class Neos:
     # CALCULATION OF EXPECTED EVENTS
     # ------------------------------
 
-    def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None, average = False):
+    def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None, average = False, use_HM = True):
         """
         This function implements formula (A.2) from 1709.04294, adapted to NEOS.
         Here we don't neglect the width of the detector, and integrate over it.
@@ -204,9 +206,12 @@ class Neos:
                         elif average == True:
                             oscprob = model.oscProbability_av(enu,L)
 
-                        # flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
-                        # if it is not necessary, better use the HM flux:
-                        flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope] for isotope in self.isotopes_to_consider]))
+                        if use_HM == True:
+                            # For the GlobalFit, it is necessary to use HM flux.
+                            flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope] for isotope in self.isotopes_to_consider]))
+                        else:
+                            flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
+
 
                         # Here we perform trapezoidal integration, the extremes contribute 1/2.
                         if ((etf == 0) or (etf == len(self.FromEtrueToErec[1])-1) or
@@ -228,10 +233,14 @@ class Neos:
             # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
             # the dL is to implement a trapezoidal numeric integration in L
             # we divide by the total width 2W because we want an intensive quantity! It is an average, not a total sum.
-        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]*self.TotalNumberOfProtons
+        if use_HM == True:
+            TotalNumberOfProtons = self.TotalNumberOfProtonsHM
+        else:
+            TotalNumberOfProtons = self.TotalNumberOfProtonsDB
+        return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]*TotalNumberOfProtons
 
 
-    def integrand(self,enu,L,model,erf,etf):
+    def integrand(self,enu,L,model,erf,etf, use_HM = True):
         """
         This function returns the integrand of formula (A.2) from 1709.04294.
 
@@ -242,15 +251,20 @@ class Neos:
         model: the model with which to compute the oscillation probability.
         """
         # Computes the HM flux for all isotopes
-        flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
-                                for isotope in self.isotopes_to_consider]))
+        if use_HM == True:
+            # For the GlobalFit, it is necessary to use HM flux.
+            flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
+                                    for isotope in self.isotopes_to_consider]))
+        else:
+            flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
+
         return (flux*
                 self.get_cross_section(enu) *
                 self.FromEtrueToErec[erf][etf] *
                 model.oscProbability(enu,L))
 
 
-    def calculate_naked_event_expectation_integr(self,model,set_name,i, bins = None):
+    def calculate_naked_event_expectation_integr(self,model,set_name,i, bins = None, use_HM = True):
         """
         This function implements formula (A.2) from 1709.04294.
         Here we don't neglect the width of the detector, and integrate over it.
@@ -299,10 +313,10 @@ class Neos:
                         if ((erf == min_energy_fine_index) or (erf == max_energy_fine_index-1) or
                             (j == 0) or (j == ndL - 1)):
                             expectation += integrate.quad(self.integrand,enu_min,enu_max,
-                                                          args=(L,model,erf,etf))[0]/L**2/2
+                                                          args=(L,model,erf,etf,use_HM))[0]/L**2/2
                         else:
                             expectation += integrate.quad(self.integrand,enu_min,enu_max,
-                                                          args=(L,model,erf,etf))[0]/L**2
+                                                          args=(L,model,erf,etf,use_HM))[0]/L**2
                     # isotope loop ends
 
                 # real antineutrino energies loop ends
@@ -311,10 +325,14 @@ class Neos:
             # only one trapezoidal numeric integration has been done
 
         # reactor loop ends
-        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name]*self.TotalNumberOfProtons
+        if use_HM == True:
+            TotalNumberOfProtons = self.TotalNumberOfProtonsHM
+        else:
+            TotalNumberOfProtons = self.TotalNumberOfProtonsDB
+        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name]*TotalNumberOfProtons
 
 
-    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,custom_bins = None, do_we_average = False):
+    def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False,custom_bins = None, do_we_average = False, use_HM = True):
         """
         Computes the histogram of expected number of events without normalisation
         to the real data, and without summing the predicted background.
@@ -334,11 +352,11 @@ class Neos:
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i,bins = custom_bins, average = do_we_average) for i in range(0,imax)]))
+                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i,bins = custom_bins, average = do_we_average, use_HM = use_HM) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
             else:
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i) for i in range(0,self.n_bins)]))
+                                     np.array([self.calculate_naked_event_expectation_simple(model,set_name,i, use_HM = use_HM) for i in range(0,self.n_bins)]))
                                     for set_name in self.sets_names])
 
         if do_we_integrate == True:
@@ -346,11 +364,11 @@ class Neos:
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,bins = custom_bins) for i in range(0,imax)]))
+                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i,bins = custom_bins, use_HM = use_HM) for i in range(0,imax)]))
                                     for set_name in self.sets_names])
             else:
                 Expectation = dict([(set_name,
-                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i) for i in range(0,self.n_bins)]))
+                                     np.array([self.calculate_naked_event_expectation_integr(model,set_name,i, use_HM = use_HM) for i in range(0,self.n_bins)]))
                                     for set_name in self.sets_names])
         return Expectation
 
@@ -370,19 +388,19 @@ class Neos:
         number of events of "events" is the same as the one from NEOS data.
         """
 
-        TotalNumberOfEvents = dict([(set_name,np.sum(self.PredictedDataHM[set_name]))
+        TotalNumberOfEvents = dict([(set_name,np.sum(self.ObservedData[set_name]))
                                      for set_name in self.sets_names])
         TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
                                   for set_name in self.sets_names])
 
         norm = dict([(set_name,(TotalNumberOfEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
                      for set_name in self.sets_names])
-        print(events)
-        print('norm: ', norm)
+
+        # print('norm: ', norm)
         return norm
 
 
-    def get_expectation(self,model, integrate = False, average = False):
+    def get_expectation(self,model, integrate = False, average = False, use_HM = True):
         """
         Input:
         model: a model from Models.py for which to compute the expected number of events.
@@ -396,10 +414,10 @@ class Neos:
         """
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
-        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = False)
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = False, use_HM = use_HM)
 
-        # norm = self.normalization_to_data(exp_events) # Huge mistake!
-        exp_events = dict([(set_name,exp_events[set_name] +self.PredictedBackground[set_name]) for set_name in self.sets_names])
+        norm = self.normalization_to_data(exp_events) # This should only be allowed for NEOS only fit.
+        exp_events = dict([(set_name,exp_events[set_name]*norm[set_name] +self.PredictedBackground[set_name]) for set_name in self.sets_names])
 
         # For the NEOS single fit, there are no nuissance parameters. We just return the data.
         model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),
@@ -414,7 +432,7 @@ class Neos:
 # FITTING THE DATA
 # ----------------------------------------------------------
 
-    def get_poisson_chi2(self,model):
+    def get_poisson_chi2(self,model, integrate = False, average = False, use_HM = True):
         """
         Computes the chi2 value from the Poisson probability, taking into account
         every bin from the NEOS detector.
@@ -425,7 +443,7 @@ class Neos:
         Output: (float) the chi2 value.
         """
         # Honestly, have never tried this. Probably, it should work.
-        Exp = self.get_expectation(model)
+        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
         Data = self.ObservedData
 
         TotalLogPoisson = 0.0
@@ -435,3 +453,16 @@ class Neos:
             TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
 
         return -2*np.sum(TotalLogPoisson)
+
+    def get_chi2_ratio(self, model, integrate = False, average = False, use_HM = True):
+        # Honestly, have never tried this. Probably, it should work.
+        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)['NEOS']
+        modelSM = Models.PlaneWaveSM()
+        ExpSM = self.get_expectation(model, use_HM = use_HM)['NEOS']
+        teo = Exp/ExpSM
+        ratio = self.RatioData['NEOS']
+        ratio_err = self.RatioError['NEOS']
+
+        chi2 = (teo[:,0]-ratio)**2/ratio_err**2
+        chi2 = np.sum(chi2)
+        return chi2
