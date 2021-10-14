@@ -22,7 +22,7 @@ class NoOscillations:
 # Uses the approximate formula from Daya Bay. No matter effects.
 # -----------------------------------------------------------
 
-class PlaneWaveSM:
+class PlaneWaveDB:
     def __init__(self,Sin22Th13 = 0.0841,DM2_ee = 2.5e-3):
         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
         self.th12 = 0.583763
@@ -43,6 +43,42 @@ class PlaneWaveSM:
         xee = 1.267*self.dm2_ee*L/enu
         return (1- cos(self.th13)**4*sin(2*self.th12)**2*sin(x21)**2
                 - sin(2*self.th13)**2*sin(xee)**2)
+
+
+# -----------------------------------------------------------
+# Plane wave Standard Model: 3 neutrinos, no decoherence
+# Uses the full formula. Parameters taken from nu-fit.org
+# -----------------------------------------------------------
+
+class PlaneWaveSM:
+    def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+        self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
+        self.th12 = 0.583763
+        self.dm2_31 = DM2_31
+        self.dm2_21 = 7.42e-5
+        self.dm2_32 = self.dm2_31 - self.dm2_21
+
+    def fosc(self,enu,L,deltam):
+        return np.cos(L*deltam/(2*enu))
+
+    def oscProbability(self,E,l):
+        """
+        Input:
+        enu (float): the energy of the electron antineutrino, in MeV.
+        L (float): the length travelled by the antineutrino, in meters.
+
+        Output:
+        The probability of the antineutrino remaining an antineutrino.
+        This is computed according to (find paper!).
+        """
+        enu = 1e6*E # conversion from MeV to eV
+        L = 5.06773e6*l # conversion from meters to 1/eV
+        prob = 1.
+        prob -= np.sin(2*self.th12)**2*np.cos(self.th13)**4*(1-self.fosc(enu,L,self.dm2_21))/2.
+        prob -= np.sin(2*self.th13)**2*(np.cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
+                                        np.sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
+        return prob
+
 
 # -----------------------------------------------------------
 # Wave packet Standard Model: 3 neutrinos, decoherence due to wave packet separation
@@ -89,7 +125,7 @@ class PlaneWaveSterile:
         self.th13 = np.arcsin(sqrt(0.0841))/2.
         self.th12 = 0.583763
         self.dm2_41 = DM2_41
-        self.dm2_31 = 2.5e-3
+        self.dm2_31 = 2.4e-3
         self.dm2_21 = 7.42e-5
         self.dm2_32 = self.dm2_31 - self.dm2_21
         self.dm2_42 = self.dm2_41 - self.dm2_21
@@ -149,7 +185,7 @@ class WavePacketSterile:
         self.th13 = np.arcsin(sqrt(0.0841))/2.
         self.th12 = 0.583763
         self.dm2_41 = DM2_41
-        self.dm2_31 = 2.5e-3
+        self.dm2_31 = 2.4e-3
         self.dm2_21 = 7.42e-5
         self.dm2_32 = self.dm2_31 - self.dm2_21
         self.dm2_42 = self.dm2_41 - self.dm2_21

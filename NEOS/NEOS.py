@@ -30,8 +30,8 @@ class Neos:
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
         # However, we consider an arbitrary large number of targets to prevent very small event expectations.
-        self.TotalNumberOfProtonsHM = 4.76567e50
-        self.TotalNumberOfProtonsDB = 5.27683e04
+        self.TotalNumberOfProtonsHM = 9.74503e51#4.76567e50
+        self.TotalNumberOfProtonsDB = 1.06406e06
 
         self.sets_names = NEOSP.exp_names
         self.reactor_names = NEOSP.reac_names
@@ -43,6 +43,7 @@ class Neos:
         self.WidthOfHall = NEOSP.width
 
         self.NeutrinoCovarianceMatrix = NEOSP.neutrino_covariance_matrix
+        self.NeutrinoCovarianceMatrix = np.identity(26)
         self.NeutrinoLowerBinEdges = NEOSP.nulowerbin
         self.NeutrinoUpperBinEdges = NEOSP.nuupperbin
         self.NeutrinoFlux = NEOSP.spectrum
@@ -459,52 +460,138 @@ class Neos:
         # Honestly, have never tried this. Probably, it should work.
         Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)['NEOS']
         modelSM = Models.PlaneWaveSM()
-        ExpSM = self.get_expectation(model, use_HM = use_HM)['NEOS']
+        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
         teo = Exp/ExpSM
         ratio = self.RatioData['NEOS']
         ratio_err = self.RatioError['NEOS']
 
         chi2 = (teo[:,0]-ratio)**2/ratio_err**2
         chi2 = np.sum(chi2)
+        return chi2
+
+    def get_both_chi2(self, model, integrate = False, average = False, use_HM = True):
+        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
+        Data = self.ObservedData
+
+        TotalLogPoisson = 0.0
+        for set_name in self.sets_names:
+            lamb = Exp[set_name][:,0]#+Bkg[set_name]
+            k = Data[set_name]
+            TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
+        poisson_chi2 = -2*np.sum(TotalLogPoisson)
+
+
+        modelSM = Models.PlaneWaveSM()
+        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
+        teo = Exp['NEOS']/ExpSM
+        ratio = self.RatioData['NEOS']
+        ratio_err = self.RatioError['NEOS']
+
+        ratio_chi2 = (teo[:,0]-ratio)**2/ratio_err**2
+        ratio_chi2 = np.sum(ratio_chi2)
+        return (poisson_chi2,ratio_chi2)
+
+
 # ----------------------------------------------------------
 # FITTING THE DATA WITH THE COVARIANCE MATRIX
 # ----------------------------------------------------------
 
-    def get_inverse_flux_covariance(self):
-        """
-        Returns the inverse of the neutrino covariance matrix, V^-1.
-        """
-        return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
+    # def get_resolution_matrix_underdim(self):
+    #     """
+    #     Returns an underdimension of the response matrix.
+    #     """
+    #     mat = np.zeros((len(self.NeutrinoLowerBinEdges),self.n_bins))
+    #     for i in range(0,self.n_bins):
+    #         minrec = self.FindFineBinIndex(self.DataLowerBinEdges[i])
+    #         maxrec = self.FindFineBinIndex(self.DataUpperBinEdges[i])
+    #         for j in range(0,len(self.NeutrinoLowerBinEdges)):
+    #             mintrue = self.FindFineBinIndex(self.NeutrinoLowerBinEdges[j])
+    #             maxtrue = self.FindFineBinIndex(self.NeutrinoUpperBinEdges[j])
+    #             mat[j,i] = np.mean(self.FromEtrueToErec[minrec:maxrec,mintrue:maxtrue])
+    #     return mat
+    #
+    #
+    # def get_correlation_matrix(self):
+    #     V = self.NeutrinoCovarianceMatrix
+    #     sigma = np.sqrt(np.diag(V))
+    #     sigmaij = np.tile(sigma,(len(sigma),1))*(np.tile(sigma,(len(sigma),1)).transpose())
+    #     # print(V/sigmaij)
+    #     return V/sigmaij
+    #
+    # def get_correlation_matrix_underdim(self):
+    #     V = self.get_correlation_matrix()
+    #     U = self.get_resolution_matrix_underdim()
+    #     UT = U.transpose()
+    #     Vdim = UT.dot(V.dot(U))
+    #     sigma = np.sqrt(np.diag(Vdim))
+    #     sigmaij = np.tile(sigma,(len(sigma),1))*(np.tile(sigma,(len(sigma),1)).transpose())
+    #     return Vdim/sigmaij
+    #
+    # def get_total_covariance_matrix(self):
+    #     A = self.get_correlation_matrix_underdim()
+    #     sigmaNEOS = self.RatioError['NEOS']
+    #     sigmaijNEOS = np.tile(sigmaNEOS,(len(sigmaNEOS),1))*(np.tile(sigmaNEOS,(len(sigmaNEOS),1)).transpose())
+    #     print(A*sigmaijNEOS)
+    #     return A*sigmaijNEOS
+    #
+    # def get_inverse_total_covariance(self):
+    #     """
+    #     Returns the inverse of the neutrino covariance matrix, V^-1.
+    #     """
+    #     return np.linalg.inv(np.array(self.get_total_covariance_matrix()))
 
-    def get_resolution_matrix_underdim(self):
-        """
-        Returns an underdimension of the response matrix.
-        """
-        mat = np.zeros((len(self.NeutrinoLowerBinEdges),self.n_bins))
-        for i in range(0,self.n_bins):
-            minrec = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-            maxrec = self.FindFineBinIndex(self.DataUpperBinEdges[i])
-            for j in range(0,len(self.NeutrinoLowerBinEdges)):
-                mintrue = self.FindFineBinIndex(self.NeutrinoLowerBinEdges[j])
-                maxtrue = self.FindFineBinIndex(self.NeutrinoUpperBinEdges[j])
-                mat[j,i] = np.mean(self.FromEtrueToErec[mintrue:maxtrue,minrec:maxrec])
-        return mat
 
-    def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
-        """
-        Input: a  model with which to compute expectations.
-        Output: a chi2 statistic comparing data and expectations.
-        """
-        U = self.get_resolution_matrix_underdim()
-        UT = U.transpose()
-        Vinv = self.get_inverse_flux_covariance()
+    # def get_inverse_flux_covariance(self):
+    #     """
+    #     Returns the inverse of the neutrino covariance matrix, V^-1.
+    #     """
+    #     return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
+    #
+    # def get_inverse_correlation_matrix(self):
+    #     V = self.NeutrinoCovarianceMatrix
+    #     Vinv = self.get_inverse_flux_covariance()
+    #     sigma = np.sqrt(np.diag(V))
+    #     sigmaij = np.tile(sigma,(len(sigma),1))*(np.tile(sigma,(len(sigma),1)).transpose())
+    #     return Vinv*sigmaij
+    #
+    # def get_inverse_correlation_matrix_underdim(self):
+    #     V = self.get_inverse_correlation_matrix()
+    #     U = self.get_resolution_matrix_underdim()
+    #     UT = U.transpose()
+    #     Vdim = UT.dot(V.dot(U))
+    #     return Vdim
+    #
+    # def get_total_inverse_covariance_matrix_underdim(self):
+    #     A = self.get_inverse_correlation_matrix_underdim()
+    #     sigmaNEOS = self.RatioError['NEOS']
+    #     sigmaijNEOS = np.tile(sigmaNEOS,(len(sigmaNEOS),1))*(np.tile(sigmaNEOS,(len(sigmaNEOS),1)).transpose())
+    #     return A/sigmaijNEOS
 
-        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
-        Data = self.ObservedData
-        chi2 = 0.
-        for set_name in self.sets_names:
-            exp_i = Exp[set_name][:,0]#+Bkg[set_name]
-            dat_i = Data[set_name]
-            chi2 += (dat_i-exp_i).dot(UT.dot(Vinv.dot(U.dot(dat_i-exp_i))))
-
-        return chi2
+    # def get_chi2_ratio(self, model, integrate = False, average = False, use_HM = True):
+    #     # Honestly, have never tried this. Probably, it should work.
+    #     Vinv = self.get_inverse_total_covariance()
+    #     Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)['NEOS']
+    #     modelSM = Models.PlaneWaveSM()
+    #     ExpSM = self.get_expectation(model, use_HM = use_HM)['NEOS']
+    #     teo = Exp/ExpSM
+    #     ratio = self.RatioData['NEOS']
+    #     ratio_err = self.RatioError['NEOS']
+    #
+    #     chi2 = (teo[:,0]-ratio).dot(Vinv.dot(teo[:,0]-ratio))
+    #     return chi2
+    #
+    # def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
+    #     """
+    #     Input: a  model with which to compute expectations.
+    #     Output: a chi2 statistic comparing data and expectations.
+    #     """
+    #     Vinv = self.get_total_inverse_covariance_matrix_underdim()
+    #     Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
+    #     Data = self.ObservedData
+    #     chi2 = 0.
+    #     for set_name in self.sets_names:
+    #         exp_i = Exp[set_name][:,0]#+Bkg[set_name]
+    #         dat_i = Data[set_name]
+    #         chi2 += (dat_i-exp_i).dot(Vinv.dot(dat_i-exp_i))
+    #
+    #     return chi2

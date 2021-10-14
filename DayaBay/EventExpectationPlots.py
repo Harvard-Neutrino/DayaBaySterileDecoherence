@@ -23,7 +23,7 @@ Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
 # Model_osc = Models.PlaneWaveSM(Sin22Th13 = 0.07821,DM2_31 = 2.5e-3)
 Model_coh = Models.WavePacketSM()
-Model_ste = Models.PlaneWaveSterile(Sin22Th14 = 0.6, DM2_41 = 6)
+Model_ste = Models.PlaneWaveSterile(Sin22Th14 = 0.71101, DM2_41 = 0.12164)
 
 
 # -------------------------------------------------------

@@ -107,8 +107,8 @@ class SterileFit:
             model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
 
         wdwd = self.what_do_we_do(mass)
-        chi2 = self.fitter.get_chi2_ratio(model,integrate = wdwd['NEOS']['integrate'], average = wdwd['NEOS']['average'], use_HM = self.UseHM)
-        print(mass,angl,chi2)
+        chi2 = self.fitter.get_both_chi2(model,integrate = wdwd['NEOS']['integrate'], average = wdwd['NEOS']['average'], use_HM = self.UseHM)
+        print(mass,angl,chi2[0],chi2[1])
         return chi2
 
     def write_data_table(self,mass_ax,angl_ax,filename):
@@ -123,7 +123,8 @@ class SterileFit:
         file = open(filename,'w')
         for m in mass_ax:
             for a in angl_ax:
-                file.write('{0:1.5f},{1:1.5f},{2:7.4f}\n'.format(m,a,self.getChi2(m,a)))
+                chi2 = self.getChi2(m,a)
+                file.write('{0:1.5f},{1:1.5f},{2:7.4f},{3:7.4f}\n'.format(m,a,chi2[0],chi2[1]))
         file.close()
 
 

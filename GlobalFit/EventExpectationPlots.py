@@ -6,6 +6,7 @@ sys.path.append(os.getcwd()[:-10]+common_dir)
 sys.path.append(os.getcwd()[:-10]+"/NEOS")
 sys.path.append(os.getcwd()[:-10]+"/DayaBay")
 
+
 import numpy as np
 import time
 import GlobalFit as GF
@@ -26,7 +27,7 @@ Model_coh = Models.WavePacketSM()
 # Sterile parameters
 sin2 = 0.0
 dm2 = 0.0
-Model_ste = Models.WavePacketSterile(Sin22Th14 = sin2, DM2_41 = dm2)
+Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
 # -------------------------------------------------------------
@@ -95,7 +96,7 @@ for i in range(4):
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
+figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
 # As we can see, both ways of computing the event expectations give the same result.
 
@@ -113,10 +114,12 @@ for i in range(4):
     SM_dat = predDB[fitter.sets_names[i]][:,0]
     ste_err = pred[fitter.sets_names[i]][:,1]
     SM_err = predDB[fitter.sets_names[i]][:,1]
-    axev[i].errorbar(x_ax[set],ste_dat/SM_dat, yerr = ste_err/SM_dat + ste_dat*SM_err/SM_dat**2, xerr = 0.1, label = "Heavy sterile/SM", fmt = "_", elinewidth = 2)
+    # ratio_err = ste_err/SM_dat + ste_dat*SM_err/SM_dat**2
+    ratio_err = ste_err/SM_dat
+    axev[i].errorbar(x_ax[set],ste_dat/SM_dat, yerr = ratio_err, xerr = 0.1, label = "Heavy sterile/SM", fmt = "_", elinewidth = 2)
     axev[i].plot(x_ax[set],np.ones([fitter.n_bins[set]]),linestyle = 'dashed')
     if set == 'NEOS':
-        axev[i].errorbar(x_ax[set],fitter.NEOSexp.AllData['NEOS'][3:-2,3], yerr = fitter.NEOSexp.AllData['NEOS'][3:-2,4], label = "NEOS data", fmt = "ok")
+        axev[i].errorbar(x_ax[set],fitter.NEOSexp.RatioData['NEOS'][3:-1], yerr = fitter.NEOSexp.RatioError['NEOS'][3:-1], label = "NEOS data", fmt = "ok")
     # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
     axev[i].set_xlabel("Energy (MeV)", fontsize = 16)
     axev[i].set_ylabel("Ratio ste/DB", fontsize = 16)
@@ -129,7 +132,7 @@ for i in range(4):
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
+figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figev.savefig("Figures/EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 # -----------------------------------------------------
@@ -141,9 +144,9 @@ SM_dat = predDB['NEOS'][:,0]
 
 set = 'NEOS'
 axNEOS[1].errorbar(x_ax[set],ste_dat/SM_dat, xerr = 0.05, label = "Our prediction w/out error", fmt = "_", elinewidth = 2.5)
-axNEOS[1].errorbar(x_ax[set],fitter.NEOSexp.AllData['NEOS'][3:-2,3], yerr = fitter.NEOSexp.AllData['NEOS'][3:-2,4], label = "NEOS data", fmt = "ok")
-axNEOS[0].errorbar(x_ax[set],ste_dat/SM_dat, yerr = ste_err/SM_dat + ste_dat*SM_err/SM_dat**2, xerr = 0.05, label = "Our prediction w/error", fmt = "_", elinewidth = 2.5)
-axNEOS[0].errorbar(x_ax[set],fitter.NEOSexp.AllData['NEOS'][3:-2,3], label = "NEOS data", fmt = "ok")
+axNEOS[1].errorbar(x_ax[set],fitter.NEOSexp.RatioData['NEOS'][3:-1], yerr = fitter.NEOSexp.RatioError['NEOS'][3:-1], label = "NEOS data", fmt = "ok")
+axNEOS[0].errorbar(x_ax[set],ste_dat/SM_dat, yerr = ste_err/SM_dat, xerr = 0.05, label = "Our prediction w/error", fmt = "_", elinewidth = 2.5)
+axNEOS[0].errorbar(x_ax[set],fitter.NEOSexp.RatioData['NEOS'][3:-1], label = "NEOS data", fmt = "ok")
 
 for i in range(2):
     axNEOS[i].set_xlabel("Energy (MeV)", fontsize = 16)

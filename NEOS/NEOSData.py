@@ -69,17 +69,18 @@ def reconstruct_matrix_function(self,etrue,erec):
 # -------------------------------------------------------------
 
 # Histogram bins of the measured data.
-number_of_bins = 61-1
+
+lastbin = 1 # 0 for including the last bin (7-10 MeV), 1 for removing it
+number_of_bins = 61-lastbin
 datlowerbin = np.array([1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,
                2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,
                4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.6,5.7,5.8,5.9,6.0,6.1,6.2,6.3,6.4,6.5,6.6,6.7,
-               6.8,6.9,7.0][:-1])
+               6.8,6.9,7.0][:number_of_bins])
 datupperbin = np.array([1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,
                2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,
                4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.6,5.7,5.8,5.9,6.0,6.1,6.2,6.3,6.4,6.5,6.6,6.7,
-               6.8,6.9,7.0,10.0][:-1])
+               6.8,6.9,7.0,10.0][:number_of_bins])
 deltaE = datupperbin - datlowerbin
-
 
 # -------------------------------------------------------------
 #   DAYABAY FULL DATA
@@ -117,16 +118,16 @@ norm = 180.#-46.
 
 fudge_data = 1.
 fudge_bkg = 1.
-all_data = {'NEOS': txt_to_array(dir+"AllData.dat")}
-observed_data  = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,0]}
-predicted_data = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,1]}
-predicted_data_HM = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:-1,5]}
-predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:-1,2]}
+all_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins]}
+observed_data  = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,0]}
+predicted_data = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,1]}
+predicted_data_HM = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,5]}
+predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:number_of_bins,2]}
 # predicted_bkg = {'NEOS':np.zeros([number_of_bins])}
 
 
-ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,3]}
-ratio_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:-1,4]}
+ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,3]}
+ratio_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,4]}
 
 
 # -------------------------------------------------------------------

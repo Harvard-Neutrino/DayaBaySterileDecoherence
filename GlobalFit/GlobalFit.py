@@ -78,26 +78,26 @@ class GlobalFit:
         obs_pred.update(self.NEOSexp.get_expectation_unnorm_nobkg(model,do_we_integrate = do_integral_NEOS,custom_bins = self.DataAllBinEdges['NEOS'], do_we_average = do_average_NEOS))
         return obs_pred
 
-    def normalization_to_data(self,events):
-        """
-        Input:
-        events: a dictionary with a string key for each experimental hall, linking to
-        a numpy array for some histogram of events. In principle, it should be
-        the number of expected number of events of our model.
-
-        Output:
-        norm: a normalisation factor with which to multiply events such that the total
-        number of events of "events" is the same as the one from DB and NEOS data.
-        """
-        TotalNumberOfExpEvents = dict([(set_name,np.sum(self.PredictedData[set_name]))
-                                            for set_name in self.sets_names])
-        TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
-                                for set_name in self.sets_names])
-
-        norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
-                     for set_name in self.sets_names])
-
-        return norm
+    # def normalization_to_data(self,events):
+    #     """
+    #     Input:
+    #     events: a dictionary with a string key for each experimental hall, linking to
+    #     a numpy array for some histogram of events. In principle, it should be
+    #     the number of expected number of events of our model.
+    #
+    #     Output:
+    #     norm: a normalisation factor with which to multiply events such that the total
+    #     number of events of "events" is the same as the one from DB and NEOS data.
+    #     """
+    #     TotalNumberOfExpEvents = dict([(set_name,np.sum(self.PredictedData[set_name]))
+    #                                         for set_name in self.sets_names])
+    #     TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
+    #                             for set_name in self.sets_names])
+    #
+    #     norm = dict([(set_name,(TotalNumberOfExpEvents[set_name]-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
+    #                  for set_name in self.sets_names])
+    #
+    #     return norm
 
     def get_nuissance_parameters(self,exp_events):
         """
@@ -214,6 +214,7 @@ class GlobalFit:
 
         return vinv
 
+
     def get_resolution_matrix_underdim(self):
         """
         Returns an underdimension of the response matrix.
@@ -231,6 +232,8 @@ class GlobalFit:
                     mat[j,i] = np.mean(self.FromEtrueToErec[set_name][mintrue:maxtrue,minrec:maxrec])
             resmats.update({set_name:mat})
         return resmats
+
+
 
     def get_chi2(self,model, integrate_DB = False, integrate_NEOS = False,
                              average_DB = False, average_NEOS = False):
