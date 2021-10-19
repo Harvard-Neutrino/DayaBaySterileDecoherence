@@ -43,13 +43,14 @@ class Neos:
         self.WidthOfHall = NEOSP.width
 
         self.NeutrinoCovarianceMatrix = NEOSP.neutrino_covariance_matrix
-        self.NeutrinoCovarianceMatrix = np.identity(26)
+        self.NeutrinoCovarianceMatrixPrompt = NEOSP.neutrino_covariance_matrix_prompt
         self.NeutrinoLowerBinEdges = NEOSP.nulowerbin
         self.NeutrinoUpperBinEdges = NEOSP.nuupperbin
         self.NeutrinoFlux = NEOSP.spectrum
 
         self.DataLowerBinEdges = NEOSD.datlowerbin
         self.DataUpperBinEdges = NEOSD.datupperbin
+        self.DataCentrBinEdges = (NEOSD.datlowerbin+NEOSD.datupperbin)/2.
         self.DeltaEData = (self.DataUpperBinEdges-self.DataLowerBinEdges)
         self.n_bins = NEOSD.number_of_bins
         self.FromEtrueToErec = NEOSP.reconstruct_mat
@@ -493,105 +494,127 @@ class Neos:
 
 
 # ----------------------------------------------------------
-# FITTING THE DATA WITH THE COVARIANCE MATRIX
+# BUILDING THE COVARIANCE MATRIX
 # ----------------------------------------------------------
 
-    # def get_resolution_matrix_underdim(self):
-    #     """
-    #     Returns an underdimension of the response matrix.
-    #     """
-    #     mat = np.zeros((len(self.NeutrinoLowerBinEdges),self.n_bins))
-    #     for i in range(0,self.n_bins):
-    #         minrec = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-    #         maxrec = self.FindFineBinIndex(self.DataUpperBinEdges[i])
-    #         for j in range(0,len(self.NeutrinoLowerBinEdges)):
-    #             mintrue = self.FindFineBinIndex(self.NeutrinoLowerBinEdges[j])
-    #             maxtrue = self.FindFineBinIndex(self.NeutrinoUpperBinEdges[j])
-    #             mat[j,i] = np.mean(self.FromEtrueToErec[minrec:maxrec,mintrue:maxtrue])
-    #     return mat
+    # def get_neutrino_flux_binned(self):
+    #     flux_bin = []
+    #     for etf in range(0,len(self.NeutrinoLowerBinEdges)):
     #
     #
-    # def get_correlation_matrix(self):
-    #     V = self.NeutrinoCovarianceMatrix
-    #     sigma = np.sqrt(np.diag(V))
-    #     sigmaij = np.tile(sigma,(len(sigma),1))*(np.tile(sigma,(len(sigma),1)).transpose())
-    #     # print(V/sigmaij)
-    #     return V/sigmaij
+    # def get_all_flux_prompt_energy(self):
+    #     flux_rec = []
+    #     for i in range(0,len(self.DataLowerBinEdges)):
+    #         erec = (self.DataLowerBinEdges[erf]+self.DataUpperBinEdges[erf])/2.
+    #         erf = self.FindFineBinIndex(erec)
+    #         for etf in range(0,len(self.FromEtrueToErec[1])):
+    #             enu = (etf+0.5)*self.deltaEfine
+    #             flux = self.get_flux(enu)
+    #             flux_rec.append(flux*self.FromEtrueToErec[erf][etf])
     #
-    # def get_correlation_matrix_underdim(self):
-    #     V = self.get_correlation_matrix()
-    #     U = self.get_resolution_matrix_underdim()
-    #     UT = U.transpose()
-    #     Vdim = UT.dot(V.dot(U))
-    #     sigma = np.sqrt(np.diag(Vdim))
-    #     sigmaij = np.tile(sigma,(len(sigma),1))*(np.tile(sigma,(len(sigma),1)).transpose())
-    #     return Vdim/sigmaij
-    #
-    # def get_total_covariance_matrix(self):
-    #     A = self.get_correlation_matrix_underdim()
-    #     sigmaNEOS = self.RatioError['NEOS']
-    #     sigmaijNEOS = np.tile(sigmaNEOS,(len(sigmaNEOS),1))*(np.tile(sigmaNEOS,(len(sigmaNEOS),1)).transpose())
-    #     print(A*sigmaijNEOS)
-    #     return A*sigmaijNEOS
-    #
-    # def get_inverse_total_covariance(self):
-    #     """
-    #     Returns the inverse of the neutrino covariance matrix, V^-1.
-    #     """
-    #     return np.linalg.inv(np.array(self.get_total_covariance_matrix()))
+    #     return np.array(flux_rec)
 
+    def get_flux_prompt_energy(self,erec,use_HM = True):
+                # For the GlobalFit, it is necessary to use HM flux.
+        flux_rec = 0.0
+        erf = self.FindFineBinIndex(erec)
+        for etf in range(0,len(self.FromEtrueToErec[1])):
+            enu = (etf + 0.5)*self.deltaEfine
+            if use_HM == True:
+                # For the GlobalFit, it is necessary to use HM flux.
+                flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
+                                        for isotope in self.isotopes_to_consider]))
+            else:
+                flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
+            if ((etf == 0) or (etf == len(self.FromEtrueToErec[1]-1))):
+                flux_rec += flux*self.FromEtrueToErec[erf][etf]/2.
+            else:
+                flux_rec += flux*self.FromEtrueToErec[erf][etf]
+        return flux_rec
 
-    # def get_inverse_flux_covariance(self):
-    #     """
-    #     Returns the inverse of the neutrino covariance matrix, V^-1.
-    #     """
-    #     return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
-    #
-    # def get_inverse_correlation_matrix(self):
-    #     V = self.NeutrinoCovarianceMatrix
-    #     Vinv = self.get_inverse_flux_covariance()
-    #     sigma = np.sqrt(np.diag(V))
-    #     sigmaij = np.tile(sigma,(len(sigma),1))*(np.tile(sigma,(len(sigma),1)).transpose())
-    #     return Vinv*sigmaij
-    #
-    # def get_inverse_correlation_matrix_underdim(self):
-    #     V = self.get_inverse_correlation_matrix()
-    #     U = self.get_resolution_matrix_underdim()
-    #     UT = U.transpose()
-    #     Vdim = UT.dot(V.dot(U))
-    #     return Vdim
-    #
-    # def get_total_inverse_covariance_matrix_underdim(self):
-    #     A = self.get_inverse_correlation_matrix_underdim()
-    #     sigmaNEOS = self.RatioError['NEOS']
-    #     sigmaijNEOS = np.tile(sigmaNEOS,(len(sigmaNEOS),1))*(np.tile(sigmaNEOS,(len(sigmaNEOS),1)).transpose())
-    #     return A/sigmaijNEOS
+    def FindTrueBinIndex(self,enuf):
+        if enuf <= 2.125:
+            return 0
+        elif enuf >= 8.125:
+            return len(self.NeutrinoLowerBinEdges)-1
+        else:
+            return int((enuf-2.125)/0.25)+1
 
-    # def get_chi2_ratio(self, model, integrate = False, average = False, use_HM = True):
-    #     # Honestly, have never tried this. Probably, it should work.
-    #     Vinv = self.get_inverse_total_covariance()
-    #     Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)['NEOS']
-    #     modelSM = Models.PlaneWaveSM()
-    #     ExpSM = self.get_expectation(model, use_HM = use_HM)['NEOS']
-    #     teo = Exp/ExpSM
-    #     ratio = self.RatioData['NEOS']
-    #     ratio_err = self.RatioError['NEOS']
-    #
-    #     chi2 = (teo[:,0]-ratio).dot(Vinv.dot(teo[:,0]-ratio))
-    #     return chi2
-    #
-    # def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
-    #     """
-    #     Input: a  model with which to compute expectations.
-    #     Output: a chi2 statistic comparing data and expectations.
-    #     """
-    #     Vinv = self.get_total_inverse_covariance_matrix_underdim()
-    #     Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
-    #     Data = self.ObservedData
-    #     chi2 = 0.
-    #     for set_name in self.sets_names:
-    #         exp_i = Exp[set_name][:,0]#+Bkg[set_name]
-    #         dat_i = Data[set_name]
-    #         chi2 += (dat_i-exp_i).dot(Vinv.dot(dat_i-exp_i))
-    #
-    #     return chi2
+    def get_flux_covariance_prompt_energy(self,erec1,erec2):
+        covr = 0.0
+
+        if (erec1 < 1.022) or (erec2 < 1.022):
+            return 0.
+
+        erf1 = self.FindFineBinIndex(erec1)
+        erf2 = self.FindFineBinIndex(erec2)
+
+        for etf1 in range(self.FindFineBinIndex(1.806)+1,len(self.FromEtrueToErec[1])):
+            enu1 = (etf1+0.5)*self.deltaEfine
+            et1  = self.FindTrueBinIndex(enu1)
+            for etf2 in range(self.FindFineBinIndex(1.806)+1,len(self.FromEtrueToErec[1])):
+                enu2 = (etf2+0.5)*self.deltaEfine
+                et2  = self.FindTrueBinIndex(enu2)
+                covr += (self.NeutrinoCovarianceMatrix[et1][et2]/self.get_cross_section(enu1)/self.get_cross_section(enu2)
+                         *self.FromEtrueToErec[erf1][etf1]*self.FromEtrueToErec[erf2][etf2])
+        return covr
+
+    def get_table_flux_covariance_matrix_prompt(self):
+        covtab = np.array([[self.get_flux_covariance_prompt_energy(self.DataCentrBinEdges[eri1],self.DataCentrBinEdges[eri2])
+                         for eri1 in range(0,self.n_bins)] for eri2 in range(0,self.n_bins)])
+        return covtab
+
+    def get_total_covariance_matrix(self):
+        flux = np.array([self.get_flux_prompt_energy(self.DataCentrBinEdges[eri], use_HM = False)
+                         for eri in range(0,self.n_bins)])
+
+        Neff = self.ObservedData['NEOS']/flux
+        N = self.ObservedData['NEOS']
+        # print(Neff**2)
+
+        flux_cov = self.NeutrinoCovarianceMatrixPrompt
+        # flux_cov = self.NeutrinoCovarianceMatrix
+        # print(np.diag(flux_cov)/np.mean(self.NeutrinoFlux)**2)
+        # print(np.diag(flux_cov)*Neff**2)
+        # print(flux)
+        # print(self.NeutrinoFlux)
+
+        # print(1/np.sqrt(N))
+
+        stat_err = N*np.identity(self.n_bins)
+        # print(N/flux)
+        cov_err = np.tile(np.sqrt(N)/flux,(len(N),1))*(np.tile(np.sqrt(N)/flux,(len(N),1)).transpose())
+        cov_err = flux_cov*cov_err
+
+        return cov_err+stat_err
+
+    def get_inverse_covariance_matrix(self):
+        return np.linalg.inv(np.array(self.get_total_covariance_matrix()))
+
+    def get_chi2_cov(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
+        """
+        Input: a  model with which to compute expectations.
+        Output: a chi2 statistic comparing data and expectations.
+        """
+        Vinv = self.get_inverse_covariance_matrix()
+        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)
+        Data = self.ObservedData
+        chi2 = 0.
+        for set_name in self.sets_names:
+            exp_i = Exp[set_name][:,0]#+Bkg[set_name]
+            dat_i = Data[set_name]
+            chi2 += (dat_i-exp_i).dot(Vinv.dot(dat_i-exp_i))
+
+        return chi2
+
+    def get_chi2_ratio_cov(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
+        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)['NEOS']
+        modelSM = Models.PlaneWaveSM()
+        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
+        teo = Exp[:,0]/ExpSM[:,0]
+        ratio = self.RatioData['NEOS']
+        Vinv = self.get_inverse_covariance_matrix()
+        # Vinv *= np.tile(np.sqrt(ExpSM[:,0]),(len(ExpSM[:,0]),1))*(np.tile(np.sqrt(ExpSM[:,0]),(len(ExpSM[:,0]),1)).transpose())
+        Vinv *= np.tile(ExpSM[:,0],(len(ExpSM[:,0]),1))*(np.tile(ExpSM[:,0],(len(ExpSM[:,0]),1)).transpose())
+
+        return (teo-ratio).dot(Vinv.dot(teo-ratio))

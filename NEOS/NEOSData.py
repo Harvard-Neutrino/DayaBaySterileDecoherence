@@ -35,7 +35,7 @@ dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 def gaussian(x,mu,sig):
     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
 
-def reconstruct_matrix_function(self,etrue,erec):
+def reconstruct_matrix_function(etrue,erec):
     """
     This function tries to mimic the response matrix in inset from figure 3(a)
     in 1610.05134. More information on the fit in 1609.03910.
@@ -113,7 +113,7 @@ def txt_to_array(filename, sep = ","):
 # 4: Error of ratio of NEOS data to DayaBay data
 # 5: Number of expected events according to HM flux, per day, per 100 keV
 
-norm = 180.#-46.
+norm = 180.-46.
 # It is important to say: this normalisation factor must not include the deltaE
 
 fudge_data = 1.
