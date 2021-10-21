@@ -44,6 +44,7 @@ class Neos:
 
         self.NeutrinoCovarianceMatrix = NEOSP.neutrino_covariance_matrix
         self.NeutrinoCovarianceMatrixPrompt = NEOSP.neutrino_covariance_matrix_prompt
+        self.NeutrinoCorrelationMatrix = NEOSP.neutrino_correlation_matrix
         self.NeutrinoLowerBinEdges = NEOSP.nulowerbin
         self.NeutrinoUpperBinEdges = NEOSP.nuupperbin
         self.NeutrinoFlux = NEOSP.spectrum
@@ -61,7 +62,9 @@ class Neos:
         self.ObservedData = NEOSD.observed_data
         self.PredictedBackground = NEOSD.predicted_bkg
         self.RatioData = NEOSD.ratio_data
-        self.RatioError = NEOSD.ratio_error
+        self.RatioStatError = NEOSD.ratio_stat_error
+        self.RatioSystError = NEOSD.ratio_syst_error
+
 
     # FUNCTIONS TO MAKE HISTOGRAMS
     # -----------------------------------
@@ -189,7 +192,7 @@ class Neos:
             max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         W = self.get_width(set_name) # in meters, the detector total width is 2W
-        ndL = 3 # We only integrate through L with three points. It is probably enough.
+        ndL = 10 # We only integrate through L with three points. It is probably enough.
         dL = (2*W)/(ndL-1)
 
         for reactor in self.reactor_names:
@@ -296,7 +299,7 @@ class Neos:
             max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         W = self.get_width(set_name) # in meters, the detector total width is 2W
-        ndL = 3 # We only integrate through L with three points. It is probably enough.
+        ndL = 10 # We only integrate through L with three points. It is probably enough.
         dL = (2*W)/(ndL-1)
 
 
@@ -431,172 +434,56 @@ class Neos:
         return model_expectations
 
 
-# ----------------------------------------------------------
-# FITTING THE DATA
-# ----------------------------------------------------------
-
-    def get_poisson_chi2(self,model, integrate = False, average = False, use_HM = True):
-        """
-        Computes the "chi2" value from the Poisson probability, taking into account
-        every bin from every DayaBay detector.
-
-        Input:
-        model: a model from Models.py for which to compute the expected number of events.
-
-        Output: (float) the log Poisson "chi2" value.
-        """
-        # Honestly, have never tried this. Probably, it should work.
-        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
-        Data = self.ObservedData
-
-        TotalLogPoisson = 0.0
-        for set_name in self.sets_names:
-            lamb = Exp[set_name][:,0]#+Bkg[set_name]
-            k = Data[set_name]
-            TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
-
-        return -2*np.sum(TotalLogPoisson)
-
-    def get_chi2_ratio(self, model, integrate = False, average = False, use_HM = True):
-        # Honestly, have never tried this. Probably, it should work.
-        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)['NEOS']
-        modelSM = Models.PlaneWaveSM()
-        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
-        teo = Exp/ExpSM
-        ratio = self.RatioData['NEOS']
-        ratio_err = self.RatioError['NEOS']
-
-        chi2 = (teo[:,0]-ratio)**2/ratio_err**2
-        chi2 = np.sum(chi2)
-        return chi2
-
-    def get_both_chi2(self, model, integrate = False, average = False, use_HM = True):
-        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
-        Data = self.ObservedData
-
-        TotalLogPoisson = 0.0
-        for set_name in self.sets_names:
-            lamb = Exp[set_name][:,0]#+Bkg[set_name]
-            k = Data[set_name]
-            TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
-        poisson_chi2 = -2*np.sum(TotalLogPoisson)
-
-
-        modelSM = Models.PlaneWaveSM()
-        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
-        teo = Exp['NEOS']/ExpSM
-        ratio = self.RatioData['NEOS']
-        ratio_err = self.RatioError['NEOS']
-
-        ratio_chi2 = (teo[:,0]-ratio)**2/ratio_err**2
-        ratio_chi2 = np.sum(ratio_chi2)
-        return (poisson_chi2,ratio_chi2)
-
 
 # ----------------------------------------------------------
 # BUILDING THE COVARIANCE MATRIX
 # ----------------------------------------------------------
 
-    # def get_neutrino_flux_binned(self):
-    #     flux_bin = []
-    #     for etf in range(0,len(self.NeutrinoLowerBinEdges)):
-    #
-    #
-    # def get_all_flux_prompt_energy(self):
-    #     flux_rec = []
-    #     for i in range(0,len(self.DataLowerBinEdges)):
-    #         erec = (self.DataLowerBinEdges[erf]+self.DataUpperBinEdges[erf])/2.
-    #         erf = self.FindFineBinIndex(erec)
-    #         for etf in range(0,len(self.FromEtrueToErec[1])):
-    #             enu = (etf+0.5)*self.deltaEfine
-    #             flux = self.get_flux(enu)
-    #             flux_rec.append(flux*self.FromEtrueToErec[erf][etf])
-    #
-    #     return np.array(flux_rec)
-
-    def get_flux_prompt_energy(self,erec,use_HM = True):
-                # For the GlobalFit, it is necessary to use HM flux.
-        flux_rec = 0.0
-        erf = self.FindFineBinIndex(erec)
-        for etf in range(0,len(self.FromEtrueToErec[1])):
-            enu = (etf + 0.5)*self.deltaEfine
-            if use_HM == True:
-                # For the GlobalFit, it is necessary to use HM flux.
-                flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
-                                        for isotope in self.isotopes_to_consider]))
-            else:
-                flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
-            if ((etf == 0) or (etf == len(self.FromEtrueToErec[1]-1))):
-                flux_rec += flux*self.FromEtrueToErec[erf][etf]/2.
-            else:
-                flux_rec += flux*self.FromEtrueToErec[erf][etf]
-        return flux_rec
-
-    def FindTrueBinIndex(self,enuf):
-        if enuf <= 2.125:
-            return 0
-        elif enuf >= 8.125:
-            return len(self.NeutrinoLowerBinEdges)-1
-        else:
-            return int((enuf-2.125)/0.25)+1
-
-    def get_flux_covariance_prompt_energy(self,erec1,erec2):
-        covr = 0.0
-
-        if (erec1 < 1.022) or (erec2 < 1.022):
-            return 0.
-
-        erf1 = self.FindFineBinIndex(erec1)
-        erf2 = self.FindFineBinIndex(erec2)
-
-        for etf1 in range(self.FindFineBinIndex(1.806)+1,len(self.FromEtrueToErec[1])):
-            enu1 = (etf1+0.5)*self.deltaEfine
-            et1  = self.FindTrueBinIndex(enu1)
-            for etf2 in range(self.FindFineBinIndex(1.806)+1,len(self.FromEtrueToErec[1])):
-                enu2 = (etf2+0.5)*self.deltaEfine
-                et2  = self.FindTrueBinIndex(enu2)
-                covr += (self.NeutrinoCovarianceMatrix[et1][et2]/self.get_cross_section(enu1)/self.get_cross_section(enu2)
-                         *self.FromEtrueToErec[erf1][etf1]*self.FromEtrueToErec[erf2][etf2])
-        return covr
-
-    def get_table_flux_covariance_matrix_prompt(self):
-        covtab = np.array([[self.get_flux_covariance_prompt_energy(self.DataCentrBinEdges[eri1],self.DataCentrBinEdges[eri2])
-                         for eri1 in range(0,self.n_bins)] for eri2 in range(0,self.n_bins)])
-        return covtab
-
     def get_total_covariance_matrix(self):
-        flux = np.array([self.get_flux_prompt_energy(self.DataCentrBinEdges[eri], use_HM = False)
-                         for eri in range(0,self.n_bins)])
+        """
+        Returns a numpy array with the total covariance matrix in prompt energy,
+        taking into account both systematic and statistical errors,
+        normalised to match the systematic errors from figure 3(c) in 1610.05134.
+        Therefore, it is not normalised to N.
+        For more information on the correlation matrix, check NEOSParameters.py
+        """
+        corr_mat = self.NeutrinoCorrelationMatrix
+        syst_err = self.RatioSystError['NEOS']
+        syst_err = np.tile(syst_err,(len(syst_err),1))*(np.tile(syst_err,(len(syst_err),1)).transpose())
 
-        Neff = self.ObservedData['NEOS']/flux
-        N = self.ObservedData['NEOS']
-        # print(Neff**2)
-
-        flux_cov = self.NeutrinoCovarianceMatrixPrompt
-        # flux_cov = self.NeutrinoCovarianceMatrix
-        # print(np.diag(flux_cov)/np.mean(self.NeutrinoFlux)**2)
-        # print(np.diag(flux_cov)*Neff**2)
-        # print(flux)
-        # print(self.NeutrinoFlux)
-
-        # print(1/np.sqrt(N))
-
-        stat_err = N*np.identity(self.n_bins)
-        # print(N/flux)
-        cov_err = np.tile(np.sqrt(N)/flux,(len(N),1))*(np.tile(np.sqrt(N)/flux,(len(N),1)).transpose())
-        cov_err = flux_cov*cov_err
-
-        return cov_err+stat_err
+        stat_err = self.RatioStatError['NEOS']**2*np.identity(self.n_bins)
+        return corr_mat*syst_err+stat_err
 
     def get_inverse_covariance_matrix(self):
+        """
+        Returns the inverse total covariance matrix.
+        For more information, check the function get_total_covariance_matrix.
+        """
         return np.linalg.inv(np.array(self.get_total_covariance_matrix()))
 
-    def get_chi2_cov(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
+
+
+
+# ----------------------------------------------------------
+# FITTING THE DATA
+# ----------------------------------------------------------
+
+
+    def get_chi2(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
         """
-        Input: a  model with which to compute expectations.
-        Output: a chi2 statistic comparing data and expectations.
+        Computes the "chi2" value from the total number of events in figure 3(a),
+        using the covariance matrix provided in NEOSParameters.py
+
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output: (float) the chi2 value.
         """
         Vinv = self.get_inverse_covariance_matrix()
+        # norm = self.PredictedData['NEOS']
+        modelSM = Models.PlaneWaveSM()
+        norm = self.get_expectation(modelSM, use_HM = use_HM)['NEOS'][:,0]
+        Vinv /= np.tile(norm,(len(norm),1))*(np.tile(norm,(len(norm),1)).transpose())
         Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)
         Data = self.ObservedData
         chi2 = 0.
@@ -607,14 +494,69 @@ class Neos:
 
         return chi2
 
-    def get_chi2_ratio_cov(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
+    def get_chi2_ratio(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
+        """
+        Computes the "chi2" value from the ratio of the expected events to DB in figure 3(c),
+        using the covariance matrix provided in NEOSParameters.py
+
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output: (float) the chi2 value.
+        """
         Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)['NEOS']
         modelSM = Models.PlaneWaveSM()
         ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
         teo = Exp[:,0]/ExpSM[:,0]
         ratio = self.RatioData['NEOS']
         Vinv = self.get_inverse_covariance_matrix()
-        # Vinv *= np.tile(np.sqrt(ExpSM[:,0]),(len(ExpSM[:,0]),1))*(np.tile(np.sqrt(ExpSM[:,0]),(len(ExpSM[:,0]),1)).transpose())
-        Vinv *= np.tile(ExpSM[:,0],(len(ExpSM[:,0]),1))*(np.tile(ExpSM[:,0],(len(ExpSM[:,0]),1)).transpose())
 
         return (teo-ratio).dot(Vinv.dot(teo-ratio))
+
+    def get_both_chi2(self, model, integrate = False, average = False, use_HM = True):
+        """
+        Computes the "chi2" value from both figures 3(a) and 3(c),
+        using the covariance matrix provided in NEOSParameters.py
+
+        Input:
+        model: a model from Models.py for which to compute the expected number of events.
+
+        Output: (float) a tuple with the values of the 3(a) chi2 and the 3(c) chi2.
+        """
+        modelSM = Models.PlaneWaveSM()
+        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)
+        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
+        Data = self.ObservedData
+        ratio = self.RatioData
+
+        chi2 = 0.0
+        chi2_ratio = 0.0
+        for set_name in self.sets_names:
+            Vinv_r = self.get_inverse_covariance_matrix()
+            Vinv = Vinv_r/(np.tile(ExpSM[set_name][:,0],(len(ExpSM[set_name][:,0]),1))*(np.tile(ExpSM[set_name][:,0],(len(ExpSM[set_name][:,0]),1)).transpose()))
+            chi2 += (Data[set_name]-Exp[set_name][:,0]).dot(Vinv.dot(Data[set_name]-Exp[set_name][:,0]))
+            chi2_ratio += (ratio[set_name]-Exp[set_name][:,0]/ExpSM[set_name][:,0]).dot(Vinv_r.dot(ratio[set_name]-Exp[set_name][:,0]/ExpSM[set_name][:,0]))
+
+        return (chi2,chi2_ratio)
+
+
+    # def get_poisson_chi2(self,model, integrate = False, average = False, use_HM = True):
+    #     """
+    #     Computes the "chi2" value from the Poisson probability, fitting the total number of events in figure 3(a).
+    #
+    #     Input:
+    #     model: a model from Models.py for which to compute the expected number of events.
+    #
+    #     Output: (float) the log Poisson "chi2" value.
+    #     """
+    #     # Honestly, have never tried this. Probably, it should work.
+    #     Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
+    #     Data = self.ObservedData
+    #
+    #     TotalLogPoisson = 0.0
+    #     for set_name in self.sets_names:
+    #         lamb = Exp[set_name][:,0]#+Bkg[set_name]
+    #         k = Data[set_name]
+    #         TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
+    #
+    #     return -2*np.sum(TotalLogPoisson)

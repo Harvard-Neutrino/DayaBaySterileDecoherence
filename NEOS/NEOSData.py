@@ -108,10 +108,12 @@ def txt_to_array(filename, sep = ","):
 # Columns:
 # 0: Number of events, per day, per 100 keV;
 # 1: Number of expected events, per day, per 100 keV
-# 2: Number of background events, per day, per 100 keV
-# 3: Ratio of NEOS data to DayaBay data
-# 4: Error of ratio of NEOS data to DayaBay data
-# 5: Number of expected events according to HM flux, per day, per 100 keV
+# 2: Number of expected events according to HM flux, per day, per 100 keV
+# 3: Number of background events, per day, per 100 keV
+# 4: Ratio of NEOS data to DayaBay data
+# 5: Statistical error of ratio of NEOS data to DayaBay data
+# 6: Systematical error of ratio of NEOS data to DayaBay data
+
 
 norm = 180.-46.
 # It is important to say: this normalisation factor must not include the deltaE
@@ -121,14 +123,14 @@ fudge_bkg = 1.
 all_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins]}
 observed_data  = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,0]}
 predicted_data = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,1]}
-predicted_data_HM = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,5]}
-predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:number_of_bins,2]}
+predicted_data_HM = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,2]}
+predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:number_of_bins,3]}
 # predicted_bkg = {'NEOS':np.zeros([number_of_bins])}
 
 
-ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,3]}
-ratio_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,4]}
-
+ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,4]}
+ratio_stat_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,5]}
+ratio_syst_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,6]}
 
 # -------------------------------------------------------------------
 #  DAYA BAY DATA

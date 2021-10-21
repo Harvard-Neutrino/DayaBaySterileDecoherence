@@ -25,14 +25,10 @@ Model_osc = Models.PlaneWaveSM()
 # ------------
 sin2 = 0.05
 dm2 = 1.73
-sin2 = 0.142
-dm2 = 2.32
 Model_ste = Models.PlaneWaveSterile(DM2_41 = dm2,Sin22Th14 = sin2)
 
 sin2_2 = 0.142
 dm2_2 = 2.32
-sin2_2 = 0.05
-dm2_2 = 1.73
 Model_ste2 = Models.PlaneWaveSterile(DM2_41 = dm2_2,Sin22Th14 = sin2_2)
 
 
@@ -54,25 +50,25 @@ pred = pred['NEOS']
 predDB_DB = predDB_DB['NEOS']
 # predDB_HM = predDB_HM['NEOS']
 pred2 = pred2['NEOS']
+print(pred/predDB_DB)
 
 def chi2_ratio_cov(Exp,ExpSM):
     teo = Exp[:,0]/ExpSM[:,0]
     ratio = NEOS_test.RatioData['NEOS']
     Vinv = NEOS_test.get_inverse_covariance_matrix()
     # Vinv *= np.tile(np.sqrt(ExpSM[:,0]),(len(ExpSM[:,0]),1))*(np.tile(np.sqrt(ExpSM[:,0]),(len(ExpSM[:,0]),1)).transpose())
-    Vinv *= np.tile(ExpSM[:,0],(len(ExpSM[:,0]),1))*(np.tile(ExpSM[:,0],(len(ExpSM[:,0]),1)).transpose())
-
     return (teo-ratio).dot(Vinv.dot(teo-ratio))
 
 
 evex = pred[:,0]
 data = NEOS_test.ObservedData['NEOS']
-ratio_data = NEOS_test.RatioData['NEOS']
-ratio_err  = NEOS_test.RatioError['NEOS']
+# ratio_data = NEOS_test.RatioData['NEOS']
+# ratio_err  = NEOS_test.RatioError['NEOS']
 ratio_pred = pred[:,0]/predDB_DB[:,0]
 
-chi2_ratio = (ratio_pred-ratio_data)**2/ratio_err**2
-chi2_per_exp = np.sum(chi2_ratio_cov(pred,predDB_DB))
+chi2 = chi2_ratio_cov(pred,predDB_DB)
+chi2_ratio = np.sum(chi2,axis=0)
+chi2_per_exp = np.sum(chi2)
 
 
 # -------------------------------------------------------
@@ -142,7 +138,7 @@ exerr = np.sqrt(pred[:,0])/predDB_DB[:,0]
 
 axev.errorbar(x_ax,pred[:,0]/predDB_DB[:,0], yerr = exerr, xerr = 0.05, label = r'$\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$'%(dm2,sin2), fmt = "_g", elinewidth = 2)
 axev.errorbar(x_ax,pred2[:,0]/predDB_DB[:,0], xerr = 0.05, label = r'$\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$'%(dm2_2,sin2_2), fmt = "_r", elinewidth = 2)
-axev.errorbar(x_ax,NEOS_test.AllData['NEOS'][:,3], yerr = NEOS_test.AllData['NEOS'][:,4], label = "NEOS data", fmt = "ok")
+axev.errorbar(x_ax,NEOS_test.RatioData['NEOS'], yerr = NEOS_test.RatioStatError['NEOS'], label = "NEOS data", fmt = "ok")
 # axev.scatter(x_ax,NEOS_test.AllData['NEOS'][:,1]/predDB, label = "NEOS prediction", marker = "_")
 axev.plot(x_ax,[1 for x in x_ax], linestyle = 'dashed', color = 'yellow')
 axev.set_xlabel("Energy (MeV)", fontsize = 16)

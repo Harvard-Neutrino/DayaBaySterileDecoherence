@@ -35,8 +35,8 @@ efficiency = {'NEOS': 0.82*0.97}
 # NEOS only has one reactor and one detector.
 # However, since they are very near, we cannot consider the detector puntual,
 # and must integrate over its width. That's why we must consider its width.
-distance = {'NEOS': {'H5': 23.7}}
-width = {'NEOS': 0.3} # this is half-width, i.e. NEOS has L = (23.7 +- 0.3) m.
+distance = {'NEOS': {'H5': 23.64}}
+width = {'NEOS': 1.5} # this is half-width, i.e. NEOS has L = (23.7 +- 1.5) m. From Kopp.
 
 
 
@@ -106,3 +106,4 @@ spectrum = np.array([344.19, 770.96, 1080.9, 1348.4, 1528.8, 1687.0, 1746.6, 176
 # Units (cm^2/fission/MeV)^2 x 10^{-92}
 neutrino_covariance_matrix = txt_to_array(dir+"NeutrinoCovMatrix.dat")
 neutrino_covariance_matrix_prompt = txt_to_array(dir+"NeutrinoCovMatrixPrompt.dat")
+neutrino_correlation_matrix = np.flipud(txt_to_array(dir+"NeutrinoCorrelationMatrix.dat")[1:,1:])
