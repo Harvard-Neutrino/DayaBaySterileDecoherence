@@ -40,7 +40,7 @@ Model_ste2 = Models.PlaneWaveSterile(DM2_41 = dm2_2,Sin22Th14 = sin2_2)
 
 begin_time = time.time()
 predDB_DB = NEOS_test.get_expectation(Model_osc, integrate = False, use_HM = False)
-# predDB_HM =  NEOS_test.get_expectation(Model_osc, integrate = False, use_HM = True)
+predDB_HM =  NEOS_test.get_expectation(Model_osc, integrate = False, use_HM = True)
 pred = NEOS_test.get_expectation(Model_ste, integrate = True, use_HM = False)
 pred2 = NEOS_test.get_expectation(Model_ste2, integrate = True, use_HM = False)
 end_time = time.time()
@@ -48,9 +48,9 @@ print(end_time-begin_time)
 
 pred = pred['NEOS']
 predDB_DB = predDB_DB['NEOS']
-# predDB_HM = predDB_HM['NEOS']
+predDB_HM = predDB_HM['NEOS']
 pred2 = pred2['NEOS']
-print(pred/predDB_DB)
+# print(pred/predDB_DB)
 
 def chi2_ratio_cov(Exp,ExpSM):
     teo = Exp[:,0]/ExpSM[:,0]
@@ -83,7 +83,7 @@ deltaE = (NEOS_test.DataUpperBinEdges -NEOS_test.DataLowerBinEdges)
 # to the flux from DayaBay.
 
 figSM,axSM = plt.subplots(1,1,figsize = (12,8),gridspec_kw=dict(left=0.1, right=0.98,bottom=0.1, top=0.93))
-axSM.errorbar(x_ax,predDB_DB[:,0], yerr = predDB_DB[:,1], xerr = 0.05, label = "Our prediction", fmt = "_", elinewidth = 2)
+axSM.errorbar(x_ax,predDB_HM[:,0], yerr = predDB_HM[:,1], xerr = 0.05, label = "Our prediction", fmt = "_", elinewidth = 2)
 axSM.errorbar(x_ax,NEOS_test.PredictedData['NEOS'], xerr  = 0.05, label = "NEOS prediction", fmt = "_", elinewidth = 2)
 axSM.errorbar(x_ax,NEOS_test.PredictedBackground['NEOS'], xerr = 0.05, label = "NEOS background", fmt = "_", elinewidth = 2)
 axSM.errorbar(x_ax,data, fmt = 'ok', label = "NEOS data")

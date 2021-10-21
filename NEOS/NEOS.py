@@ -30,7 +30,7 @@ class Neos:
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
         # However, we consider an arbitrary large number of targets to prevent very small event expectations.
-        self.TotalNumberOfProtonsHM = 9.74503e51#4.76567e50
+        self.TotalNumberOfProtonsHM = 9.74503e51#/180*(180-46)#4.76567e50
         self.TotalNumberOfProtonsDB = 1.06406e06
 
         self.sets_names = NEOSP.exp_names
@@ -422,6 +422,7 @@ class Neos:
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = False, use_HM = use_HM)
 
         norm = self.normalization_to_data(exp_events) # This should only be allowed for NEOS only fit.
+        norm = {'NEOS':1}
         exp_events = dict([(set_name,exp_events[set_name]*norm[set_name] +self.PredictedBackground[set_name]) for set_name in self.sets_names])
 
         # For the NEOS single fit, there are no nuissance parameters. We just return the data.
