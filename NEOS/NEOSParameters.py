@@ -105,5 +105,4 @@ spectrum = np.array([344.19, 770.96, 1080.9, 1348.4, 1528.8, 1687.0, 1746.6, 176
 # The neutrino flux covariance matrix is obtained from 1607.05378 Table 13.
 # Units (cm^2/fission/MeV)^2 x 10^{-92}
 neutrino_covariance_matrix = txt_to_array(dir+"NeutrinoCovMatrix.dat")
-neutrino_covariance_matrix_prompt = txt_to_array(dir+"NeutrinoCovMatrixPrompt.dat")
 neutrino_correlation_matrix = np.flipud(txt_to_array(dir+"NeutrinoCorrelationMatrix.dat")[1:,1:])

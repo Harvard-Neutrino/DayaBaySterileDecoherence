@@ -43,7 +43,6 @@ class Neos:
         self.WidthOfHall = NEOSP.width
 
         self.NeutrinoCovarianceMatrix = NEOSP.neutrino_covariance_matrix
-        self.NeutrinoCovarianceMatrixPrompt = NEOSP.neutrino_covariance_matrix_prompt
         self.NeutrinoCorrelationMatrix = NEOSP.neutrino_correlation_matrix
         self.NeutrinoLowerBinEdges = NEOSP.nulowerbin
         self.NeutrinoUpperBinEdges = NEOSP.nuupperbin
@@ -446,6 +445,9 @@ class Neos:
         normalised to match the systematic errors from figure 3(c) in 1610.05134.
         Therefore, it is not normalised to N.
         For more information on the correlation matrix, check NEOSParameters.py
+
+        This function is not in use, just as a demonstration on how one can
+        construct the covariance matrix from the correlation matrix and the stat. errors.
         """
         corr_mat = self.NeutrinoCorrelationMatrix
         syst_err = self.RatioSystError['NEOS']
@@ -459,7 +461,7 @@ class Neos:
         Returns the inverse total covariance matrix.
         For more information, check the function get_total_covariance_matrix.
         """
-        return np.linalg.inv(np.array(self.get_total_covariance_matrix()))
+        return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
 
 
 
