@@ -25,8 +25,8 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.0
-dm2 = 0.0
+sin2 = 0.60
+dm2 = 0.5
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
@@ -51,18 +51,22 @@ def what_do_we_do(mass):
 wdwd = what_do_we_do(dm2)
 begin_time = time.time()
 predDB = fitter.get_expectation(Model_osc)
-pred = fitter.get_expectation(Model_ste,do_we_integrate_DB = wdwd['DB']['integrate'],do_we_average_DB = wdwd['DB']['average'],
-                                        do_we_integrate_NEOS = wdwd['NEOS']['integrate'],do_we_average_NEOS = wdwd['NEOS']['integrate'])
+all = fitter.get_expectation_ratio_and_chi2(Model_ste,integrate_DB = wdwd['DB']['integrate'],  average_DB = wdwd['DB']['average'],
+                                                    integrate_NEOS = wdwd['NEOS']['integrate'],average_NEOS = wdwd['NEOS']['integrate'])
 end_time = time.time()
 print(begin_time-end_time)
 
+pred = all[0]
 
 
-chi2_per_exp = []
-for exp in fitter.sets_names:
-    evex = pred[exp][:,0]
-    data = fitter.AllData[exp][:,0]
-    chi2_per_exp.append(np.sum(-2*(data-evex+data*np.log(evex/data))))
+# chi2_per_exp = []
+# for exp in fitter.sets_names[-1]:
+#     evex = pred[exp][:,0]
+#     data = fitter.AllData[exp][:,0]
+#     chi2_per_exp.append(np.sum(-2*(data-evex+data*np.log(evex/data))))
+
+chi2_per_exp = all[2]
+ratio = all[1]
 
 
 # -------------------------------------------------------
@@ -74,15 +78,15 @@ deltaE = dict([(set_name,(-fitter.DataLowerBinEdges[set_name]+fitter.DataUpperBi
 
 figev,axev = plt.subplots(1,4,figsize = (25,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
 
-axis = [[1.3,6.9,0.,3.5],[1.3,6.9,0.,3.],[1.3,6.9,0.,0.9],[1.3,6.9,0.,1.1]]
+axis = [[1.3,6.9,0.,3.5],[1.3,6.9,0.,3.],[1.3,6.9,0.,0.9],[1.3,6.9,0.,0.81]]
 norm = [1e5,1e5,1e5,1e5]
 
 
 for i in range(4):
     set = fitter.sets_names[i]
-    axev[i].errorbar(x_ax[set],pred[set][:,0]/deltaE[set]/norm[i], yerr = pred[set][:,1]/deltaE[set]/norm[i], xerr = 0.1, label = "Our prediction", fmt = "_", elinewidth = 2)
+    axev[i].errorbar(x_ax[set],pred[set]/deltaE[set]/norm[i], yerr = np.sqrt(pred[set])/deltaE[set]/norm[i], xerr = 0.1, label = "Our prediction", fmt = "_", elinewidth = 2)
     # axev[i].errorbar(x_ax,pred[fitter.sets_names[i]]/deltaE/norm[i], yerr = err[fitter.sets_names[i]]/deltaE/norm[i], xerr = 0.1, label = "Our prediction", fmt = "_", elinewidth = 2)
-    axev[i].scatter(x_ax[set],fitter.AllData[set][:,0]/deltaE[set]/norm[i], label = "{} data".format(fitter.sets_names[i]),color = "black")
+    axev[i].scatter(x_ax[set],fitter.ObservedData[set]/deltaE[set]/norm[i], label = "{} data".format(fitter.sets_names[i]),color = "black")
     # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
     # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
     axev[i].set_xlabel("Energy (MeV)", fontsize = 16)
@@ -91,12 +95,12 @@ for i in range(4):
     axev[i].tick_params(axis='y', labelsize=13)
     axev[i].axis(axis[i])
     axev[i].grid(linestyle="--")
-    axev[i].title.set_text(fitter.sets_names[i])
+    axev[i].title.set_text(fitter.sets_names[i]+r' total $\chi^2 = %.2f $'%(chi2_per_exp[i]))
     axev[i].legend(loc="upper right",fontsize=16)
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
+figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
 # As we can see, both ways of computing the event expectations give the same result.
 
@@ -105,21 +109,24 @@ figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2
 # EVENT EXPECTATIONS RATIO, HEAVY STERILE VS SM
 # -----------------------------------------------
 
+# Note that this is not exactly what we're fitting.
+# Here the nuissances for the SM expectations are different than for the sterile expectations,
+# because they are built in different calls of get_expectation.
+# Therefore, the flux and total number of targets is not the same, which makes this ratio not rigorous.
 figev,axev = plt.subplots(1,4,figsize = (25,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
-
 
 for i in range(4):
     set = fitter.sets_names[i]
-    ste_dat = pred[fitter.sets_names[i]][:,0]
+    ste_dat = pred[fitter.sets_names[i]]
     SM_dat = predDB[fitter.sets_names[i]][:,0]
-    ste_err = pred[fitter.sets_names[i]][:,1]
-    SM_err = predDB[fitter.sets_names[i]][:,1]
+    ste_err = np.sqrt(ste_dat)
+    SM_err = np.sqrt(SM_dat)
     # ratio_err = ste_err/SM_dat + ste_dat*SM_err/SM_dat**2
     ratio_err = ste_err/SM_dat
     axev[i].errorbar(x_ax[set],ste_dat/SM_dat, yerr = ratio_err, xerr = 0.1, label = "Heavy sterile/SM", fmt = "_", elinewidth = 2)
     axev[i].plot(x_ax[set],np.ones([fitter.n_bins[set]]),linestyle = 'dashed')
     if set == 'NEOS':
-        axev[i].errorbar(x_ax[set],fitter.NEOSexp.RatioData['NEOS'][3:-1], yerr = fitter.NEOSexp.RatioError['NEOS'][3:-1], label = "NEOS data", fmt = "ok")
+        axev[i].errorbar(x_ax[set],fitter.NEOSRatioData, yerr = fitter.NEOSRatioStatError, label = "NEOS data", fmt = "ok")
     # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
     axev[i].set_xlabel("Energy (MeV)", fontsize = 16)
     axev[i].set_ylabel("Ratio ste/DB", fontsize = 16)
@@ -127,26 +134,27 @@ for i in range(4):
     axev[i].tick_params(axis='y', labelsize=13)
     # axev[i].axis(axis[i])
     axev[i].grid(linestyle="--")
-    axev[i].title.set_text(fitter.sets_names[i])
+    axev[i].title.set_text(fitter.sets_names[i]+r' total $\chi^2 = %.2f $'%(chi2_per_exp[i]))
     axev[i].legend(loc="upper right",fontsize=16)
 
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
+figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figev.savefig("Figures/EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 # -----------------------------------------------------
 # ONLY NEOS
 
 figNEOS,axNEOS = plt.subplots(1,2,figsize = (14,8),gridspec_kw=dict(left=0.06, right=0.98,bottom=0.1, top=0.91))
-ste_dat = pred['NEOS'][:,0]
+ste_dat = pred['NEOS']
+ste_err = np.sqrt(ste_dat)
 SM_dat = predDB['NEOS'][:,0]
 
 set = 'NEOS'
-axNEOS[1].errorbar(x_ax[set],ste_dat/SM_dat, xerr = 0.05, label = "Our prediction w/out error", fmt = "_", elinewidth = 2.5)
-axNEOS[1].errorbar(x_ax[set],fitter.NEOSexp.RatioData['NEOS'][3:-1], yerr = fitter.NEOSexp.RatioError['NEOS'][3:-1], label = "NEOS data", fmt = "ok")
-axNEOS[0].errorbar(x_ax[set],ste_dat/SM_dat, yerr = ste_err/SM_dat, xerr = 0.05, label = "Our prediction w/error", fmt = "_", elinewidth = 2.5)
-axNEOS[0].errorbar(x_ax[set],fitter.NEOSexp.RatioData['NEOS'][3:-1], label = "NEOS data", fmt = "ok")
+axNEOS[1].errorbar(x_ax[set],ratio, xerr = 0.05, label = "Our prediction w/out error", fmt = "_", elinewidth = 2.5)
+axNEOS[1].errorbar(x_ax[set],fitter.NEOSRatioData, yerr = fitter.NEOSRatioStatError, label = "NEOS data", fmt = "ok")
+axNEOS[0].errorbar(x_ax[set],ratio, yerr = ste_err/SM_dat, xerr = 0.05, label = "Our prediction w/error", fmt = "_", elinewidth = 2.5)
+axNEOS[0].errorbar(x_ax[set],fitter.NEOSRatioData, label = "NEOS data", fmt = "ok")
 
 for i in range(2):
     axNEOS[i].set_xlabel("Energy (MeV)", fontsize = 16)
@@ -158,7 +166,7 @@ for i in range(2):
     axNEOS[i].legend(loc="lower left",fontsize=16)
     axNEOS[i].plot(x_ax[set],np.ones([fitter.n_bins[set]]),linestyle = 'dashed')
 
-figNEOS.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
+figNEOS.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figNEOS.savefig("Figures/NEOSRatio/NEOSRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 # ----------------------------------------------
@@ -171,8 +179,8 @@ axis = [[1.3,6.9,0.,1.5],[1.3,6.9,0.,2.],[1.3,6.9,0.,5.5],[1.3,6.9,0.,0.6]]
 figchi,axchi = plt.subplots(1,4,figsize = (25,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
 for i in range(4):
     set = fitter.sets_names[i]
-    data = fitter.AllData[fitter.sets_names[i]][:,0]
-    evex = pred[fitter.sets_names[i]][:,0]
+    data = fitter.ObservedData[fitter.sets_names[i]]
+    evex = pred[fitter.sets_names[i]]
     axchi[i].bar(x_ax[set],-2*(data-evex+data*np.log(evex/data)),width = 3/4*deltaE[set])
     # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
     # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")

@@ -78,12 +78,13 @@ dir = os.path.dirname(os.path.abspath(__file__))[:-10]
 dirDB = dir+"/DayaBay/Data/"
 dirNEOS = dir+"/NEOS/Data/"
 
-fudge = 180. # Total of days the NEOS detector was on. NEOS Data is the number of events, PER DAY.
+fudge = 180.-46. # Total of days the NEOS detector was on. NEOS Data is the number of events, PER DAY.
 all_data = {'EH1': np.concatenate((txt_to_array(dirDB+"DataEH1.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH1.dat")[1:29,6:7]),axis=1),
             'EH2': np.concatenate((txt_to_array(dirDB+"DataEH2.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH2.dat")[1:29,6:7]),axis=1),
             'EH3': np.concatenate((txt_to_array(dirDB+"DataEH3.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH3.dat")[1:29,6:7]),axis=1),
-            'NEOS':fudge*txt_to_array(dirNEOS+'AllData.dat')[3:-2,0:3]}
+            'NEOS':fudge*np.concatenate((txt_to_array(dirNEOS+'AllData.dat')[3:-2,0:2],txt_to_array(dirNEOS+'AllData.dat')[3:-2,3:4]), axis = 1)}
 
+ratio_data = {'NEOS': txt_to_array(dirNEOS+'AllData.dat')[3:-2,4:]}
 
 # RECONSTRUCTION MATRIX
 # ---------------------
@@ -118,8 +119,16 @@ neutrino_upper_bin_edges = {'EH1': nuupperbin,
 # NEUTRINO COVARIANCE MATRIX
 # --------------------------
 
-
+# For more information in the covariance matrices from each experiment,
+# check the corresponding XXXXParameters.py files.
+# There are some inhomogeneities between the covariance matrices, which we most work through.
+# For example, the NEOS one is in prompt energy, and we must trim it to the GlobalFit number of bins.
+# In principle, the DB ones should not be used, we include them here for easier generalisation.
 neutrino_cov_mat = {'EH1': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
                     'EH2': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
                     'EH3': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
-                    'NEOS': txt_to_array(dirNEOS+"NeutrinoCovMatrix.dat")}
+                    'NEOS': txt_to_array(dirNEOS+"NeutrinoCovMatrix.dat")[3:-1,3:-1]}
+
+# It is tricky to decide whether the NEOS covariance matrix, which contains the correlations
+# from the DayaBay spectrum which we are not using here.
+# However, for now we decide it is for the better to use it.
