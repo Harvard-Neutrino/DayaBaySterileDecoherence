@@ -102,8 +102,19 @@ spectrum = np.array([344.19, 770.96, 1080.9, 1348.4, 1528.8, 1687.0, 1746.6, 176
 # NEUTRINO COVARIANCE MATRIX
 # -----------------------------------------------------------
 
-# The neutrino flux covariance matrix is obtained from 1607.05378 Table 13.
-# Units (cm^2/fission/MeV)^2 x 10^{-92}
+# The neutrino flux correlation matrix is obtained from http://vietnam.in2p3.fr/2017/neutrinos/transparencies/5_friday/1_morning/7_kim.pdf
+neutrino_correlation_matrix = txt_to_array(dir+"NeutrinoCorrelationMatrix.dat")[:-1,1:]
+# Afterwars, we compute the covariance matrix taking into account this correlation,
+# and normalising it to the systematic and statistical errors from figure 3(c) in 1610.05134.
+# Covariance matrix is, therefore, not normalised to the total number of data, but to the ratio to DB.
+# Both matrices are in prompt energy.
 neutrino_covariance_matrix = txt_to_array(dir+"NeutrinoCovMatrix.dat")
-neutrino_covariance_matrix_prompt = txt_to_array(dir+"NeutrinoCovMatrixPrompt.dat")
-neutrino_correlation_matrix = np.flipud(txt_to_array(dir+"NeutrinoCorrelationMatrix.dat")[1:,1:])
+
+# The NeutrinoCorrelationMatrix.dat file contains a 61x61 table, the same number of bins
+# as the total number of bins in NEOS. However, the digitalisation is far from perfect.
+# The correlation matrix should have the maximum numbers in the diagonal.
+# In order for this table to fulfill this property, we gotta trim it like [:-1,1:],
+# thus having a 60x60 matrix (which is alright, because in our analysis we forget about NEOS last bin).
+# The NeutrinoCovMatrix.dat file, which is build from this 60x60 matrix, is also 60x60.
+# However, the NeutrinoCovMatrix.dat file has lost the possibility to include the last bin,
+# because of an unmatch between the digitalisation of the matrix and the errors.
