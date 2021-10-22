@@ -1,9 +1,10 @@
 import sys
 import os
 common_dir = '/Common_cython'
-sys.path.append(os.getcwd()[:-10]+common_dir)
-sys.path.append(os.getcwd()[:-10]+"/NEOS")
-sys.path.append(os.getcwd()[:-10]+"/DayaBay")
+main_dir = os.getcwd()[:-10]
+sys.path.append(main_dir+common_dir)
+sys.path.append(main_dir+"/DayaBay")
+sys.path.append(main_dir+"/NEOS")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,12 +13,11 @@ import matplotlib
 import Models
 import GlobalFit as GF
 
-cwd = os.getcwd()
-path_to_style=cwd+'/Figures'
+path_to_style = main_dir + common_dir
 dir = 'PlotData/'
-# plt.style.use(path_to_style+r"/paper.mplstyle")
-# matplotlib.rcParams.update({'text.usetex': True})
-# matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
+plt.style.use(path_to_style+r"/paper.mplstyle")
+matplotlib.rcParams.update({'text.usetex': True})
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 
 
 # -------------------------------------------------------
@@ -54,21 +54,22 @@ def getChi2(mass,angl,wave_packet = False):
 
 def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
     axxis.grid(linestyle = '--')
-    axxis.tick_params(axis='x', labelsize=13)
-    axxis.tick_params(axis='y', labelsize=13)
+    axxis.tick_params(axis='x')
+    axxis.tick_params(axis='y')
     axxis.set_xscale('log')
     axxis.set_yscale('log')
-    axxis.set_ylabel(r"$\Delta m^2_{14} (eV^2)$", fontsize = 16)
-    axxis.set_xlabel(r"$\sin^2 2 \theta_{14}$", fontsize = 16)
+    axxis.set_ylabel(r"$\Delta m^2_{41} (\text{eV}^2)$")
+    axxis.set_xlabel(r"$\sin^2 2 \theta_{14}$")
     axxis.set_xlim([1e-3,1])
     axxis.set_ylim([1e-2,10])
-    labels = [r'$1\sigma$ (68% C.L.)',r'$2\sigma$ (95% C.L.)',r'$3\sigma$ (99% C.L.)']
+    labels = [r'$1\sigma$ (68\% C.L.)',r'$2\sigma$ (95\% C.L.)',r'$3\sigma$ (99\% C.L.)']
     for i in range(3):
         contours.collections[i].set_label(labels[i])
-    axxis.legend(loc = 'lower right', fontsize = 11)
+    axxis.legend(loc = 'lower right')
 
-
-
+titlesize = 13.
+size = (7,7)
+margins = dict(left=0.14, right=0.96,bottom=0.1, top=0.93)
 
 # -------------------------------------------------
 # STERILE PLANE WAVE CONTOUR - PLANE WAVE FORMALISM
@@ -98,14 +99,14 @@ axBF.scatter(bestfit[1],bestfit[0],marker = '+', label = r'Best fit')
 
 stylize(axBF,conts)
 
-figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]))
+figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f \text{ eV}^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]), fontsize = titlesize)
 figBF.savefig('Figures/PWContour_bestfit.png')
 
 
 # PLOT WITH RESPECT TO THE NULL HYPOTHESIS
 # -----------------------------------------
 
-figNH,axNH = plt.subplots(figsize = (7,7))
+figNH,axNH = plt.subplots(figsize = size, gridspec_kw = margins)
 
 conts = axNH.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [2.30,6.18,11.83])
 axNH.scatter(bestfit[1],bestfit[0],marker = '+', label = 'Our best fit')
@@ -113,7 +114,7 @@ axNH.scatter(bestfit[1],bestfit[0],marker = '+', label = 'Our best fit')
 
 stylize(axNH,conts)
 
-figNH.suptitle('Null hypothesis: total $\chi^2 = %.2f$'%(null_hyp_PW))
+figNH.suptitle('Null hypothesis: total $\chi^2 = %.2f$'%(null_hyp_PW), fontsize = titlesize)
 figNH.savefig('Figures/PWContour_nullhyp.png')
 
 
@@ -133,12 +134,13 @@ print('Best fit values and chi2: ',bestfit)
 
 # We find which is the chi2 of the null hypothesis
 null_hyp_WP = getChi2(0,0, wave_packet = True)
+null_hyp_WP = 114.57
 print('Null hyp chi2: ',null_hyp_WP)
 
 
 # PLOT WITH RESPECT TO THE BEST FIT
 # ----------------------------------
-figBF,axBF = plt.subplots(figsize = (7,7))
+figBF,axBF = plt.subplots(figsize = size, gridspec_kw = margins)
 
 conts = axBF.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-bestfit[2]),levels = [2.30,6.18,11.83])
 axBF.scatter(bestfit[1],bestfit[0],marker = '+', label = r'Best fit')
@@ -146,22 +148,22 @@ axBF.scatter(bestfit[1],bestfit[0],marker = '+', label = r'Best fit')
 
 stylize(axBF,conts)
 
-figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]))
+figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f \text{ eV}^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]), fontsize = titlesize)
 figBF.savefig('Figures/WPContour_bestfit.png')
 
 
 # PLOT WITH RESPECT TO THE NULL HYPOTHESIS
 # -----------------------------------------
 
-figNH,axNH = plt.subplots(figsize = (7,7))
+figNH,axNH = plt.subplots(figsize = size, gridspec_kw = margins)
 
 conts = axNH.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-null_hyp_WP),levels = [2.30,6.18,11.83])
 axNH.scatter(bestfit[1],bestfit[0],marker = '+', label = 'Our best fit')
-axNH.scatter(data_WP[:,1],data_WP[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
+# axNH.scatter(data_WP[:,1],data_WP[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
 
 stylize(axNH,conts)
 
-figNH.suptitle('Null hypothesis: total $\chi^2 = %.2f$'%(null_hyp_WP))
+figNH.suptitle('Null hypothesis: total $\chi^2 = %.2f$'%(null_hyp_WP), fontsize = titlesize)
 figNH.savefig('Figures/WPContour_nullhyp.png')
 
 
@@ -171,7 +173,7 @@ figNH.savefig('Figures/WPContour_nullhyp.png')
 # 2SIGMA PLOT COMPARISON
 # ----------------------------------------------
 
-fig_comp,ax_comp = plt.subplots(figsize = (7,7))
+fig_comp,ax_comp = plt.subplots(figsize = size, gridspec_kw = margins)
 cont_PW = ax_comp.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [2.30,6.18], colors = 'red', linestyles = ['dotted','solid'])
 cont_PW.collections[0].set_label(r'$1\sigma$ Plane wave')
 cont_PW.collections[1].set_label(r'$2\sigma$ Plane wave')
@@ -181,14 +183,14 @@ cont_WP.collections[1].set_label(r'$2\sigma$ Wave packet')
 
 
 ax_comp.grid(linestyle = '--')
-ax_comp.tick_params(axis='x', labelsize=13)
-ax_comp.tick_params(axis='y', labelsize=13)
+ax_comp.tick_params(axis='x')
+ax_comp.tick_params(axis='y')
 ax_comp.set_xscale('log')
 ax_comp.set_yscale('log')
-ax_comp.set_ylabel(r"$\Delta m^2_{14} (eV^2)$", fontsize = 16)
-ax_comp.set_xlabel(r"$\sin^2 2 \theta_{14}$", fontsize = 16)
+ax_comp.set_ylabel(r"$\Delta m^2_{41} (\text{eV}^2)$")
+ax_comp.set_xlabel(r"$\sin^2 2 \theta_{14}$")
 ax_comp.set_xlim([1e-3,1])
 ax_comp.set_ylim([1e-2,10])
-ax_comp.legend(loc = 'lower right', fontsize = 11)
+ax_comp.legend(loc = 'lower right')
 
 fig_comp.savefig('Figures/ContourComparison.png')
