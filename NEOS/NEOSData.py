@@ -131,25 +131,3 @@ predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:number_
 ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,4]}
 ratio_stat_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,5]}
 ratio_syst_error = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,6]}
-
-# -------------------------------------------------------------------
-#  DAYA BAY DATA
-# -------------------------------------------------------------------
-
-# Contains the full data from 1610.04802 for all three experimental halls.
-# Columns:
-# 0: Emin; 1: Emax, 2: Ecentral
-# 3: Nobs  4: Npred (including background)
-# 5: Nprednoosc; 6: Nbkg
-DB_all_data = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,0:7],
-            'EH2': txt_to_array(dir+"DataEH2.dat")[:,0:7],
-            'EH3': txt_to_array(dir+"DataEH3.dat")[:,0:7]}
-
-
-DB_observed_data = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,3],
-                 'EH2': txt_to_array(dir+"DataEH2.dat")[:,3],
-                 'EH3': txt_to_array(dir+"DataEH3.dat")[:,3]}
-
-DB_predicted_bkg = {'EH1': txt_to_array(dir+"DataEH1.dat")[:,6],
-                 'EH2': txt_to_array(dir+"DataEH2.dat")[:,6],
-                 'EH3': txt_to_array(dir+"DataEH3.dat")[:,6]}

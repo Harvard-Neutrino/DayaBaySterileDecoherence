@@ -33,7 +33,7 @@ class StandardModelGlobalFit:
             model = Models.PlaneWaveSM(Sin22Th13 = angl,DM2_ee = mass)
         elif self.WavePacket == True:
             model = Models.WavePacketSM(Sin22Th13 = angl,DM2_ee = mass)
-        chi2 = self.fitter.get_poisson_chi2(model)
+        chi2 = self.fitter.get_chi2(model)
         print(mass,angl,chi2)
         return chi2
 
@@ -105,7 +105,7 @@ class SterileGlobalFit:
             model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
 
         wdwd = self.what_do_we_do(mass)
-        chi2 = self.fitter.get_poisson_chi2(model,integrate_DB = wdwd['DB']['integrate'], integrate_NEOS = wdwd['NEOS']['integrate'],
+        chi2 = self.fitter.get_chi2(model,integrate_DB = wdwd['DB']['integrate'], integrate_NEOS = wdwd['NEOS']['integrate'],
                                              average_DB = wdwd['DB']['average'],     average_NEOS = wdwd['NEOS']['average'])
         print(mass,angl,chi2)
         return chi2

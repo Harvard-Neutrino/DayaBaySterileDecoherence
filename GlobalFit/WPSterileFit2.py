@@ -1,4 +1,4 @@
-import FitClass as FC
+import SterileFit as SF
 import numpy as np
 import time
 
@@ -11,12 +11,13 @@ import time
        #              1.49255018, 1.55653058, 1.62325359, 1.69283678, 1.76540275,
        #              1.84107938, 1.92      ]
 
-datangl1 = np.logspace(np.log10(4e-3),0,80)
-datmass1 = np.logspace(np.log10(0.08),0,80)
+datmass1 = np.logspace(np.log10(0.15),np.log10(0.4),11)
+datangl1 = np.logspace(-3,0,30)
+
 
 
 begin = time.time()
-fit = FC.SterileFit(wave_packet = False, use_HM = False)
-fit.write_data_table(datmass1,datangl1,'PWSterileChi2_1.dat')
+fit = SF.SterileGlobalFit(wave_packet = True)
+fit.write_data_table(datmass1,datangl1,'WPSterileChi2_2.dat')
 end = time.time()
 print('Time = '+str(end-begin)[:6]+' s.')

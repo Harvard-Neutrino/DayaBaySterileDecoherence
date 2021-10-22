@@ -49,7 +49,7 @@ def getChi2(mass,angl,wave_packet = False):
         model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)
     else:
         model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
-    chi2 = fitter.get_poisson_chi2(model)
+    chi2 = fitter.get_chi2(model)
     return chi2
 
 def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
