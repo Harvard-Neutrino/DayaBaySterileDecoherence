@@ -24,8 +24,8 @@ class StandardModelGlobalFit:
         every bin from every detector in the global fit, for a given square mass and mixing.
 
         Input:
-        mass: the value of Delta m^2_{41} of the sterile neutrino.
-        angl: the value of sin^2(2theta_{41})
+        mass: the value of Delta m^2_{31} of the sterile neutrino.
+        angl: the value of sin^2(2theta_{13})
 
         Output: (float) the chi2 value.
         """
@@ -43,8 +43,8 @@ class StandardModelGlobalFit:
         Writes a square table with the chi2 values of different masses and angles in a file.
 
         Input:
-        mass_ax (array/list): the values of Delta m^2_{41}.
-        angl_ax (array/list): the values of sin^2(2theta_{41})
+        mass_ax (array/list): the values of Delta m^2_{31}.
+        angl_ax (array/list): the values of sin^2(2theta_{13})
         filename (str): the name of the file in which to write the table.
         """
         file = open(filename,'w')
@@ -63,6 +63,7 @@ class SterileGlobalFit:
         # according to the wave packet formalism or not (plane wave).
         self.WavePacket = wave_packet
         self.fitter = GF.GlobalFit()
+        self.SMExpectation = self.fitter.get_expectation_SM(wave_packet = wave_packet)
 
     def what_do_we_do(self,mass):
         """
@@ -106,7 +107,8 @@ class SterileGlobalFit:
 
         wdwd = self.what_do_we_do(mass)
         chi2 = self.fitter.get_chi2(model,integrate_DB = wdwd['DB']['integrate'], integrate_NEOS = wdwd['NEOS']['integrate'],
-                                             average_DB = wdwd['DB']['average'],     average_NEOS = wdwd['NEOS']['average'])
+                                            average_DB = wdwd['DB']['average'],     average_NEOS = wdwd['NEOS']['average'],
+                                            exp_events_SM = self.SMExpectation)
         print(mass,angl,chi2)
         return chi2
 

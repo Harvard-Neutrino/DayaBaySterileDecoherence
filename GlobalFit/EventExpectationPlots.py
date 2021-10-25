@@ -25,8 +25,8 @@ Model_osc = Models.PlaneWaveSM()
 Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.06
-dm2 = 0.5
+sin2 = 0.2*0
+dm2 = 6.0*0
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
@@ -175,13 +175,19 @@ figNEOS.savefig("Figures/NEOSRatio/NEOSRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 axis = [[1.3,6.9,0.,1.5],[1.3,6.9,0.,2.],[1.3,6.9,0.,5.5],[1.3,6.9,0.,0.6]]
 
+Vinv = fitter.get_inverse_covariance_matrix()['NEOS']
+# NEOSchi2 = np.array([(ratio-fitter.NEOSRatioData)[i]*Vinv[:,i].dot(ratio-fitter.NEOSRatioData) for i in range(fitter.n_bins['NEOS'])])
+NEOSchi2 = (ratio-fitter.NEOSRatioData)**2*np.diag(Vinv)
 
 figchi,axchi = plt.subplots(1,4,figsize = (25,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
 for i in range(4):
     set = fitter.sets_names[i]
     data = fitter.ObservedData[fitter.sets_names[i]]
     evex = pred[fitter.sets_names[i]]
-    axchi[i].bar(x_ax[set],-2*(data-evex+data*np.log(evex/data)),width = 3/4*deltaE[set])
+    if set == 'NEOS':
+        axchi[i].bar(x_ax[set],NEOSchi2, width = 3/4*deltaE[set]) #doesn't include correlations
+    else:
+        axchi[i].bar(x_ax[set],-2*(data-evex+data*np.log(evex/data)),width = 3/4*deltaE[set])
     # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")
     # axev[i].scatter(x_ax,DB_test.AllData[DB_test.sets_names[i]][:,5]/deltaE/1.e5,marker="+",color = "red", label = "DB no oscillations")
     axchi[i].set_xlabel("Energy (MeV)", fontsize = 16)

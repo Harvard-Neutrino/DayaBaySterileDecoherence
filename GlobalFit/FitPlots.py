@@ -91,7 +91,7 @@ print('Null hyp chi2: ',null_hyp_PW)
 
 # PLOT WITH RESPECT TO THE BEST FIT
 # ----------------------------------
-figBF,axBF = plt.subplots(figsize = (7,7))
+figBF,axBF = plt.subplots(figsize = size,gridspec_kw=margins)
 
 conts = axBF.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-bestfit[2]),levels = [2.30,6.18,11.83])
 axBF.scatter(bestfit[1],bestfit[0],marker = '+', label = r'Best fit')
@@ -134,7 +134,6 @@ print('Best fit values and chi2: ',bestfit)
 
 # We find which is the chi2 of the null hypothesis
 null_hyp_WP = getChi2(0,0, wave_packet = True)
-null_hyp_WP = 114.57
 print('Null hyp chi2: ',null_hyp_WP)
 
 

@@ -220,9 +220,22 @@ class GlobalFit:
         return vinv
 
 
+    def get_expectation_SM(self,wave_packet = False):
+        if wave_packet == False:
+            modelSM = Models.PlaneWaveSM()
+        if wave_packet == True:
+            modelSM = Models.WavePacketSM()
+
+        exp_events_SM = self.get_predicted_obs(modelSM)
+        nuissances_SM = self.get_nuissance_parameters(exp_events_SM)
+        exp_events_SM = dict([(set_name,exp_events_SM[set_name]*nuissances_SM[set_name]+self.PredictedBackground[set_name])
+                                   for set_name in self.sets_names])
+        return exp_events_SM
+
+
     def get_chi2(self,model, integrate_DB = False, integrate_NEOS = False,
                              average_DB = False, average_NEOS = False,
-                             tupled = False):
+                             exp_events_SM = None):
         """
         Input: a  model with which to compute expectations.
         Output: a chi2 statistic comparing data and expectations.
@@ -242,28 +255,24 @@ class GlobalFit:
             k = Data[set_name]
             TotalLogPoisson += np.sum(k - lamb + k*np.log(lamb/k))
 
-        # For NEOS, we need to fit the ratio. Therefore, we need the expectation from SM.
-        # However, the nuissances must be the ones from the sterile expectation.
-        modelSM = Models.PlaneWaveSM()
-        exp_events_NEOSSM = self.NEOSexp.get_expectation_unnorm_nobkg(modelSM,
-                                    do_we_integrate = integrate_NEOS, do_we_average = average_NEOS,
-                                    custom_bins = self.DataAllBinEdges['NEOS'])
-        # The question here is: is it necessary to compute this previous events every time, or can we tabulate it?
-        exp_events_NEOSSM = exp_events_NEOSSM['NEOS']*nuissances['NEOS']+self.PredictedBackground['NEOS']
+        if exp_events_SM == None:
+            exp_events_SM = self.get_expectation_SM()
 
         Vinv = self.get_inverse_covariance_matrix()['NEOS']
-        teo = exp_events['NEOS']/exp_events_NEOSSM
+        teo = exp_events['NEOS']/exp_events_SM['NEOS']
         ratio = self.NEOSRatioData
 
         chi2_ratio = (teo-ratio).dot(Vinv.dot(teo-ratio))
         return -2*TotalLogPoisson+chi2_ratio
 
 
+
+
 # TO PLOT STUFF
 # ......................................
 
     def get_expectation_ratio_and_chi2(self,model, integrate_DB = False, integrate_NEOS = False,
-                             average_DB = False, average_NEOS = False):
+                             average_DB = False, average_NEOS = False, exp_events_SM = None):
         """
         Input: a  model with which to compute expectations.
         Output: a chi2 statistic comparing data and expectations.
@@ -273,7 +282,6 @@ class GlobalFit:
         nuissances = self.get_nuissance_parameters(exp_events)
         exp_events = dict([(set_name,exp_events[set_name]*nuissances[set_name]+self.PredictedBackground[set_name])
                                    for set_name in self.sets_names])
-
         Data = self.ObservedData
 
         # For DB, the Poisson likelihood is sufficient.
@@ -283,18 +291,14 @@ class GlobalFit:
             k = Data[set_name]
             AllChi2.append(-2*np.sum(k - lamb + k*np.log(lamb/k)))
 
-        # For NEOS, we need to fit the ratio. Therefore, we need the expectation from SM.
-        # However, the nuissances must be the ones from the sterile expectation.
-        modelSM = Models.PlaneWaveSM()
-        exp_events_NEOSSM = self.NEOSexp.get_expectation_unnorm_nobkg(modelSM,
-                                    do_we_integrate = integrate_NEOS, do_we_average = average_NEOS,
-                                    custom_bins = self.DataAllBinEdges['NEOS'])
-        # The question here is: is it necessary to compute this previous events every time, or can we tabulate it?
-        exp_events_NEOSSM = exp_events_NEOSSM['NEOS']*nuissances['NEOS']+self.PredictedBackground['NEOS']
+        # For NEOS, we need to fit the ratio. Therefore, we need the expectation from the null hypothesis (SM).
+        if exp_events_SM == None:
+            exp_events_SM = self.get_expectation_SM()
+        # It might be more useful to tabulate this and not compute it every time.
 
         Vinv = self.get_inverse_covariance_matrix()['NEOS']
-        teo = exp_events['NEOS']/exp_events_NEOSSM
+        teo = exp_events['NEOS']/exp_events_SM['NEOS']
         ratio = self.NEOSRatioData
 
         AllChi2.append((teo-ratio).dot(Vinv.dot(teo-ratio)))
-        return (exp_events,exp_events['NEOS']/exp_events_NEOSSM,AllChi2)
+        return (exp_events,teo,AllChi2)

@@ -30,8 +30,8 @@ class Neos:
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
         # However, we consider an arbitrary large number of targets to prevent very small event expectations.
-        self.TotalNumberOfProtonsHM = 9.74503e51#/180*(180-46)#4.76567e50
-        self.TotalNumberOfProtonsDB = 1.06406e06
+        self.TotalNumberOfProtonsHM = 9.74503e51#*180/(180-46)#4.76567e50
+        self.TotalNumberOfProtonsDB = 1.06406e06#*180/(180-46)
 
         self.sets_names = NEOSP.exp_names
         self.reactor_names = NEOSP.reac_names
