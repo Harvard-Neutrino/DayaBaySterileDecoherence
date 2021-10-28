@@ -104,6 +104,7 @@ class GlobalFit:
     #
     #     return norm
 
+
     def get_nuissance_parameters(self,exp_events):
         """
         Input:
@@ -131,6 +132,24 @@ class GlobalFit:
         TotalNumberOfEventsPerBin += self.ObservedData['NEOS'][::2]+self.ObservedData['NEOS'][1::2]
         TotalNumberOfBkgPerBin += self.PredictedBackground['NEOS'][::2]+self.PredictedBackground['NEOS'][1::2]
         TotalNumberOfExpEvents += exp_events['NEOS'][::2]+exp_events['NEOS'][1::2]
+        # lam4 = exp_events['NEOS'][::2]
+        # lam5 = exp_events['NEOS'][1::2]
+        # k4 = self.ObservedData['NEOS'][::2]
+        # k5 = self.ObservedData['NEOS'][1::2]
+        # sigma = np.diag(self.NeutrinoCovarianceMatrix['NEOS'])*self.ObservedData['NEOS']**2 #squared of sigma!
+        # print('Sigmas: ',sigma[0],sigma[1])
+        # print('Sum lam: ',TotalNumberOfEventsPerBin[0]-TotalNumberOfBkgPerBin[0])
+        # print('Sum k: ', TotalNumberOfExpEvents[0])
+        # print('lams 4,5: ', lam4[0],lam5[0])
+        # print('k 4,5: ',k4[0],k5[0])
+        # sig4 = sigma[::2]
+        # sig5 = sigma[1::2]
+        # sumA = k5*lam5*sig4 + k4*lam4*sig5 - TotalNumberOfExpEvents*sig4*sig5
+        # sumB = lam5**2*sig4+lam4**2*sig5
+        # nuissances = sumA
+        # nuissances += np.sqrt(4*(TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)*sig4*sig5*sumB + sumA**2)
+        # nuissances /= 2*sumB
+        # print('Nuissance: ',nuissances[0])
 
         nuissances = (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
 
@@ -219,7 +238,6 @@ class GlobalFit:
 
         return vinv
 
-
     def get_expectation_SM(self,wave_packet = False):
         if wave_packet == False:
             modelSM = Models.PlaneWaveSM()
@@ -231,7 +249,6 @@ class GlobalFit:
         exp_events_SM = dict([(set_name,exp_events_SM[set_name]*nuissances_SM[set_name]+self.PredictedBackground[set_name])
                                    for set_name in self.sets_names])
         return exp_events_SM
-
 
     def get_chi2(self,model, integrate_DB = False, integrate_NEOS = False,
                              average_DB = False, average_NEOS = False,

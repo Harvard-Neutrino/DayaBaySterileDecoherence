@@ -58,10 +58,10 @@ class PlaneWaveSM:
         self.dm2_21 = 7.42e-5
         self.dm2_32 = self.dm2_31 - self.dm2_21
 
-    def fosc(self,enu,L,deltam):
+    def fosc(self,double enu,double L, double deltam):
         return np.cos(L*deltam/(2*enu))
 
-    def oscProbability(self,E,l):
+    def oscProbability(self,double E, double l):
         """
         Input:
         enu (float): the energy of the electron antineutrino, in MeV.
@@ -94,10 +94,10 @@ class WavePacketSM:
         nm = 50677.308*1e-7 # 1/eV
         self.sigmax = 2.1e-4*nm # after multiplying by nm, sigmax in 1/eV
 
-    def fosc(self,enu,L,deltam):
+    def fosc(self, double enu, double L,double deltam):
         return cos(L*deltam/(2*enu))*np.exp(-L**2*deltam**2/(32.*enu**4*self.sigmax**2))
 
-    def oscProbability(self,E,l):
+    def oscProbability(self,double E, double l):
         """
         Input:
         enu (float): the energy of the electron antineutrino, in MeV.
@@ -151,8 +151,8 @@ class PlaneWaveSterile:
         prob -= sin(2*self.th13)**2* cos(self.th14)**4*(cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
                                                               sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
         prob -= sin(2*self.th14)**2*(cos(self.th13)**2*(cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_41))+
-                                                              sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_42)))+
-                                        sin(self.th13)**2*(1-self.fosc(enu,L,self.dm2_43)))/2.
+                                                        sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_42)))+
+                                     sin(self.th13)**2*(1-self.fosc(enu,L,self.dm2_43)))/2.
         return prob
 
     def oscProbability_av(self,double E,double l):
@@ -170,7 +170,7 @@ class PlaneWaveSterile:
         prob = 1.
         prob -= sin(2*self.th12)**2* cos(self.th13)**4* cos(self.th14)**4*(1-self.fosc(enu,L,self.dm2_21))/2.
         prob -= sin(2*self.th13)**2* cos(self.th14)**4*(cos(self.th12)**2*(1-self.fosc(enu,L,self.dm2_31))+
-                                                              sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
+                                                        sin(self.th12)**2*(1-self.fosc(enu,L,self.dm2_32)))/2.
         prob -= sin(2*self.th14)**2/2.
         return prob
 
@@ -193,10 +193,10 @@ class WavePacketSterile:
         nm = 50677.308*1e-7 # 1/eV
         self.sigmax = 2.1e-4*nm # after multiplying by nm, sigmax in 1/eV
 
-    def fosc(self,enu,L,deltam):
+    def fosc(self,double enu, double L, double deltam):
         return cos(L*deltam/(2*enu))*np.exp(-L**2*deltam**2/(32.*enu**4*self.sigmax**2))
 
-    def oscProbability(self,E,l):
+    def oscProbability(self, double E, double l):
         """
         Input:
         enu (float): the energy of the electron antineutrino, in MeV.
@@ -217,7 +217,7 @@ class WavePacketSterile:
                                         sin(self.th13)**2*(1-self.fosc(enu,L,self.dm2_43)))/2.
         return prob
 
-    def oscProbability_av(self,E,l):
+    def oscProbability_av(self,double E, double l):
         """
         Input:
         enu (float): the energy of the electron antineutrino, in MeV.

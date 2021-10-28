@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import time
-import sys
-import os
-common_dir = '/Common_cython'
-sys.path.append(os.getcwd()[:-8]+common_dir)
+# import sys
+# import os
+# common_dir = '/Common_cython'
+# sys.path.append(os.getcwd()[:-8]+common_dir)
 
 import DayaBay as DB
 import Models
@@ -19,12 +19,12 @@ import matplotlib.pyplot as plt
 fitter = DB.DayaBay()
 Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
-Model_coh = Models.WavePacketSM()
+# Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.00
-dm2 = 0.0
-Model_ste = Models.WavePacketSterile(Sin22Th14 = sin2, DM2_41 = dm2)
+sin2 = 0.06
+dm2 = 0.5
+Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
 # -------------------------------------------------------------

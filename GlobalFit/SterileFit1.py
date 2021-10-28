@@ -12,7 +12,7 @@ import time
        #              1.84107938, 1.92      ]
 
 datmass1 = np.logspace(-2,np.log10(0.149),40)
-datangl1 = np.logspace(-3,np.log10(0.25),32)
+datangl1 = np.logspace(np.log10(0.011),np.log10(0.23),32)
 
 
 

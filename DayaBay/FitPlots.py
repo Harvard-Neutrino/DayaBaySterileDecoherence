@@ -60,7 +60,7 @@ def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
     axxis.set_ylabel(r"$\Delta m^2_{41} (\text{eV}^2)$")
     axxis.set_xlabel(r"$\sin^2 2 \theta_{14}$")
     axxis.set_xlim([1e-3,1])
-    axxis.set_ylim([1e-4,0.15])
+    axxis.set_ylim([1e-4,2.])
     labels = [r'$1\sigma$ (68\% C.L.)',r'$2\sigma$ (95\% C.L.)',r'$3\sigma$ (99\% C.L.)']
     for i in range(3):
         contours.collections[i].set_label(labels[i])
@@ -109,7 +109,7 @@ figNH,axNH = plt.subplots(figsize = size, gridspec_kw = margins)
 
 conts = axNH.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [2.30,6.18,11.83])
 axNH.scatter(bestfit[1],bestfit[0],marker = '+', label = 'Our best fit')
-# axNH.scatter(data_PW[:,1],data_PW[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
+axNH.scatter(data_PW[:,1],data_PW[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
 
 stylize(axNH,conts)
 
@@ -157,7 +157,7 @@ figNH,axNH = plt.subplots(figsize = size, gridspec_kw = margins)
 
 conts = axNH.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-null_hyp_WP),levels = [2.30,6.18,11.83])
 axNH.scatter(bestfit[1],bestfit[0],marker = '+', label = 'Our best fit')
-# axNH.scatter(data_WP[:,1],data_WP[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
+axNH.scatter(data_WP[:,1],data_WP[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
 
 stylize(axNH,conts)
 
@@ -188,7 +188,7 @@ ax_comp.set_yscale('log')
 ax_comp.set_ylabel(r"$\Delta m^2_{41} (\text{eV}^2)$")
 ax_comp.set_xlabel(r"$\sin^2 2 \theta_{14}$")
 ax_comp.set_xlim([1e-3,1])
-ax_comp.set_ylim([1e-4,0.15])
+ax_comp.set_ylim([1e-4,2.])
 ax_comp.legend(loc = 'lower left')
 
 fig_comp.savefig('Figures/ContourComparison.png')

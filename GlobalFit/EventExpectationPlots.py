@@ -22,13 +22,13 @@ import matplotlib.pyplot as plt
 fitter = GF.GlobalFit()
 Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
-Model_coh = Models.WavePacketSM()
+# Model_osc = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.2*0
-dm2 = 6.0*0
+sin2 = 0.06
+dm2 = 0.5
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
-
+# Model_ste = Models.WavePacketSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 # -------------------------------------------------------------
 # INITIAL COMPUTATIONS
@@ -80,11 +80,11 @@ figev,axev = plt.subplots(1,4,figsize = (25,8),gridspec_kw=dict(left=0.05, right
 
 axis = [[1.3,6.9,0.,3.5],[1.3,6.9,0.,3.],[1.3,6.9,0.,0.9],[1.3,6.9,0.,0.81]]
 norm = [1e5,1e5,1e5,1e5]
-
+xerror = [0.1,0.1,0.1,0.05]
 
 for i in range(4):
     set = fitter.sets_names[i]
-    axev[i].errorbar(x_ax[set],pred[set]/deltaE[set]/norm[i], yerr = np.sqrt(pred[set])/deltaE[set]/norm[i], xerr = 0.1, label = "Our prediction", fmt = "_", elinewidth = 2)
+    axev[i].errorbar(x_ax[set],pred[set]/deltaE[set]/norm[i], yerr = np.sqrt(pred[set])/deltaE[set]/norm[i], xerr = xerror[i], label = "Our prediction", fmt = "_", elinewidth = 2)
     # axev[i].errorbar(x_ax,pred[fitter.sets_names[i]]/deltaE/norm[i], yerr = err[fitter.sets_names[i]]/deltaE/norm[i], xerr = 0.1, label = "Our prediction", fmt = "_", elinewidth = 2)
     axev[i].scatter(x_ax[set],fitter.ObservedData[set]/deltaE[set]/norm[i], label = "{} data".format(fitter.sets_names[i]),color = "black")
     # axev[i].scatter(x_ax,pred[1][DB_test.sets_names[i]][:,0]/deltaE/1.e5,marker="+",color = "blue", label = "Our no oscillations")

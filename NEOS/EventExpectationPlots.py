@@ -18,18 +18,20 @@ import matplotlib
 
 NEOS_test = NEOS.Neos()
 Model_osc = Models.PlaneWaveSM()
-# Model_osc = Models.PlaneWaveSM(Sin22Th13 = 0.07821,DM2_31 = 2.5e-3)
-# Model_coh = Models.WavePacketSM()
+# Model_osc = Models.WavePacketSM()
 
 # Sterile data
 # ------------
-sin2 = 0.05
-dm2 = 1.73
+sin2 = 0.8
+dm2 = 9.5
 Model_ste = Models.PlaneWaveSterile(DM2_41 = dm2,Sin22Th14 = sin2)
+# Model_ste = Models.WavePacketSterile(DM2_41 = dm2,Sin22Th14 = sin2)
+
 
 sin2_2 = 0.142
 dm2_2 = 2.32
 Model_ste2 = Models.PlaneWaveSterile(DM2_41 = dm2_2,Sin22Th14 = sin2_2)
+# Model_ste2 = Models.WavePacketSterile(DM2_41 = dm2_2,Sin22Th14 = sin2_2)
 
 
 

@@ -485,6 +485,8 @@ class Neos:
         Vinv = self.get_inverse_covariance_matrix()
         # norm = self.PredictedData['NEOS']
         modelSM = Models.PlaneWaveSM()
+        # To be rigorous, this should be PlaneWaveSM or WavePacketSM depending on what we're doing.
+        # Don't think this will make much of a mess. 
         norm = self.get_expectation(modelSM, use_HM = use_HM)['NEOS'][:,0]
         Vinv /= np.tile(norm,(len(norm),1))*(np.tile(norm,(len(norm),1)).transpose())
         Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)
