@@ -10,6 +10,7 @@ import DayaBay as DB
 import Models
 import GlobalFitData as GFD
 import numpy as np
+from scipy.optimize import minimize
 
 
 class GlobalFit:
@@ -45,7 +46,6 @@ class GlobalFit:
         self.NEOSRatioStatError = GFD.ratio_data['NEOS'][:,1]
         self.NEOSRatioSystError = GFD.ratio_data['NEOS'][:,2]
         self.PredictedNEOSDataSM = GFD.neos_data_SM['NEOS']
-
 
         # These are the objects which allow to compute the event expectations for each experiment.
         self.DBexp = DB.DayaBay()
@@ -107,18 +107,22 @@ class GlobalFit:
     #     return norm
 
 
-    def get_nuissance_parameters(self,exp_events):
+    def get_initial_nuissance_parameters(self,exp_events, exp_events_SM_NEOS = np.array([None])):
         """
         Input:
         events: a dictionary with a string key for each experimental hall, linking to
         a numpy array for some histogram of events. In principle, it should be
-        the number of expected number of events of the model we want to study.
+        the number of expected number of events of the model we want to study (without bkg).
 
         Output:
-        Returns the nuissance parameters which minimise the Poisson probability at all the
+        Returns an initial guess for the nuissance parameters per bin which minimize the chi2 at all
         experimental halls simultaneously (i.e. each nuissance is the same for all halls).
-        They are computed as alpha_i = (sum(data_EHi)-sum(bkg_EHi))/(sum(exp_EHi))
+        This initial guess is analytical and has a complicated formula, implemented here.
+        The idea is that they minimize ((ObservedData-PredictedBackground)-exp_events).
         """
+        if exp_events_SM_NEOS.any() == None:
+            exp_events_SM_NEOS = self.PredictedNEOSDataSM
+
         TotalNumberOfEventsPerBin = 0.
         TotalNumberOfBkgPerBin = 0.
         TotalNumberOfExpEvents = 0.
@@ -131,13 +135,10 @@ class GlobalFit:
 
         # One has to consider that NEOS has twice as many bins.
         # We decided that two consecutive bin contributed to and had the same nuissance parameter.
-        # TotalNumberOfEventsPerBin += self.ObservedData['NEOS'][::2]+self.ObservedData['NEOS'][1::2]
-        # TotalNumberOfBkgPerBin += self.PredictedBackground['NEOS'][::2]+self.PredictedBackground['NEOS'][1::2]
-        # TotalNumberOfExpEvents += exp_events['NEOS'][::2]+exp_events['NEOS'][1::2]
-        lam4 = exp_events['NEOS'][::2]/self.PredictedData['NEOS'][::2]
-        lam5 = exp_events['NEOS'][1::2]/self.PredictedData['NEOS'][1::2]
-        k4 = self.NEOSRatioData[::2]-self.PredictedBackground['NEOS'][::2]/self.PredictedData['NEOS'][::2]
-        k5 = self.NEOSRatioData[1::2]-self.PredictedBackground['NEOS'][1::2]/self.PredictedData['NEOS'][1::2]
+        lam4 = exp_events['NEOS'][::2]/exp_events_SM_NEOS[::2]
+        lam5 = exp_events['NEOS'][1::2]/exp_events_SM_NEOS[1::2]
+        k4 = self.NEOSRatioData[::2]-self.PredictedBackground['NEOS'][::2]/exp_events_SM_NEOS[::2]
+        k5 = self.NEOSRatioData[1::2]-self.PredictedBackground['NEOS'][1::2]/exp_events_SM_NEOS[1::2]
         sigma = np.diag(self.NeutrinoCovarianceMatrix['NEOS'])#*self.ObservedData['NEOS']**2 #squared of sigma!
 
         sig4 = sigma[::2]
@@ -147,17 +148,78 @@ class GlobalFit:
         nuissances = sumA
         nuissances += np.sqrt(4*(TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)*sig4*sig5*sumB + sumA**2)
         nuissances /= 2*sumB
-        # print('Nuissance: ',nuissances[0])
 
-        # nuissances = (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
+        return nuissances
 
-        # As we said, each nuissance corresponds to two consecutive bins in NEOS.
+
+
+    def get_chi2_from_nuissances(self,nuissances, exp_events, exp_events_SM_NEOS = np.array([None])):
+        """
+        Computes a chi2 given a list of expected_events and the nuissances which to apply to it.
+
+        Input:
+        exp_events (float np.array): the expected events (without background) with which
+                                     to compute the chi2.
+        nuissances (float np.array): arbitrary nuissances to apply to exp_events.
+        exp_events_SM_NEOS (float np.array): the predicted data for NEOS from the null hyp (SM 3nu),
+                                             used to normalize the covariance matrix.
+
+        Output (float): the value of the chi2.
+        """
+        if exp_events_SM_NEOS.any() == None:
+            exp_events_SM_NEOS = self.PredictedNEOSDataSM
+
         nuissancesdict = dict([(set_name,nuissances) for set_name in self.sets_names[:-1]])
         nuissancesdict.update({'NEOS':np.repeat(nuissances,2)})
+        exp_events = dict([(set_name,exp_events[set_name]*nuissancesdict[set_name]+self.PredictedBackground[set_name])
+                                   for set_name in self.sets_names])
 
-        return nuissancesdict
+        Data = self.ObservedData
 
-    def get_expectation(self,model,do_we_integrate_DB = False, do_we_integrate_NEOS = False, do_we_average_DB = False, do_we_average_NEOS = False):
+        # For DB, the Poisson likelihood is sufficient.
+        TotalLogPoisson = 0.0
+        for set_name in self.sets_names[:-1]:
+            lamb = exp_events[set_name]
+            k = Data[set_name]
+            TotalLogPoisson += np.sum(k - lamb + k*np.log(lamb/k))
+
+        Vinv = self.get_inverse_covariance_matrix()['NEOS']
+        teo = exp_events['NEOS']/exp_events_SM_NEOS
+        ratio = self.NEOSRatioData
+
+        chi2_ratio = (teo-ratio).dot(Vinv.dot(teo-ratio))
+        return -2*TotalLogPoisson+chi2_ratio
+
+
+
+    def get_nuissance_parameters(self,exp_events, exp_events_SM_NEOS = np.array([None])):
+        """
+        Computes the nuissance parameters which minimize the chi2 for a given expected events.
+
+        Input:
+        exp_events (float np.array): the expected events (without background).
+        exp_events_SM_NEOS (float np.array): the predicted data for NEOS from the null hyp (SM 3nu),
+                                             used to normalize the covariance matrix.
+
+        Output (float np.array): the nuissance parameters.
+        """
+        if exp_events_SM_NEOS.any() == None:
+            exp_events_SM_NEOS = self.PredictedNEOSDataSM
+
+        # We compute the analytical initial guess of nuissance parameters
+        x0 = self.get_initial_nuissance_parameters(exp_events, exp_events_SM_NEOS = exp_events_SM_NEOS)
+
+        def f(nuissances):
+            # This is just a dummy function for scipy.optimize.minimize
+            return self.get_chi2_from_nuissances(nuissances, exp_events, exp_events_SM_NEOS = exp_events_SM_NEOS)
+
+        res = minimize(f,  x0, method = 'L-BFGS-B')
+        return np.array(res.x)
+
+
+
+    def get_expectation(self,model,do_we_integrate_DB = False, do_we_integrate_NEOS = False, do_we_average_DB = False, do_we_average_NEOS = False,
+                             exp_events_SM_NEOS = np.array([None])):
         """
         Input:
         model: a model from Models.py for which to compute the expected number of events.
@@ -171,16 +233,17 @@ class GlobalFit:
         the error bars of each bin, the lower limits of each bin, and the upper limits of each bin.
         The error bars are purely statistical, i.e. sqrt(N).
         """
+        if exp_events_SM_NEOS.any() == None:
+            exp_events_SM_NEOS = self.PredictedNEOSDataSM
+
         exp_events = self.get_predicted_obs(model,do_integral_DB = do_we_integrate_DB, do_integral_NEOS = do_we_integrate_NEOS,
                                                   do_average_DB  = do_we_average_DB,   do_average_NEOS =  do_we_average_NEOS)
 
-        # We normalise the data from each experimental hall to its own data.
-        # norm = self.normalization_to_data(exp_events) # Huge mistake
-        # exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
-
         # We compute and apply the nuissances parameters to all experiments.
-        nuissances = self.get_nuissance_parameters(exp_events)
-        exp_events = dict([(set_name,exp_events[set_name]*nuissances[set_name]+self.PredictedBackground[set_name])
+        nuissances = self.get_nuissance_parameters(exp_events, exp_events_SM_NEOS = exp_events_SM_NEOS)
+        nuissancesdict = dict([(set_name,nuissances) for set_name in self.sets_names[:-1]])
+        nuissancesdict.update({'NEOS':np.repeat(nuissances,2)})
+        exp_events = dict([(set_name,exp_events[set_name]*nuissancesdict[set_name]+self.PredictedBackground[set_name])
                                    for set_name in self.sets_names])
 
         # We build the result inside a dictionary.
@@ -236,30 +299,23 @@ class GlobalFit:
 
         return vinv
 
-    def get_expectation_SM(self,wave_packet = False):
-        if wave_packet == False:
-            modelSM = Models.PlaneWaveSM()
-        if wave_packet == True:
-            modelSM = Models.WavePacketSM()
-
-        exp_events_SM = self.get_predicted_obs(modelSM)
-        nuissances_SM = self.get_nuissance_parameters(exp_events_SM)
-        exp_events_SM = dict([(set_name,exp_events_SM[set_name]*nuissances_SM[set_name]+self.PredictedBackground[set_name])
-                                   for set_name in self.sets_names])
-        return exp_events_SM
-
-
     def get_chi2(self,model, integrate_DB = False, integrate_NEOS = False,
                              average_DB = False, average_NEOS = False,
-                             exp_events_SM = None):
+                             exp_events_SM_NEOS = np.array([None])):
         """
         Input: a  model with which to compute expectations.
         Output: a chi2 statistic comparing data and expectations.
         """
+        if exp_events_SM_NEOS.any() == None:
+            exp_events_SM_NEOS = self.PredictedNEOSDataSM
+
         exp_events = self.get_predicted_obs(model,do_integral_DB = integrate_DB, do_integral_NEOS = integrate_NEOS,
                                                   do_average_DB  = average_DB,   do_average_NEOS =  average_NEOS)
-        nuissances = self.get_nuissance_parameters(exp_events)
-        exp_events = dict([(set_name,exp_events[set_name]*nuissances[set_name]+self.PredictedBackground[set_name])
+
+        nuissances = self.get_nuissance_parameters(exp_events, exp_events_SM_NEOS = exp_events_SM_NEOS)
+        nuissancesdict = dict([(set_name,nuissances) for set_name in self.sets_names[:-1]])
+        nuissancesdict.update({'NEOS':np.repeat(nuissances,2)})
+        exp_events = dict([(set_name,exp_events[set_name]*nuissancesdict[set_name]+self.PredictedBackground[set_name])
                                    for set_name in self.sets_names])
 
         Data = self.ObservedData
@@ -271,13 +327,8 @@ class GlobalFit:
             k = Data[set_name]
             TotalLogPoisson += np.sum(k - lamb + k*np.log(lamb/k))
 
-        if exp_events_SM == None:
-            exp_events_SM = self.PredictedNEOSDataSM
-            # exp_events_SM = self.PredictedData
-
-
         Vinv = self.get_inverse_covariance_matrix()['NEOS']
-        teo = exp_events['NEOS']/exp_events_SM
+        teo = exp_events['NEOS']/exp_events_SM_NEOS
         ratio = self.NEOSRatioData
 
         chi2_ratio = (teo-ratio).dot(Vinv.dot(teo-ratio))
@@ -290,16 +341,25 @@ class GlobalFit:
 # ......................................
 
     def get_expectation_ratio_and_chi2(self,model, integrate_DB = False, integrate_NEOS = False,
-                             average_DB = False, average_NEOS = False, exp_events_SM = None):
+                             average_DB = False, average_NEOS = False,
+                             exp_events_SM_NEOS = np.array([None])):
         """
         Input: a  model with which to compute expectations.
-        Output: a chi2 statistic comparing data and expectations.
+        Output: a chi2 statistic comparing data and expectations and plenty of stuff.
         """
+        if exp_events_SM_NEOS.any() == None:
+            exp_events_SM_NEOS = self.PredictedNEOSDataSM
+
         exp_events = self.get_predicted_obs(model,do_integral_DB = integrate_DB, do_integral_NEOS = integrate_NEOS,
                                                   do_average_DB  = average_DB,   do_average_NEOS =  average_NEOS)
-        nuissances = self.get_nuissance_parameters(exp_events)
-        exp_events = dict([(set_name,exp_events[set_name]*nuissances[set_name]+self.PredictedBackground[set_name])
+
+        nuissances = self.get_nuissance_parameters(exp_events, exp_events_SM_NEOS = exp_events_SM_NEOS)
+        nuissancesdict = dict([(set_name,nuissances) for set_name in self.sets_names[:-1]])
+        nuissancesdict.update({'NEOS':np.repeat(nuissances,2)})
+        exp_events = dict([(set_name,exp_events[set_name]*nuissancesdict[set_name]+self.PredictedBackground[set_name])
                                    for set_name in self.sets_names])
+
+
         Data = self.ObservedData
 
         # For DB, the Poisson likelihood is sufficient.
@@ -309,13 +369,9 @@ class GlobalFit:
             k = Data[set_name]
             AllChi2.append(-2*np.sum(k - lamb + k*np.log(lamb/k)))
 
-        # For NEOS, we need to fit the ratio. Therefore, we need the expectation from the null hypothesis (SM).
-        if exp_events_SM == None:
-            exp_events_SM = self.get_expectation_SM()
-        # It might be more useful to tabulate this and not compute it every time.
 
         Vinv = self.get_inverse_covariance_matrix()['NEOS']
-        teo = exp_events['NEOS']/exp_events_SM['NEOS']
+        teo = exp_events['NEOS']/exp_events_SM_NEOS
         ratio = self.NEOSRatioData
 
         AllChi2.append((teo-ratio).dot(Vinv.dot(teo-ratio)))

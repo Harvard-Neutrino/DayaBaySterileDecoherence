@@ -9,7 +9,8 @@ sys.path.append(os.getcwd()[:-10]+"/DayaBay")
 
 import numpy as np
 import time
-import GlobalFit as GF
+# import GlobalFit as GF
+import GlobalFitNuissances as GF
 import Models
 
 import matplotlib.pyplot as plt
@@ -25,8 +26,8 @@ Model_osc = Models.PlaneWaveSM()
 # Model_osc = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.06
-dm2 = 0.5
+sin2 = 0.8
+dm2 = 9.5
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 # Model_ste = Models.WavePacketSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
@@ -67,6 +68,7 @@ pred = all[0]
 
 chi2_per_exp = all[2]
 ratio = all[1]
+print(chi2_per_exp)
 
 
 # -------------------------------------------------------

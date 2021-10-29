@@ -3,7 +3,7 @@ import os
 common_dir = '/Common_cython'
 sys.path.append(os.getcwd()[:-10]+common_dir)
 
-import GlobalFit as GF
+import GlobalFitNuissances as GF
 import Models
 import time
 

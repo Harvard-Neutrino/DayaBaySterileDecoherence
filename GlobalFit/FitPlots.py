@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib
 
 import Models
-import GlobalFit as GF
+import GlobalFitNuissances as GF
 
 path_to_style = main_dir + common_dir
 dir = 'PlotData/'
