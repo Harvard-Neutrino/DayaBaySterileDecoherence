@@ -3,7 +3,7 @@ import os
 common_dir = '/Common_cython'
 sys.path.append(os.getcwd()[:-10]+common_dir)
 
-import GlobalFitNuissances as GF
+import GlobalFit as GF
 import Models
 import time
 
@@ -63,7 +63,10 @@ class SterileGlobalFit:
         # according to the wave packet formalism or not (plane wave).
         self.WavePacket = wave_packet
         self.fitter = GF.GlobalFit()
-        self.SMExpectation = self.fitter.get_expectation_SM(wave_packet = wave_packet)
+        if wave_packet == False:
+            self.SMexpectation = self.fitter.PredictedNEOSDataSM
+        if wave_packet == True:
+            self.SMexpectation = self.fitter.PredictedNEOSDataSMWP
 
     def what_do_we_do(self,mass):
         """
@@ -108,7 +111,7 @@ class SterileGlobalFit:
         wdwd = self.what_do_we_do(mass)
         chi2 = self.fitter.get_chi2(model,integrate_DB = wdwd['DB']['integrate'], integrate_NEOS = wdwd['NEOS']['integrate'],
                                             average_DB = wdwd['DB']['average'],     average_NEOS = wdwd['NEOS']['average'],
-                                            exp_events_SM = self.SMExpectation)
+                                            exp_events_SM_NEOS = self.SMexpectation)
         print(mass,angl,chi2)
         return chi2
 

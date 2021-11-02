@@ -10,7 +10,7 @@ sys.path.append(os.getcwd()[:-10]+"/DayaBay")
 import numpy as np
 import time
 # import GlobalFit as GF
-import GlobalFitNuissances as GF
+import GlobalFit as GF
 import Models
 
 import matplotlib.pyplot as plt

@@ -11,10 +11,8 @@ import time
        #              1.49255018, 1.55653058, 1.62325359, 1.69283678, 1.76540275,
        #              1.84107938, 1.92      ]
 
-datmass1 = np.logspace(-2,np.log10(0.149),40)
-datangl1 = np.logspace(np.log10(0.011),np.log10(0.23),32)
-
-
+datmass1 = np.logspace(-2,np.log10(0.149),150)
+datangl1 = np.logspace(-3,0,150)
 
 
 begin = time.time()

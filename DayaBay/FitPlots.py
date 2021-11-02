@@ -172,12 +172,10 @@ figNH.savefig('Figures/WPContour_nullhyp.png')
 # ----------------------------------------------
 
 fig_comp,ax_comp = plt.subplots(figsize = size, gridspec_kw = margins)
-cont_PW = ax_comp.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [2.30,6.18], colors = 'red', linestyles = ['dotted','solid'])
-cont_PW.collections[0].set_label(r'$1\sigma$ Plane wave')
-cont_PW.collections[1].set_label(r'$2\sigma$ Plane wave')
-cont_WP = ax_comp.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-null_hyp_WP),levels = [2.30,6.18], colors = 'blue',linestyles = ['dotted','solid'])
-cont_WP.collections[0].set_label(r'$1\sigma$ Wave packet')
-cont_WP.collections[1].set_label(r'$2\sigma$ Wave packet')
+cont_PW = ax_comp.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [6.18], colors = 'red')
+cont_PW.collections[0].set_label(r'$2\sigma$ Plane wave')
+cont_WP = ax_comp.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-null_hyp_WP),levels = [6.18], colors = 'blue')
+cont_WP.collections[0].set_label(r'$2\sigma$ Wave packet')
 
 
 ax_comp.grid(linestyle = '--')
@@ -191,4 +189,4 @@ ax_comp.set_xlim([1e-3,1])
 ax_comp.set_ylim([1e-4,2.])
 ax_comp.legend(loc = 'lower left')
 
-fig_comp.savefig('Figures/ContourComparison.png')
+fig_comp.savefig('Figures/ContourComparison.pdf')
