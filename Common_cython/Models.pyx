@@ -51,7 +51,7 @@ class PlaneWaveDB:
 # -----------------------------------------------------------
 
 class PlaneWaveSM:
-    def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+    def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
         self.th12 = 0.583763
         self.dm2_31 = DM2_31
@@ -85,7 +85,7 @@ class PlaneWaveSM:
 # Uses the approximate formula from Daya Bay. No matter effects.
 # -----------------------------------------------------------
 class WavePacketSM:
-    def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+    def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
         self.th12 = 0.583763
         self.dm2_31 = DM2_31
@@ -122,10 +122,10 @@ class WavePacketSM:
 class PlaneWaveSterile:
     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
-        self.th13 = np.arcsin(sqrt(0.0841))/2.
+        self.th13 = np.arcsin(sqrt(0.0868525))/2.
         self.th12 = 0.583763
         self.dm2_41 = DM2_41
-        self.dm2_31 = 2.4e-3
+        self.dm2_31 = 2.515e-3
         self.dm2_21 = 7.42e-5
         self.dm2_32 = self.dm2_31 - self.dm2_21
         self.dm2_42 = self.dm2_41 - self.dm2_21
@@ -182,10 +182,10 @@ class PlaneWaveSterile:
 class WavePacketSterile:
     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
-        self.th13 = np.arcsin(sqrt(0.0841))/2.
+        self.th13 = np.arcsin(sqrt(0.0868525))/2.
         self.th12 = 0.583763
         self.dm2_41 = DM2_41
-        self.dm2_31 = 2.4e-3
+        self.dm2_31 = 2.515e-3
         self.dm2_21 = 7.42e-5
         self.dm2_32 = self.dm2_31 - self.dm2_21
         self.dm2_42 = self.dm2_41 - self.dm2_21
@@ -245,7 +245,7 @@ class PlaneWaveSM_full:
     def __init__(self):
         self.deltaCP = 0
         self.theta12 = np.arcsin(sqrt(0.846))/2.
-        self.theta13 = np.arcsin(sqrt(0.0841))/2.
+        self.theta13 = np.arcsin(sqrt(0.0868525))/2.
         self.theta23 = np.arcsin(sqrt(0.999))/2.
         self.dm2_31 = 2.44e-3 # eV^2
         self.dm2_21 = 7.42e-5 # eV^2
@@ -324,7 +324,7 @@ class WavePacketSM_full:
         nm = 50677.308*1e-7 # 1/eV
         self.deltaCP = 0
         self.theta12 = np.arcsin(sqrt(0.846))/2.
-        self.theta13 = np.arcsin(sqrt(0.0841))/2.
+        self.theta13 = np.arcsin(sqrt(0.0868525))/2.
         self.theta23 = np.arcsin(sqrt(0.999))/2.
         self.dm2_31 = 2.44e-3 # eV^2
         self.dm2_21 = 7.42e-5 # eV^2
@@ -411,7 +411,7 @@ class PlaneWaveSterile_full:
         self.delta34 = 0.
          #DB best fit
         self.theta12 = np.arcsin(sqrt(0.304))
-        self.theta13 = np.arcsin(sqrt(0.0841))/2.  # nu-fit is sin^2theta = 0.02221
+        self.theta13 = np.arcsin(sqrt(0.0868525))/2.  # nu-fit is sin^2theta = 0.02221
         self.theta23 = np.arcsin(sqrt(0.570))
         self.theta14 = np.arcsin(sqrt(r14))/2.
         self.theta24 = np.arcsin(sqrt(r24))/2.

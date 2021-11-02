@@ -1757,11 +1757,12 @@ static PyObject *__pyx_float_0_01;
 static PyObject *__pyx_float_1eneg_5;
 static PyObject *__pyx_float_1_267;
 static PyObject *__pyx_float_0_0841;
-static PyObject *__pyx_float_2_4eneg_3;
 static PyObject *__pyx_float_2_5eneg_3;
 static PyObject *__pyx_float_2_44eneg_3;
 static PyObject *__pyx_float_7_42eneg_5;
 static PyObject *__pyx_float_0_583763;
+static PyObject *__pyx_float_2_515eneg_3;
+static PyObject *__pyx_float_0_0868525;
 static PyObject *__pyx_float_5_06773e6;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
@@ -2392,7 +2393,7 @@ static PyObject *__pyx_pf_6Models_11PlaneWaveDB_2oscProbability(CYTHON_UNUSED Py
 /* "Models.pyx":54
  * 
  * class PlaneWaveSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -2413,8 +2414,8 @@ static PyObject *__pyx_pw_6Models_11PlaneWaveSM_1__init__(PyObject *__pyx_self, 
   {
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_self,&__pyx_n_s_Sin22Th13,&__pyx_n_s_DM2_31,0};
     PyObject* values[3] = {0,0,0};
-    values[1] = ((PyObject *)((PyObject*)__pyx_float_0_0841));
-    values[2] = ((PyObject *)((PyObject*)__pyx_float_2_4eneg_3));
+    values[1] = ((PyObject *)((PyObject*)__pyx_float_0_0868525));
+    values[2] = ((PyObject *)((PyObject*)__pyx_float_2_515eneg_3));
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
@@ -2494,7 +2495,7 @@ static PyObject *__pyx_pf_6Models_11PlaneWaveSM___init__(CYTHON_UNUSED PyObject 
 
   /* "Models.pyx":55
  * class PlaneWaveSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.             # <<<<<<<<<<<<<<
  *         self.th12 = 0.583763
  *         self.dm2_31 = DM2_31
@@ -2547,7 +2548,7 @@ static PyObject *__pyx_pf_6Models_11PlaneWaveSM___init__(CYTHON_UNUSED PyObject 
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "Models.pyx":56
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763             # <<<<<<<<<<<<<<
  *         self.dm2_31 = DM2_31
@@ -2594,7 +2595,7 @@ static PyObject *__pyx_pf_6Models_11PlaneWaveSM___init__(CYTHON_UNUSED PyObject 
   /* "Models.pyx":54
  * 
  * class PlaneWaveSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -3386,7 +3387,7 @@ static PyObject *__pyx_pf_6Models_11PlaneWaveSM_4oscProbability(CYTHON_UNUSED Py
 /* "Models.pyx":88
  * # -----------------------------------------------------------
  * class WavePacketSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -3407,8 +3408,8 @@ static PyObject *__pyx_pw_6Models_12WavePacketSM_1__init__(PyObject *__pyx_self,
   {
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_self,&__pyx_n_s_Sin22Th13,&__pyx_n_s_DM2_31,0};
     PyObject* values[3] = {0,0,0};
-    values[1] = ((PyObject *)((PyObject*)__pyx_float_0_0841));
-    values[2] = ((PyObject *)((PyObject*)__pyx_float_2_4eneg_3));
+    values[1] = ((PyObject *)((PyObject*)__pyx_float_0_0868525));
+    values[2] = ((PyObject *)((PyObject*)__pyx_float_2_515eneg_3));
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
@@ -3489,7 +3490,7 @@ static PyObject *__pyx_pf_6Models_12WavePacketSM___init__(CYTHON_UNUSED PyObject
 
   /* "Models.pyx":89
  * class WavePacketSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.             # <<<<<<<<<<<<<<
  *         self.th12 = 0.583763
  *         self.dm2_31 = DM2_31
@@ -3525,7 +3526,7 @@ static PyObject *__pyx_pf_6Models_12WavePacketSM___init__(CYTHON_UNUSED PyObject
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "Models.pyx":90
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763             # <<<<<<<<<<<<<<
  *         self.dm2_31 = DM2_31
@@ -3593,7 +3594,7 @@ static PyObject *__pyx_pf_6Models_12WavePacketSM___init__(CYTHON_UNUSED PyObject
   /* "Models.pyx":88
  * # -----------------------------------------------------------
  * class WavePacketSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -4309,7 +4310,7 @@ static PyObject *__pyx_pf_6Models_12WavePacketSM_4oscProbability(CYTHON_UNUSED P
  * class PlaneWaveSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
 
 /* Python wrapper */
@@ -4411,7 +4412,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile___init__(CYTHON_UNUSED PyOb
  * class PlaneWaveSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.             # <<<<<<<<<<<<<<
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.th12 = 0.583763
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 124, __pyx_L1_error)
@@ -4447,7 +4448,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile___init__(CYTHON_UNUSED PyOb
   /* "Models.pyx":125
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.             # <<<<<<<<<<<<<<
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.             # <<<<<<<<<<<<<<
  *         self.th12 = 0.583763
  *         self.dm2_41 = DM2_41
  */
@@ -4456,7 +4457,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile___init__(CYTHON_UNUSED PyOb
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_arcsin); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 125, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0841)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 125, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0868525)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 125, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_5 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
@@ -4482,18 +4483,18 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile___init__(CYTHON_UNUSED PyOb
 
   /* "Models.pyx":126
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.th12 = 0.583763             # <<<<<<<<<<<<<<
  *         self.dm2_41 = DM2_41
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_th12, __pyx_float_0_583763) < 0) __PYX_ERR(0, 126, __pyx_L1_error)
 
   /* "Models.pyx":127
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.th12 = 0.583763
  *         self.dm2_41 = DM2_41             # <<<<<<<<<<<<<<
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  *         self.dm2_21 = 7.42e-5
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_41, __pyx_v_DM2_41) < 0) __PYX_ERR(0, 127, __pyx_L1_error)
@@ -4501,15 +4502,15 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile___init__(CYTHON_UNUSED PyOb
   /* "Models.pyx":128
  *         self.th12 = 0.583763
  *         self.dm2_41 = DM2_41
- *         self.dm2_31 = 2.4e-3             # <<<<<<<<<<<<<<
+ *         self.dm2_31 = 2.515e-3             # <<<<<<<<<<<<<<
  *         self.dm2_21 = 7.42e-5
  *         self.dm2_32 = self.dm2_31 - self.dm2_21
  */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_31, __pyx_float_2_4eneg_3) < 0) __PYX_ERR(0, 128, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_31, __pyx_float_2_515eneg_3) < 0) __PYX_ERR(0, 128, __pyx_L1_error)
 
   /* "Models.pyx":129
  *         self.dm2_41 = DM2_41
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  *         self.dm2_21 = 7.42e-5             # <<<<<<<<<<<<<<
  *         self.dm2_32 = self.dm2_31 - self.dm2_21
  *         self.dm2_42 = self.dm2_41 - self.dm2_21
@@ -4517,7 +4518,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile___init__(CYTHON_UNUSED PyOb
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_21, __pyx_float_7_42eneg_5) < 0) __PYX_ERR(0, 129, __pyx_L1_error)
 
   /* "Models.pyx":130
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  *         self.dm2_21 = 7.42e-5
  *         self.dm2_32 = self.dm2_31 - self.dm2_21             # <<<<<<<<<<<<<<
  *         self.dm2_42 = self.dm2_41 - self.dm2_21
@@ -4575,7 +4576,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile___init__(CYTHON_UNUSED PyOb
  * class PlaneWaveSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
 
   /* function exit code */
@@ -6096,7 +6097,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSterile_6oscProbability_av(CYTHON_U
  * class WavePacketSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
 
 /* Python wrapper */
@@ -6199,7 +6200,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSterile___init__(CYTHON_UNUSED PyO
  * class WavePacketSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.             # <<<<<<<<<<<<<<
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.th12 = 0.583763
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 184, __pyx_L1_error)
@@ -6235,7 +6236,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSterile___init__(CYTHON_UNUSED PyO
   /* "Models.pyx":185
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.             # <<<<<<<<<<<<<<
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.             # <<<<<<<<<<<<<<
  *         self.th12 = 0.583763
  *         self.dm2_41 = DM2_41
  */
@@ -6244,7 +6245,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSterile___init__(CYTHON_UNUSED PyO
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_arcsin); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 185, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0841)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 185, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0868525)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 185, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_5 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
@@ -6270,18 +6271,18 @@ static PyObject *__pyx_pf_6Models_17WavePacketSterile___init__(CYTHON_UNUSED PyO
 
   /* "Models.pyx":186
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.th12 = 0.583763             # <<<<<<<<<<<<<<
  *         self.dm2_41 = DM2_41
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_th12, __pyx_float_0_583763) < 0) __PYX_ERR(0, 186, __pyx_L1_error)
 
   /* "Models.pyx":187
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.th12 = 0.583763
  *         self.dm2_41 = DM2_41             # <<<<<<<<<<<<<<
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  *         self.dm2_21 = 7.42e-5
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_41, __pyx_v_DM2_41) < 0) __PYX_ERR(0, 187, __pyx_L1_error)
@@ -6289,15 +6290,15 @@ static PyObject *__pyx_pf_6Models_17WavePacketSterile___init__(CYTHON_UNUSED PyO
   /* "Models.pyx":188
  *         self.th12 = 0.583763
  *         self.dm2_41 = DM2_41
- *         self.dm2_31 = 2.4e-3             # <<<<<<<<<<<<<<
+ *         self.dm2_31 = 2.515e-3             # <<<<<<<<<<<<<<
  *         self.dm2_21 = 7.42e-5
  *         self.dm2_32 = self.dm2_31 - self.dm2_21
  */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_31, __pyx_float_2_4eneg_3) < 0) __PYX_ERR(0, 188, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_31, __pyx_float_2_515eneg_3) < 0) __PYX_ERR(0, 188, __pyx_L1_error)
 
   /* "Models.pyx":189
  *         self.dm2_41 = DM2_41
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  *         self.dm2_21 = 7.42e-5             # <<<<<<<<<<<<<<
  *         self.dm2_32 = self.dm2_31 - self.dm2_21
  *         self.dm2_42 = self.dm2_41 - self.dm2_21
@@ -6305,7 +6306,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSterile___init__(CYTHON_UNUSED PyO
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_dm2_21, __pyx_float_7_42eneg_5) < 0) __PYX_ERR(0, 189, __pyx_L1_error)
 
   /* "Models.pyx":190
- *         self.dm2_31 = 2.4e-3
+ *         self.dm2_31 = 2.515e-3
  *         self.dm2_21 = 7.42e-5
  *         self.dm2_32 = self.dm2_31 - self.dm2_21             # <<<<<<<<<<<<<<
  *         self.dm2_42 = self.dm2_41 - self.dm2_21
@@ -6384,7 +6385,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSterile___init__(CYTHON_UNUSED PyO
  * class WavePacketSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
 
   /* function exit code */
@@ -7993,7 +7994,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSM_full___init__(CYTHON_UNUSED PyOb
  *     def __init__(self):
  *         self.deltaCP = 0             # <<<<<<<<<<<<<<
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_deltaCP, __pyx_int_0) < 0) __PYX_ERR(0, 246, __pyx_L1_error)
 
@@ -8001,7 +8002,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSM_full___init__(CYTHON_UNUSED PyOb
  *     def __init__(self):
  *         self.deltaCP = 0
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.             # <<<<<<<<<<<<<<
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 247, __pyx_L1_error)
@@ -8036,7 +8037,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSM_full___init__(CYTHON_UNUSED PyOb
   /* "Models.pyx":248
  *         self.deltaCP = 0
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.             # <<<<<<<<<<<<<<
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.             # <<<<<<<<<<<<<<
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.
  *         self.dm2_31 = 2.44e-3 # eV^2
  */
@@ -8045,7 +8046,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSM_full___init__(CYTHON_UNUSED PyOb
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_arcsin); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 248, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0841)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 248, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0868525)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 248, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
@@ -8071,7 +8072,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSM_full___init__(CYTHON_UNUSED PyOb
 
   /* "Models.pyx":249
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.             # <<<<<<<<<<<<<<
  *         self.dm2_31 = 2.44e-3 # eV^2
  *         self.dm2_21 = 7.42e-5 # eV^2
@@ -8106,7 +8107,7 @@ static PyObject *__pyx_pf_6Models_16PlaneWaveSM_full___init__(CYTHON_UNUSED PyOb
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "Models.pyx":250
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.
  *         self.dm2_31 = 2.44e-3 # eV^2             # <<<<<<<<<<<<<<
  *         self.dm2_21 = 7.42e-5 # eV^2
@@ -10435,7 +10436,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSM_full___init__(CYTHON_UNUSED PyO
  *         nm = 50677.308*1e-7 # 1/eV
  *         self.deltaCP = 0             # <<<<<<<<<<<<<<
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_deltaCP, __pyx_int_0) < 0) __PYX_ERR(0, 325, __pyx_L1_error)
 
@@ -10443,7 +10444,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSM_full___init__(CYTHON_UNUSED PyO
  *         nm = 50677.308*1e-7 # 1/eV
  *         self.deltaCP = 0
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.             # <<<<<<<<<<<<<<
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 326, __pyx_L1_error)
@@ -10478,7 +10479,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSM_full___init__(CYTHON_UNUSED PyO
   /* "Models.pyx":327
  *         self.deltaCP = 0
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.             # <<<<<<<<<<<<<<
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.             # <<<<<<<<<<<<<<
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.
  *         self.dm2_31 = 2.44e-3 # eV^2
  */
@@ -10487,7 +10488,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSM_full___init__(CYTHON_UNUSED PyO
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_arcsin); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 327, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0841)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 327, __pyx_L1_error)
+  __pyx_t_1 = PyFloat_FromDouble(sqrt(0.0868525)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 327, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
@@ -10513,7 +10514,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSM_full___init__(CYTHON_UNUSED PyO
 
   /* "Models.pyx":328
  *         self.theta12 = np.arcsin(sqrt(0.846))/2.
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.             # <<<<<<<<<<<<<<
  *         self.dm2_31 = 2.44e-3 # eV^2
  *         self.dm2_21 = 7.42e-5 # eV^2
@@ -10548,7 +10549,7 @@ static PyObject *__pyx_pf_6Models_17WavePacketSM_full___init__(CYTHON_UNUSED PyO
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "Models.pyx":329
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.
  *         self.theta23 = np.arcsin(sqrt(0.999))/2.
  *         self.dm2_31 = 2.44e-3 # eV^2             # <<<<<<<<<<<<<<
  *         self.dm2_21 = 7.42e-5 # eV^2
@@ -13044,7 +13045,7 @@ static PyObject *__pyx_pf_6Models_21PlaneWaveSterile_full___init__(CYTHON_UNUSED
  *         self.delta34 = 0.
  *          #DB best fit
  *         self.theta12 = np.arcsin(sqrt(0.304))             # <<<<<<<<<<<<<<
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.  # nu-fit is sin^2theta = 0.02221
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.  # nu-fit is sin^2theta = 0.02221
  *         self.theta23 = np.arcsin(sqrt(0.570))
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 413, __pyx_L1_error)
@@ -13076,7 +13077,7 @@ static PyObject *__pyx_pf_6Models_21PlaneWaveSterile_full___init__(CYTHON_UNUSED
   /* "Models.pyx":414
  *          #DB best fit
  *         self.theta12 = np.arcsin(sqrt(0.304))
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.  # nu-fit is sin^2theta = 0.02221             # <<<<<<<<<<<<<<
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.  # nu-fit is sin^2theta = 0.02221             # <<<<<<<<<<<<<<
  *         self.theta23 = np.arcsin(sqrt(0.570))
  *         self.theta14 = np.arcsin(sqrt(r14))/2.
  */
@@ -13085,7 +13086,7 @@ static PyObject *__pyx_pf_6Models_21PlaneWaveSterile_full___init__(CYTHON_UNUSED
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_arcsin); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 414, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyFloat_FromDouble(sqrt(0.0841)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 414, __pyx_L1_error)
+  __pyx_t_3 = PyFloat_FromDouble(sqrt(0.0868525)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 414, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
@@ -13111,7 +13112,7 @@ static PyObject *__pyx_pf_6Models_21PlaneWaveSterile_full___init__(CYTHON_UNUSED
 
   /* "Models.pyx":415
  *         self.theta12 = np.arcsin(sqrt(0.304))
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.  # nu-fit is sin^2theta = 0.02221
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.  # nu-fit is sin^2theta = 0.02221
  *         self.theta23 = np.arcsin(sqrt(0.570))             # <<<<<<<<<<<<<<
  *         self.theta14 = np.arcsin(sqrt(r14))/2.
  *         self.theta24 = np.arcsin(sqrt(r24))/2.
@@ -13143,7 +13144,7 @@ static PyObject *__pyx_pf_6Models_21PlaneWaveSterile_full___init__(CYTHON_UNUSED
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "Models.pyx":416
- *         self.theta13 = np.arcsin(sqrt(0.0841))/2.  # nu-fit is sin^2theta = 0.02221
+ *         self.theta13 = np.arcsin(sqrt(0.0868525))/2.  # nu-fit is sin^2theta = 0.02221
  *         self.theta23 = np.arcsin(sqrt(0.570))
  *         self.theta14 = np.arcsin(sqrt(r14))/2.             # <<<<<<<<<<<<<<
  *         self.theta24 = np.arcsin(sqrt(r24))/2.
@@ -20728,7 +20729,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "Models.pyx":54
  * 
  * class PlaneWaveSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -20736,7 +20737,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
   __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Models_pyx, __pyx_n_s_init, 54, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 54, __pyx_L1_error)
-  __pyx_tuple__14 = PyTuple_Pack(2, ((PyObject*)__pyx_float_0_0841), ((PyObject*)__pyx_float_2_4eneg_3)); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 54, __pyx_L1_error)
+  __pyx_tuple__14 = PyTuple_Pack(2, ((PyObject*)__pyx_float_0_0868525), ((PyObject*)__pyx_float_2_515eneg_3)); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 54, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
@@ -20767,7 +20768,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "Models.pyx":88
  * # -----------------------------------------------------------
  * class WavePacketSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -20775,7 +20776,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
   __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Models_pyx, __pyx_n_s_init, 88, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 88, __pyx_L1_error)
-  __pyx_tuple__21 = PyTuple_Pack(2, ((PyObject*)__pyx_float_0_0841), ((PyObject*)__pyx_float_2_4eneg_3)); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 88, __pyx_L1_error)
+  __pyx_tuple__21 = PyTuple_Pack(2, ((PyObject*)__pyx_float_0_0868525), ((PyObject*)__pyx_float_2_515eneg_3)); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 88, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
 
@@ -20808,7 +20809,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * class PlaneWaveSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
   __pyx_tuple__26 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_Sin22Th14, __pyx_n_s_DM2_41); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 123, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__26);
@@ -20859,7 +20860,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * class WavePacketSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
   __pyx_tuple__35 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_Sin22Th14, __pyx_n_s_DM2_41, __pyx_n_s_nm); if (unlikely(!__pyx_tuple__35)) __PYX_ERR(0, 183, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__35);
@@ -21270,11 +21271,12 @@ static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
   __pyx_float_1eneg_5 = PyFloat_FromDouble(1e-5); if (unlikely(!__pyx_float_1eneg_5)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_1_267 = PyFloat_FromDouble(1.267); if (unlikely(!__pyx_float_1_267)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_0_0841 = PyFloat_FromDouble(0.0841); if (unlikely(!__pyx_float_0_0841)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __pyx_float_2_4eneg_3 = PyFloat_FromDouble(2.4e-3); if (unlikely(!__pyx_float_2_4eneg_3)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_2_5eneg_3 = PyFloat_FromDouble(2.5e-3); if (unlikely(!__pyx_float_2_5eneg_3)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_2_44eneg_3 = PyFloat_FromDouble(2.44e-3); if (unlikely(!__pyx_float_2_44eneg_3)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_7_42eneg_5 = PyFloat_FromDouble(7.42e-5); if (unlikely(!__pyx_float_7_42eneg_5)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_0_583763 = PyFloat_FromDouble(0.583763); if (unlikely(!__pyx_float_0_583763)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_float_2_515eneg_3 = PyFloat_FromDouble(2.515e-3); if (unlikely(!__pyx_float_2_515eneg_3)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_float_0_0868525 = PyFloat_FromDouble(0.0868525); if (unlikely(!__pyx_float_0_0868525)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_5_06773e6 = PyFloat_FromDouble(5.06773e6); if (unlikely(!__pyx_float_5_06773e6)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -21649,7 +21651,7 @@ if (!__Pyx_RefNanny) {
  * # -----------------------------------------------------------
  * 
  * class PlaneWaveSM:             # <<<<<<<<<<<<<<
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
  */
   __pyx_t_1 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_PlaneWaveSM, __pyx_n_s_PlaneWaveSM, (PyObject *) NULL, __pyx_n_s_Models, (PyObject *) NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
@@ -21658,7 +21660,7 @@ if (!__Pyx_RefNanny) {
   /* "Models.pyx":54
  * 
  * class PlaneWaveSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -21696,7 +21698,7 @@ if (!__Pyx_RefNanny) {
  * # -----------------------------------------------------------
  * 
  * class PlaneWaveSM:             # <<<<<<<<<<<<<<
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(np.sqrt(Sin22Th13))/2.
  */
   __pyx_t_2 = __Pyx_Py3ClassCreate(((PyObject*)&__Pyx_DefaultClassType), __pyx_n_s_PlaneWaveSM, __pyx_empty_tuple, __pyx_t_1, NULL, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 53, __pyx_L1_error)
@@ -21709,7 +21711,7 @@ if (!__Pyx_RefNanny) {
  * # Uses the approximate formula from Daya Bay. No matter effects.
  * # -----------------------------------------------------------
  * class WavePacketSM:             # <<<<<<<<<<<<<<
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
  */
   __pyx_t_1 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_WavePacketSM, __pyx_n_s_WavePacketSM, (PyObject *) NULL, __pyx_n_s_Models, (PyObject *) NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
@@ -21718,7 +21720,7 @@ if (!__Pyx_RefNanny) {
   /* "Models.pyx":88
  * # -----------------------------------------------------------
  * class WavePacketSM:
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):             # <<<<<<<<<<<<<<
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):             # <<<<<<<<<<<<<<
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
  *         self.th12 = 0.583763
  */
@@ -21756,7 +21758,7 @@ if (!__Pyx_RefNanny) {
  * # Uses the approximate formula from Daya Bay. No matter effects.
  * # -----------------------------------------------------------
  * class WavePacketSM:             # <<<<<<<<<<<<<<
- *     def __init__(self,Sin22Th13 = 0.0841,DM2_31 = 2.4e-3):
+ *     def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
  *         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
  */
   __pyx_t_2 = __Pyx_Py3ClassCreate(((PyObject*)&__Pyx_DefaultClassType), __pyx_n_s_WavePacketSM, __pyx_empty_tuple, __pyx_t_1, NULL, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 87, __pyx_L1_error)
@@ -21780,7 +21782,7 @@ if (!__Pyx_RefNanny) {
  * class PlaneWaveSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
   __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6Models_16PlaneWaveSterile_1__init__, 0, __pyx_n_s_PlaneWaveSterile___init, NULL, __pyx_n_s_Models, __pyx_d, ((PyObject *)__pyx_codeobj__27)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 123, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -21852,7 +21854,7 @@ if (!__Pyx_RefNanny) {
  * class WavePacketSterile:
  *     def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):             # <<<<<<<<<<<<<<
  *         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
- *         self.th13 = np.arcsin(sqrt(0.0841))/2.
+ *         self.th13 = np.arcsin(sqrt(0.0868525))/2.
  */
   __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6Models_17WavePacketSterile_1__init__, 0, __pyx_n_s_WavePacketSterile___init, NULL, __pyx_n_s_Models, __pyx_d, ((PyObject *)__pyx_codeobj__36)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 183, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
