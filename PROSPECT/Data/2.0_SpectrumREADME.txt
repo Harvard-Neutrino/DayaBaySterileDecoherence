@@ -1,0 +1,20 @@
+The PROSPECT spectrum supplementary files include the data, response matrix, predicted spectrum, and absolute covariance matrix. Energy binning is generally done in 200keV wide bins from 0.8 to 7.2MeV. All files are presented in comma-separated-variable format, with # used to indicate comments/headers.
+
+# 2.1_SpectrumData.txt
+The final spectrum used in the analysis, with reactor exposure of 6991 MW-days
+The data are reported in 32 200keV wide bins from 0.8MeV to 7.2MeV
+Columns are: Bin Center, IBD Spectrum, IBD Stat Unc, Background Spectrum, Background Stat Unc
+
+# 2.2_ResponseMatrix.txt
+The response matrix used to covert from true neutrino energy into reconstructed visible energy, including all known detector effects.
+Data are reported in a 200x200 matrix with 50keV wide bins from 0 to 10MeV
+
+# 2.3_HFIRSpectrumPrediction.txt
+The predicted spectrum in prompt space, including HFIR-specific contributions from 28Al, 6He, and Non-equilibrium isotopes.
+Data are reported in 32 200keV wide bins from 0.8MeV to 7.2MeV.
+Columns are: Bin Center, Combined Counts/bin, Huber U235, 28Al, 6He, Non-Equilibrium
+
+# 2.4_CovarianceMatrix.txt
+The absolute covariance matrix representing all systematic and statistical uncertainties, correlated and uncorrelated.
+See text for details of each component taken into consideration.
+Data are reported in a 32x32 matrix with 200keV wide bins from 0.8 to 7.2MeV

@@ -1,0 +1,37 @@
+Prospect Oscillation Analysis defined 10 baseline bins based on even statistics
+the edges of the binning are:
+[6.65826,7.35108,7.49064,7.67506,7.78471,7.96415,8.06882,8.18346,8.30308,8.52737,9.2501]
+
+# 1.1_Osc_SegmentMap.txt
+PROSPECT Baseline Segment map
+Data are reported in:
+Baseline Bin, Baseline (meters), Segment index, X Segment index, Y Segment index
+
+# 1.2_Osc_CovarianceMatrix.txt
+PROSPECT Covariance Matrix
+Data are reported in a 160x160 matrix (10 baselines bins times 16 energy bins)
+Energy with 400keV wide bins from 0.8 to 7.2MeV, and 10 baseline bins
+
+# 1.3_Osc_DetResponse[segment].txt
+PROSPECT Detector Response Matrix (Etrue to Erec)
+Data are reported a normalize matrix for every active segment.
+True Neutrino Energy: X axis contains 82 bins, with 100keV wide bins from 1.8 to 10MeV
+Prompt Energy: Y axis contains 16 bins, with 400keV wide bins from 0.8 to 7.2MeV
+
+
+# 1.4_Osc_Prompt[segment].txt
+PROSPECT Prompt distribution
+Data are reported a spectrum for every active segment
+Prompt Energy contains 16 bins from 0.8 to 7.2MeV (400kEv bin width)
+Errors given in these table are reflected in #1.2_Osc_CovarianceMatrix
+Bin Center, Background subtracted IBD counts, Total Stats Error, Background Spectrum counts, Background Stats Error
+
+# 1.5_Osc_RelativeEfficiencies.txt
+PROSPECT Relative Efficiencies
+Data are reported the relative efficiency for every active segment
+X segment index, Z segment index, Relative Efficiency
+
+# 1.6_Osc_NullOscPred[Baselinebin].txt
+PROSPECT Predicted Null Oscillation
+Data are reported the predicted null oscillation spectrum for every baseline
+Bin Center, Bin Content
