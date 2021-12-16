@@ -33,3 +33,4 @@
 
 # Python cache
 *.pyc
+*-checkpoint.ipynb
