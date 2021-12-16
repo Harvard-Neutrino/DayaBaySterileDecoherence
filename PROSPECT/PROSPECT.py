@@ -31,9 +31,9 @@ class Prospect:
         # This is the normalisation to match the PROSPECT data of expected events without oscillations (assuming no sterile osc).
         # In principle, we leave that each baseline has its own normalisation factor, because it has a different
         # number and characterstics of segments. However, the values are similar because of the construction of the experiment.
-        self.TotalNumberOfProtons = {1: 7.90485e+48, 2: 7.91115e+48, 3: 7.82036e+48, 4: 7.83318e+48, 5: 7.78405e+48,
-                                     6: 7.69496e+48, 7: 7.66413e+48, 8: 7.72670e+48, 9: 7.77459e+48, 10: 7.77016e+48}
-        # self.TotalNumberOfProtonsDB = 1.06406e06#*180/(180-46)
+        self.TotalNumberOfProtons = {1: 7.90080e+48, 2: 7.907335e+48, 3: 7.816715e+48, 4: 7.82966e+48, 5: 7.78062e+48,
+                                     6: 7.69161e+48, 7: 7.660865e+48, 8: 7.723525e+48, 9: 7.77155e+48, 10: 7.76728e+48}
+                # self.TotalNumberOfProtonsDB = 1.06406e06#*180/(180-46)
 
         self.sets_names = PROSP.exp_names
         self.reactor_names  = PROSP.reac_names
@@ -168,19 +168,18 @@ class Prospect:
 
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
-        # We allow for the possibility of custom bins, using the argument bins
 
         W = self.get_width(segment) # in meters, the detector total width is 2W
-        # ndL = 10 # We only integrate through L with three points. It is probably enough.
-        ndL = 1 #We prefer not to integrate in L yet.
-        dL = W# dL = (2*W)/(ndL-1)
+        ndL = 5 # We only integrate through L with three points. It is probably enough.
+        # ndL = 1 #We prefer not to integrate in L yet.
+        dL = (2*W)/(ndL-1)
 
         for reactor in self.reactor_names:
             Lmin = self.get_distance(segment,reactor) - W
             Lmax = self.get_distance(segment,reactor) + W
 
             for j in range(ndL):
-                L = Lmin + j*dL +W # Comment this +W if you want to perform the integration in L.
+                L = Lmin + j*dL #+W # Comment this +W if you want to perform the integration in L.
 
                 for etf in range(0,len(self.FromEtrueToErec[segment][0])):
                     enu = (etf+0.5)*self.deltaEtfine + ThresholdEnergy
@@ -194,8 +193,8 @@ class Prospect:
                                             for isotope in self.isotopes_to_consider]))
 
                     # Here we perform trapezoidal integration, the extremes contribute 1/2.
-                    if ((etf == 0) or (etf == len(self.FromEtrueToErec[segment][1])-1)):
-                        # (j == 0) or (j == ndL - 1)):
+                    if ((etf == 0) or (etf == len(self.FromEtrueToErec[segment][1])-1) or
+                        (j == 0) or (j == ndL - 1)):
                         expectation += (flux * self.get_cross_section(enu) *
                                         self.FromEtrueToErec[segment][i][etf] * oscprob)/L**2/2.
                     else:
@@ -210,10 +209,10 @@ class Prospect:
             # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
             # the dL is to implement a trapezoidal numeric integration in L
             # we divide by the total width 2W because we want an intensive quantity! It is an average, not a total sum.
-        return expectation*self.deltaEtfine*self.EfficiencyOfHall[segment]
+        return expectation*self.deltaEtfine*self.EfficiencyOfHall[segment]*dL/(2*W)
 
 
-    def integrand(self,enu,L,model,erf,etf, use_HM = True):
+    def integrand(self,enu,L,model,segment,erf,etf):
         """
         This function returns the integrand of formula (A.2) from 1709.04294.
 
@@ -224,20 +223,16 @@ class Prospect:
         model: the model with which to compute the oscillation probability.
         """
         # Computes the HM flux for all isotopes
-        if use_HM == True:
-            # For the GlobalFit, it is necessary to use HM flux.
-            flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
+        flux = np.sum(np.array([self.get_flux(enu,isotope)*self.mean_fission_fractions[isotope]
                                     for isotope in self.isotopes_to_consider]))
-        else:
-            flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
 
         return (flux*
                 self.get_cross_section(enu) *
-                self.FromEtrueToErec[erf][etf] *
+                self.FromEtrueToErec[segment][erf][etf] *
                 model.oscProbability(enu,L))
 
 
-    def calculate_naked_event_expectation_integr(self,model,set_name,i):
+    def calculate_naked_event_expectation_integr(self,model,segment,i):
         """
         This function implements formula (A.2) from 1709.04294.
         Here we don't neglect the width of the detector, and integrate over it.
@@ -253,68 +248,55 @@ class Prospect:
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
+        ThresholdEnergy = 1.806
 
         expectation = 0.0
+
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
-        # We allow for the possibility of custom bins, using the argument bins
-        if isinstance(bins,np.ndarray): #Check whether the user has introduced a numpy array of custom bins
-            min_energy_fine_index = self.FindFineBinIndex(bins[:-1][i])
-            max_energy_fine_index = self.FindFineBinIndex(bins[ 1:][i])
-        else:
-            min_energy_fine_index = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-            max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
-        W = self.get_width(set_name) # in meters, the detector total width is 2W
-        ndL = 10 # We only integrate through L with three points. It is probably enough.
+        W = self.get_width(segment) # in meters, the detector total width is 2W
+        ndL = 5 # We only integrate through L with three points. It is probably enough.
         dL = (2*W)/(ndL-1)
 
 
         for reactor in self.reactor_names:
-            Lmin = self.get_distance(set_name,reactor) - W
-            Lmax = self.get_distance(set_name,reactor) + W
+            Lmin = self.get_distance(segment,reactor) - W
+            Lmax = self.get_distance(segment,reactor) + W
 
             for j in range(ndL):
                 L = Lmin + j*dL
 
-                for erf in range(min_energy_fine_index,max_energy_fine_index):
+                # for erf in range(min_energy_fine_index,max_energy_fine_index):
 
-                    for etf in range(0,len(self.FromEtrueToErec[1])):
-                        enu_min = (etf)*self.deltaEfine
-                        enu_max = (etf+1)*self.deltaEfine # in MeV
+                for etf in range(0,len(self.FromEtrueToErec[segment][0])):
+                    enu_min = (etf)*self.deltaEtfine + ThresholdEnergy
+                    enu_max = (etf+1)*self.deltaEtfine + ThresholdEnergy # in MeV
 
-                        if ((erf == min_energy_fine_index) or (erf == max_energy_fine_index-1) or
-                            (j == 0) or (j == ndL - 1)):
-                            expectation += integrate.quad(self.integrand,enu_min,enu_max,
-                                                          args=(L,model,erf,etf,use_HM))[0]/L**2/2
-                        else:
-                            expectation += integrate.quad(self.integrand,enu_min,enu_max,
-                                                          args=(L,model,erf,etf,use_HM))[0]/L**2
-                    # isotope loop ends
+                    if ((j == 0) or (j == ndL - 1)):
+                        expectation += integrate.quad(self.integrand,enu_min,enu_max,
+                                                      args=(L,model,segment,i,etf))[0]/L**2/2
+                    else:
+                        expectation += integrate.quad(self.integrand,enu_min,enu_max,
+                                                      args=(L,model,segment,i,etf))[0]/L**2
+                # isotope loop ends
 
-                # real antineutrino energies loop ends
+            # real antineutrino energies loop ends
 
-            # reconstructed energies loop ends
+            # # reconstructed energies loop ends
             # only one trapezoidal numeric integration has been done
 
         # reactor loop ends
-        if use_HM == True:
-            TotalNumberOfProtons = self.TotalNumberOfProtonsHM
-        else:
-            TotalNumberOfProtons = self.TotalNumberOfProtonsDB
-        return expectation*self.deltaEfine*dL/(2*W)*self.EfficiencyOfHall[set_name]*TotalNumberOfProtons
+        return expectation*dL/(2*W)*self.EfficiencyOfHall[segment]
 
     def get_baseline_expectation(self,model,baseline,do_we_integrate = False, do_we_average = False):
         exp = np.zeros(self.n_bins)
 
         if do_we_integrate == False:
-            # Once we know we don't integrate, we check whether the user has introduced a custom binning
             for segment in self.Baselines[baseline]:
                 exp += np.array([self.calculate_naked_event_expectation_simple(model,segment,i, do_we_average = do_we_average) for i in range(0,self.n_bins)])
 
         else:
-            # Once we know we don't integrate, we check whether the user has introduced a custom binning
-            exp = np.zeros(self.n_bins)
             for segment in self.Baselines[baseline]:
                 exp += np.array([self.calculate_naked_event_expectation_integr(model,segment,i) for i in range(0,self.n_bins)])
 
@@ -359,6 +341,7 @@ class Prospect:
         number of events of "events" is the same as the one from NEOS data.
         """
         TotalNumberOfEvents = []
+
         for baseline in self.Baselines:
             TotalNumberOfEvents.append(np.sum(self.PredictedData[baseline]))
 
@@ -370,7 +353,7 @@ class Prospect:
         norm = np.array(TotalNumberOfEvents)/np.sum(events,axis = 1)
         norm = dict([(bl,norm[bl-1]) for bl in self.Baselines])
 
-        # print('norm: ', norm)
+        print('norm: ', norm)
         return norm
 
 
@@ -391,6 +374,7 @@ class Prospect:
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = do_we_integrate, do_we_average = do_we_average)
 
         # exp_events = dict([(set_name,exp_events[set_name] +self.PredictedBackground[set_name]) for set_name in self.sets_names])
+        self.normalization_to_data(exp_events)
 
         # For the NEOS single fit, there are no nuissance parameters. We just return the data.
         # model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),
@@ -429,33 +413,21 @@ class Prospect:
 # BUILDING THE COVARIANCE MATRIX
 # ----------------------------------------------------------
 
-    def get_total_covariance_matrix(self):
+    def get_covariance_matrix(self):
         """
         Returns a numpy array with the total covariance matrix in prompt energy,
-        taking into account both systematic and statistical errors,
-        normalised to match the systematic errors from figure 3(c) in 1610.05134.
-        Therefore, it is not normalised to N.
-        For more information on the correlation matrix, check NEOSParameters.py
+        taking into account both systematic and statistical errors.
 
-        This function is not in use, just as a demonstration on how one can
-        construct the covariance matrix from the correlation matrix and the stat. errors.
+        This function is not in use.
         """
-        corr_mat = self.NeutrinoCorrelationMatrix
-        syst_err = self.RatioSystError['NEOS']
-        syst_err = np.tile(syst_err,(len(syst_err),1))*(np.tile(syst_err,(len(syst_err),1)).transpose())
-
-        stat_err = self.RatioStatError['NEOS']**2*np.identity(self.n_bins)
-        # np.savetxt('NeutrinoCovMatrix.dat',corr_mat*syst_err+stat_err,delimiter = ',')
-        return corr_mat*syst_err+stat_err
+        return self.CovarianceMatrix
 
     def get_inverse_covariance_matrix(self):
         """
         Returns the inverse total covariance matrix.
         For more information, check the function get_total_covariance_matrix.
         """
-        return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
-
-
+        return np.linalg.inv(np.array(self.CovarianceMatrix))
 
 
 # ----------------------------------------------------------
@@ -463,7 +435,7 @@ class Prospect:
 # ----------------------------------------------------------
 
 
-    def get_chi2(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
+    def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
         """
         Computes the "chi2" value from the total number of events in figure 3(a),
         using the covariance matrix provided in NEOSParameters.py
@@ -474,85 +446,23 @@ class Prospect:
         Output: (float) the chi2 value.
         """
         Vinv = self.get_inverse_covariance_matrix()
-        # norm = self.PredictedData['NEOS']
-        modelSM = Models.PlaneWaveSM()
-        # To be rigorous, this should be PlaneWaveSM or WavePacketSM depending on what we're doing.
-        # Don't think this will make much of a mess.
-        norm = self.get_expectation(modelSM, use_HM = use_HM)['NEOS'][:,0]
-        Vinv /= np.tile(norm,(len(norm),1))*(np.tile(norm,(len(norm),1)).transpose())
-        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)
-        Data = self.ObservedData
-        chi2 = 0.
-        for set_name in self.sets_names:
-            exp_i = Exp[set_name][:,0]#+Bkg[set_name]
-            dat_i = Data[set_name]
-            chi2 += (dat_i-exp_i).dot(Vinv.dot(dat_i-exp_i))
 
+        Data = self.get_data_per_baseline()
+        Data = np.array([Data[bl] for bl in self.Baselines])
+        Data_sum = np.repeat(np.sum(Data, axis = 1),16)
+        Data = Data.flatten()
+
+        # Prediction from PROSPECT, has a chi2 = 129.
+        # exp_events = self.PredictedData
+        # exp_events = np.array([exp_events[bl] for bl in self.Baselines]).flatten()
+
+        # Our prediction
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = do_we_integrate, do_we_average = do_we_average)
+
+
+        Events_sum = np.repeat(np.sum(exp_events.reshape((10,16)), axis = 1),16)
+
+        x = Data-Data_sum*exp_events/Events_sum
+
+        chi2 = x.dot(Vinv.dot(x))
         return chi2
-
-    def get_chi2_ratio(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
-        """
-        Computes the "chi2" value from the ratio of the expected events to DB in figure 3(c),
-        using the covariance matrix provided in NEOSParameters.py
-
-        Input:
-        model: a model from Models.py for which to compute the expected number of events.
-
-        Output: (float) the chi2 value.
-        """
-        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)['NEOS']
-        modelSM = Models.PlaneWaveSM()
-        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
-        teo = Exp[:,0]/ExpSM[:,0]
-        ratio = self.RatioData['NEOS']
-        Vinv = self.get_inverse_covariance_matrix()
-
-        return (teo-ratio).dot(Vinv.dot(teo-ratio))
-
-    def get_both_chi2(self, model, integrate = False, average = False, use_HM = True):
-        """
-        Computes the "chi2" value from both figures 3(a) and 3(c),
-        using the covariance matrix provided in NEOSParameters.py
-
-        Input:
-        model: a model from Models.py for which to compute the expected number of events.
-
-        Output: (float) a tuple with the values of the 3(a) chi2 and the 3(c) chi2.
-        """
-        modelSM = Models.PlaneWaveSM()
-        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)
-        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
-        Data = self.ObservedData
-        ratio = self.RatioData
-
-        chi2 = 0.0
-        chi2_ratio = 0.0
-        for set_name in self.sets_names:
-            Vinv_r = self.get_inverse_covariance_matrix()
-            Vinv = Vinv_r/(np.tile(ExpSM[set_name][:,0],(len(ExpSM[set_name][:,0]),1))*(np.tile(ExpSM[set_name][:,0],(len(ExpSM[set_name][:,0]),1)).transpose()))
-            chi2 += (Data[set_name]-Exp[set_name][:,0]).dot(Vinv.dot(Data[set_name]-Exp[set_name][:,0]))
-            chi2_ratio += (ratio[set_name]-Exp[set_name][:,0]/ExpSM[set_name][:,0]).dot(Vinv_r.dot(ratio[set_name]-Exp[set_name][:,0]/ExpSM[set_name][:,0]))
-
-        return (chi2,chi2_ratio)
-
-
-    # def get_poisson_chi2(self,model, integrate = False, average = False, use_HM = True):
-    #     """
-    #     Computes the "chi2" value from the Poisson probability, fitting the total number of events in figure 3(a).
-    #
-    #     Input:
-    #     model: a model from Models.py for which to compute the expected number of events.
-    #
-    #     Output: (float) the log Poisson "chi2" value.
-    #     """
-    #     # Honestly, have never tried this. Probably, it should work.
-    #     Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
-    #     Data = self.ObservedData
-    #
-    #     TotalLogPoisson = 0.0
-    #     for set_name in self.sets_names:
-    #         lamb = Exp[set_name][:,0]#+Bkg[set_name]
-    #         k = Data[set_name]
-    #         TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
-    #
-    #     return -2*np.sum(TotalLogPoisson)

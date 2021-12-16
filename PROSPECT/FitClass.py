@@ -3,7 +3,7 @@ import os
 common_dir = '/Common_cython'
 sys.path.append(os.getcwd()[:-9]+common_dir)
 
-import NEOS
+import PROSPECT as PS
 import Models
 import time
 
@@ -11,12 +11,11 @@ import numpy as np
 
 class StandardModelFit:
 
-    def __init__(self, wave_packet = False, use_HM = True):
+    def __init__(self, wave_packet = False):
         # The wave packet argument will tell us whether to fit the data
         # according to the wave packet formalism or not (plane wave).
         self.WavePacket = wave_packet
-        self.fitter = NEOS.Neos()
-        self.UseHM = use_HM
+        self.fitter = PS.Prospect()
 
 
     def getChi2(self,mass,angl):
@@ -34,7 +33,7 @@ class StandardModelFit:
             model = Models.PlaneWaveSM(Sin22Th13 = angl,DM2_ee = mass)
         elif self.WavePacket == True:
             model = Models.WavePacketSM(Sin22Th13 = angl,DM2_ee = mass)
-        chi2 = self.fitter.get_poisson_chi2(model, use_HM = self.UseHM)
+        chi2 = self.fitter.get_chi2(model)
         print(mass,angl,chi2)
         return chi2
 
@@ -59,12 +58,11 @@ class StandardModelFit:
 
 class SterileFit:
 
-    def __init__(self, wave_packet = False, use_HM = True):
+    def __init__(self, wave_packet = False):
         # The wave packet argument will tell us whether to fit the data
         # according to the wave packet formalism or not (plane wave).
         self.WavePacket = wave_packet
-        self.fitter = NEOS.Neos()
-        self.UseHM = use_HM
+        self.fitter = PS.Prospect()
 
     def what_do_we_do(self,mass):
         """
@@ -79,16 +77,12 @@ class SterileFit:
         Output:
         A boolean dictionary with first key 'DB'/'NEOS' and second key 'integrate'/'average'
         """
-        if mass <= 0.15:
-            return {'DB':{'integrate':False,'average':False},'NEOS':{'integrate':False,'average':False}}
-        elif (mass > 0.15) and (mass <= 1.):
-            return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':False,'average':False}}
-        elif (mass > 1.) and (mass <= 2.):
-            return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':True,'average':False}}
-        elif (mass > 2.) and (mass <= 10.):
-            return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':True,'average':False}}
-        elif (mass > 10.):
-            return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':False,'average':True}}
+        if mass <= 2:
+            return {'PROSPECT':{'integrate':False,'average':False}}
+        elif (mass > 2) and (mass <= 20.):
+            return {'PROSPECT':{'integrate':True,'average':False}}
+        elif (mass > 20.):
+            return {'PROSPECT':{'integrate':False,'average':True}}
 
     def getChi2(self,mass,angl):
         """
@@ -107,8 +101,8 @@ class SterileFit:
             model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
 
         wdwd = self.what_do_we_do(mass)
-        chi2 = self.fitter.get_both_chi2(model,integrate = wdwd['NEOS']['integrate'], average = wdwd['NEOS']['average'], use_HM = self.UseHM)
-        print(mass,angl,chi2[0],chi2[1])
+        chi2 = self.fitter.get_chi2(model,do_we_integrate = wdwd['PROSPECT']['integrate'], do_we_average = wdwd['PROSPECT']['average'])
+        print(mass,angl,chi2)
         return chi2
 
     def write_data_table(self,mass_ax,angl_ax,filename):
@@ -124,7 +118,7 @@ class SterileFit:
         for m in mass_ax:
             for a in angl_ax:
                 chi2 = self.getChi2(m,a)
-                file.write('{0:1.5f},{1:1.5f},{2:7.4f},{3:7.4f}\n'.format(m,a,chi2[0],chi2[1]))
+                file.write('{0:1.5f},{1:1.5f},{2:7.4f}\n'.format(m,a,chi2))
         file.close()
 
 

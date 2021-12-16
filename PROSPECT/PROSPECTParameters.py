@@ -62,7 +62,7 @@ baselines = dict([(bl,active_segment_map[active_segment_map[:,0] == bl][:,2].ast
 # Since the detector is quite near, in principle we cannot consider the segments puntual,
 # we must integrate over their width.
 # We can approximate each segment by a 30cm cube. Physics in a nutshell!
-segment_width = 0.30/2 # this is half-width of each segment.
+segment_width = 0.50/2 # this is half-width of HFIR reactor.
 width = dict([(segment,segment_width) for segment in active_segments])
 # We still need to check if this will be of any use
 
