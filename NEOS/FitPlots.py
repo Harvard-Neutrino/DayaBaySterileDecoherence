@@ -167,7 +167,7 @@ figNH,axNH = plt.subplots(figsize = size, gridspec_kw = margins)
 
 conts = axNH.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,index_chi]-null_hyp_WP),levels = [2.30,6.18,11.83],  colors = [color1,color2,color3])
 axNH.scatter(bestfit[1],bestfit[0],marker = '+', label = 'Our best fit')
-# axNH.scatter(data_WP[:,1],data_WP[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
+axNH.scatter(data_WP[:,1],data_WP[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
 
 stylize(axNH,conts)
 
