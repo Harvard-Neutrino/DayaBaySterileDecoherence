@@ -11,11 +11,12 @@ import time
        #              1.49255018, 1.55653058, 1.62325359, 1.69283678, 1.76540275,
        #              1.84107938, 1.92      ]
 
-masses = np.logspace(0,1,6)
+masses = np.logspace(0,1,3)
+
 
 i = 0
-datangl1 = np.logspace(np.log10(4e-3),0,80)
-datmass1 = np.logspace(np.log10(masses[i]),np.log10(masses[i+1]*9/10),10)
+datangl1 = np.logspace(np.log10(4e-3),0,70)
+datmass1 = np.logspace(np.log10(masses[i]),np.log10(masses[i+1]*9.9/10),60)
 
 
 

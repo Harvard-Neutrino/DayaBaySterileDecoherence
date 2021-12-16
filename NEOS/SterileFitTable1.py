@@ -11,12 +11,11 @@ import time
        #              1.49255018, 1.55653058, 1.62325359, 1.69283678, 1.76540275,
        #              1.84107938, 1.92      ]
 
-datangl1 = np.logspace(np.log10(4e-3),0,80)
-datmass1 = np.logspace(np.log10(0.08),0,80)
-
+datangl1 = np.logspace(np.log10(4e-3),0,160)
+datmass1 = np.logspace(np.log10(0.08),0,160)
 
 begin = time.time()
-fit = FC.SterileFit(wave_packet = False, use_HM = False)
-fit.write_data_table(datmass1,datangl1,'PWSterileChi2_1.dat')
+fit = FC.SterileFit(wave_packet = False, use_HM = False) # S'HA DE REPETIR!!
+fit.write_data_table(datmass1,datangl1,'PWSterileChi2_1_dedebo.dat')
 end = time.time()
 print('Time = '+str(end-begin)[:6]+' s.')

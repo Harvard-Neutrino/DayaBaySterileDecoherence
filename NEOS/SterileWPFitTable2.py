@@ -11,13 +11,14 @@ import time
        #              1.49255018, 1.55653058, 1.62325359, 1.69283678, 1.76540275,
        #              1.84107938, 1.92      ]
 
-masses = np.logspace(0,1,6)
+masses = np.logspace(0,1,4)
 
 i = 0
-datangl1 = np.logspace(np.log10(4e-3),0,80)
-datmass1 = np.logspace(np.log10(masses[i]),np.log10(masses[i+1]*9/10),10)
+datangl1 = np.logspace(np.log10(4e-3),0,50)
+datmass1 = np.logspace(np.log10(masses[i]),np.log10(masses[i+1]*9/10),45)
 
-
+datangl1 = np.logspace(np.log10(0.02),np.log10(0.4),50)
+datmass1 = np.logspace(np.log10(1.95),np.log10(2.1),5)
 
 begin = time.time()
 fit = FC.SterileFit(wave_packet = True, use_HM = False)
