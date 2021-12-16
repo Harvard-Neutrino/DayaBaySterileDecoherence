@@ -419,7 +419,7 @@ class Neos:
         """
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
-        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = False, use_HM = use_HM)
+        exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = average, use_HM = use_HM)
 
         norm = self.normalization_to_data(exp_events) # This should only be allowed for NEOS only fit.
         exp_events = dict([(set_name,exp_events[set_name]*norm[set_name] +self.PredictedBackground[set_name]) for set_name in self.sets_names])
@@ -486,7 +486,7 @@ class Neos:
         # norm = self.PredictedData['NEOS']
         modelSM = Models.PlaneWaveSM()
         # To be rigorous, this should be PlaneWaveSM or WavePacketSM depending on what we're doing.
-        # Don't think this will make much of a mess. 
+        # Don't think this will make much of a mess.
         norm = self.get_expectation(modelSM, use_HM = use_HM)['NEOS'][:,0]
         Vinv /= np.tile(norm,(len(norm),1))*(np.tile(norm,(len(norm),1)).transpose())
         Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)

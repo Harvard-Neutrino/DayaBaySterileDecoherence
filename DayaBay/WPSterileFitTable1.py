@@ -3,8 +3,8 @@ import numpy as np
 import time
 
 
-datangl1 = np.logspace(np.log10(0.375),-0.02,7)
-datmass1 = np.logspace(np.log10(0.26),np.log10(0.6),6)
+datmass1 = np.logspace(-4,np.log10(0.1499),120)
+datangl1 = np.logspace(-3,np.log10(0.8),120)
 
 dir = 'PlotData/'
 
