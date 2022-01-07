@@ -75,18 +75,14 @@ class SterileFit:
         mass: the value of Delta m^2_{41} of the sterile neutrino.
 
         Output:
-        A boolean dictionary with first key 'DB'/'NEOS' and second key 'integrate'/'average'
+        A boolean dictionary with key 'integrate'/'average'
         """
         if mass <= 0.15:
-            return {'DB':{'integrate':False,'average':False},'NEOS':{'integrate':False,'average':False}}
-        elif (mass > 0.15) and (mass <= 1.):
-            return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':False,'average':False}}
-        elif (mass > 1.) and (mass <= 2.):
-            return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':True,'average':False}}
-        elif (mass > 2.) and (mass <= 10.):
-            return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':True,'average':False}}
-        elif (mass > 10.):
-            return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':False,'average':True}}
+            return {'integrate':False,'average':False}
+        elif (mass > 0.15) and (mass <= 2.):
+            return {'integrate':True, 'average':False}
+        elif (mass > 2.):
+            return {'integrate':False,'average':True}
 
     def getChi2(self,mass,angl):
         """
@@ -105,7 +101,7 @@ class SterileFit:
             model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
 
         wdwd = self.what_do_we_do(mass)
-        chi2 = self.fitter.get_poisson_chi2(model,do_we_integrate = wdwd['DB']['integrate'], do_we_average = wdwd['DB']['average'])
+        chi2 = self.fitter.get_poisson_chi2(model,do_we_integrate = wdwd['integrate'], do_we_average = wdwd['average'])
         print(mass,angl,chi2)
         return chi2
 
@@ -123,18 +119,3 @@ class SterileFit:
             for a in angl_ax:
                 file.write('{0:1.8f},{1:1.5f},{2:7.4f}\n'.format(m,a,self.getChi2(m,a)))
         file.close()
-
-
-# -----------------------------------------------------------------------
-# Best-fit from DayaBay
-# mass = 2.5e-3,angl = 0.0841
-
-# datmass = np.logspace(-2,1,3)
-# datangl = np.logspace(-3,0,3)
-# print(datmass,datangl)
-#
-# begin = time.time()
-# fit = SterileGlobalFit()
-# fit.write_data_table(datmass,datangl,'SMPWSterileChi2_new.dat')
-# end = time.time()
-# print('Time = '+str(end-begin)[:6]+' s.')

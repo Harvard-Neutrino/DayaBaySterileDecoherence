@@ -1,9 +1,5 @@
 #!/usr/bin/python3
 import time
-# import sys
-# import os
-# common_dir = '/Common_cython'
-# sys.path.append(os.getcwd()[:-8]+common_dir)
 
 import DayaBay as DB
 import Models
@@ -11,19 +7,15 @@ import Models
 import numpy as np
 import matplotlib.pyplot as plt
 
-# cwd = os.getcwd()
-# path_to_style=cwd+'/Figures'
-# plt.style.use(path_to_style+r"/paper.mplstyle")
-# matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
-
+# We load the models we want to compute the expectations for
 fitter = DB.DayaBay()
 Model_noosc = Models.NoOscillations()
 Model_osc = Models.PlaneWaveSM()
 # Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.06*0
-dm2 = 0.5*0
+sin2 = 0.06
+dm2 = 0.5
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
@@ -33,39 +25,41 @@ Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
 def what_do_we_do(mass):
-    """Mass must be in eV^2. """
+    """Mass must be in eV^2.
+
+    This functions tells us whether to integrate or to average
+    the oscillations for the given mass squared.
+    The limits of the regimes are approximate.
+    """
     if mass <= 0.15:
-        return {'DB':{'integrate':False,'average':False},'NEOS':{'integrate':False,'average':False}}
-    elif (mass > 0.15) and (mass <= 1.):
-        return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':False,'average':False}}
-    elif (mass > 1.) and (mass <= 2.):
-        return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':True,'average':False}}
-    elif (mass > 2.) and (mass <= 10.):
-        return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':True,'average':False}}
-    elif (mass > 10.):
-        return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':False,'average':True}}
+        return {'integrate':False,'average':False}
+    elif (mass > 0.15) and (mass <= 2.):
+        return {'integrate':True, 'average':False}
+    elif (mass > 2.):
+        return {'integrate':False,'average':True}
 
 wdwd = what_do_we_do(dm2)
 begin_time = time.time()
 predDB = fitter.get_expectation(Model_osc)
-pred = fitter.get_expectation(Model_ste, integrate = wdwd['DB']['integrate'], average = wdwd['DB']['average'])
+pred = fitter.get_expectation(Model_ste, integrate = wdwd['integrate'], average = wdwd['average'])
 end_time = time.time()
-print(begin_time-end_time)
+print(begin_time-end_time) # Prints the time the computation has taken
 
 
+# We compute the chi^2 to each experimental hall, separately
 chi2_per_exp = []
 for exp in fitter.sets_names:
     evex = pred[exp][:,0]
     data = fitter.ObservedData[exp]
     chi2_per_exp.append(np.sum(-2*(data-evex+data*np.log(evex/data))))
 
+# We define the prompt energy bins
+x_ax = (fitter.DataLowerBinEdges+fitter.DataUpperBinEdges)/2
+deltaE = (fitter.DataUpperBinEdges-fitter.DataLowerBinEdges)
 
 # -------------------------------------------------------
 # Event expectations
 # -------------------------------------------------------
-
-x_ax = (fitter.DataLowerBinEdges+fitter.DataUpperBinEdges)/2
-deltaE = (fitter.DataUpperBinEdges-fitter.DataLowerBinEdges)
 
 figev,axev = plt.subplots(1,len(fitter.sets_names),figsize = (20,8),gridspec_kw=dict(left=0.05, right=0.98,bottom=0.1, top=0.91))
 
@@ -90,10 +84,10 @@ for i in range(len(fitter.sets_names)):
     axev[i].title.set_text(fitter.sets_names[i])
     axev[i].legend(loc="upper right",fontsize=16)
 
-# figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
-# figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
+
+
 
 # ----------------------------------------------
 # EVENT EXPECTATIONS RATIO, HEAVY STERILE VS SM
@@ -105,9 +99,7 @@ for i in range(len(fitter.sets_names)):
     set = fitter.sets_names[i]
     ste_dat = pred[set][:,0]
     SM_dat = predDB[set][:,0]
-    # ste_err = pred[set][:,1]
-    # SM_err = predDB[set][:,1]
-    # yerr = ste_err/SM_dat + ste_dat*SM_err/SM_dat**2
+
     axev[i].errorbar(x_ax,ste_dat/SM_dat, xerr = 0.1, label = "Heavy sterile/SM", fmt = "_", elinewidth = 2)
     axev[i].plot(x_ax,np.ones([fitter.n_bins]),linestyle = 'dashed')
     axev[i].errorbar(x_ax,fitter.ObservedData[set]/SM_dat, yerr = np.sqrt(fitter.ObservedData[set])/SM_dat, label = "{} data".format(fitter.sets_names[i]), fmt = "ok")
@@ -125,6 +117,7 @@ for i in range(len(fitter.sets_names)):
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figev.savefig("Figures/EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
+
 
 
 # ----------------------------------------------
@@ -151,7 +144,5 @@ for i in range(len(fitter.sets_names)):
     axchi[i].title.set_text(set+r' total $\chi^2 = %.2f $'%(chi2_per_exp[i]))
     # axchi[i].legend(loc="upper right",fontsize=16)
 
-# figchi.suptitle(r'DayaBay best fit (3 neutrino): $\Delta m^2_{ee} = 2.5\times 10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$. Total $\chi^2 = 41.98$', fontsize = 17)
-# figchi.suptitle(r'Sterile best fit (3+1): $\Delta m^2_{41} = 0.067 eV^2$, $\sin^2 2\theta_{13} = 8.29\times 10^{-3}$. Total $\chi^2 = 39.16$', fontsize = 17)
 figchi.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
 figchi.savefig("Figures/Chi2/Chi2_%.2f_%.3f_ste.png"%(dm2,sin2))

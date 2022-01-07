@@ -15,13 +15,6 @@ import os
 # Eprompt = Erealnu - 0.78 (MeV).
 # For more information, the process is described in 1610.04802.
 
-# -------------------------------------------------------------
-# PS: The program begins to take prompt energies from ~0.78 MeV.
-#     This is a bit stupid, since the first possible antineutrino energy should be
-#     ~1.806 MeV and the first non-null prompt energy will be 1.022 MeV.
-#     However, it will bring up no error, since this is taken into account
-#     in the IBD cross-section, which is set to be 0 if the antineutrino does not
-#     have enough energy.
 
 dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 

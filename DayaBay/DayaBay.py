@@ -25,19 +25,14 @@ class DayaBay:
         # Physical quantities
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
-        Na = 6.022140857e23 # Avogadro's number
-        FH = 12.02 # hydrogen fraction in GdLS (what is this and what for?)
-        IH1 = 0.9998 # H1 isotope abundance
-        HidrogenMass = 1.673723e-27 # hidrogen mass in kg
-        TotalMass = 20.e3 # in kg
 
         # Associated objects of the class
         self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix
 
-        self.TotalNumberOfProtons = TotalMass*FH*IH1/HidrogenMass
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
-        # However, we consider an arbitrary large number of targets to prevent very small event expectations.
+        # However, to prevent very small event expectations, we normalise the flux to match the
+        # DB expectations without oscillations. The normalisation factors thus are
         self.TotalNumberOfProtons = {'EH1': 16.968688565113972e53, 'EH2': 15.783625798930741e53, 'EH3': 16.21670112543282e53}
 
         self.sets_names = DBP.exp_names
@@ -47,11 +42,6 @@ class DayaBay:
         self.mean_fission_fractions = DBP.mean_fis_frac
         self.EfficiencyOfHall = DBP.efficiency
         self.DistanceFromReactorToHall = DBP.distance
-        self.FudgeFactorPerHall = DBP.fudge_factors
-
-        self.NeutrinoCovarianceMatrix = DBP.neutrino_covariance_matrix
-        self.NeutrinoLowerBinEdges = DBP.nulowerbin
-        self.NeutrinoUpperBinEdges = DBP.nuupperbin
 
         self.DataLowerBinEdges = DBD.datlowerbin
         self.DataUpperBinEdges = DBD.datupperbin
@@ -136,7 +126,7 @@ class DayaBay:
 
     def calculate_naked_event_expectation_simple(self,model,set_name,i, average = False):
         """
-        This function implements formula (A.2) from 1709.04294.
+        This function implements formula (A10).
 
         Input:
         model: a class containing the information of the model.
@@ -193,7 +183,6 @@ class DayaBay:
                 # real antineutrino energies loop ends
 
             # reconstructed energies loop ends
-            #expectation /= L**2 # this is an error, and the root of all evil in the world
 
         # reactor loop ends
         # the two deltaEfine are to realise a trapezoidal numeric integration
@@ -201,7 +190,7 @@ class DayaBay:
 
     def integrand(self,enu,L,model,erf,etf):
         """
-        This function returns the integrand of formula (A.2) from 1709.04294.
+        This function returns the integrand of formula (A10).
 
         Input:
         erf, etf: indices of reconstructed and true energies, in the response matrix.
@@ -221,7 +210,7 @@ class DayaBay:
 
     def calculate_naked_event_expectation_integr(self,model,set_name,i):
         """
-        This function implements formula (A.2) from 1709.04294.
+        This function implements formula (A10).
         In this case, however, we perform an integral inside the fine energy
         bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
 
@@ -251,7 +240,6 @@ class DayaBay:
                     enu_max = (etf+1)*self.deltaEfine + (
                           DeltaNeutronToProtonMass - ElectronMass) # in MeV
 
-                    # print(enu_min,enu_max,f(enu_min),f(enu_max))
                     if ((erf == min_energy_fine_index) or (erf == max_energy_fine_index-1)):
                         expectation += integrate.quad(self.integrand,enu_min,enu_max,
                                                       args=(L,model,erf,etf))[0]/L**2/2.
@@ -264,7 +252,6 @@ class DayaBay:
                 # real antineutrino energies loop ends
 
             # reconstructed energies loop ends
-            # expectation /= L**2
 
         # reactor loop ends
         # only one trapezoidal numeric integration has been done
@@ -300,15 +287,17 @@ class DayaBay:
 
     def normalization_to_data(self,events):
         """
+        Returns the normalisation factors such that our prediction have the same
+        events that the DayaBay predictions without oscillations.
+        It should only be used once, to compute self.TotalNumberOfProtons.
+
         Input:
         events: a dictionary with a string key for each experimental hall, linking to
         a numpy array for some histogram of events. In principle, it should be
         the number of expected number of events of our model.
 
         Output:
-        norm: a normalisation factor with which to multiply events such that the total
-        number of events of "events" is the same as the one from observed data.
-        Each experimental hall has a different factor.
+        norm: a dictinonary with a normalisation factor for each experimental hall.
         """
         TotalNumberOfExpEvents = dict([(set_name,np.sum(self.PredictedDataNoOsc[set_name]))
                                             for set_name in self.sets_names])
@@ -342,6 +331,7 @@ class DayaBay:
             TotalNumberOfExpEvents += exp_events[set_name]
         return (TotalNumberOfEventsPerBin-TotalNumberOfBkgPerBin)/(TotalNumberOfExpEvents)
 
+
     def get_expectation(self,model, integrate = False, average = False):
         """
         Input:
@@ -351,20 +341,17 @@ class DayaBay:
         A 2-tuple with the expectation from the model and from a model without oscillations.
         Each element of a tuple is a dictionary, where each key is an experimental hall.
         Such key links to a numpy array which contains: the histogram of expected events,
-        the error bars of each bin, the lower limits of each bin, and the upper limits of each bin.
+        the error bars of each bin, the lower edges of each bin, and the upper edges of each bin.
         The error bars are purely statistical, i.e. sqrt(N).
         """
 
         # We build the expected number of events for our model and we normalise so it has the same number of events of the data.
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = integrate, do_we_average = average)
-        # norm = self.normalization_to_data(exp_events)
-        # exp_events = dict([(set_name,exp_events[set_name]*norm[set_name]) for set_name in self.sets_names])
 
         # We construct the nuissance parameters which minimise the Poisson probability
-        # alpha_i = (dataEH1_i+dataEH2_i+dataEH3_i)/(expEH1_i+expEH2_i+expEH3_i)
         nuissances = self.get_nuissance_parameters(exp_events)
 
-        # We apply the nuissance parameters to the data and obtain
+        # We apply the nuissance parameters to the data and sum the background
         exp_events = dict([(set_name,exp_events[set_name]*nuissances+self.PredictedBackground[set_name])
                            for set_name in self.sets_names])
 
@@ -382,7 +369,7 @@ class DayaBay:
 
     def get_poisson_chi2(self,model, do_we_integrate = False, do_we_average = False):
         """
-        Computes the "chi2" value from the Poisson probability, taking into account
+        Computes the "chi2" value from the Poisson probability (A8), taking into account
         every bin from every DayaBay detector.
 
         Input:
@@ -392,55 +379,11 @@ class DayaBay:
         """
         Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
         Data = self.ObservedData
-        #Bkg = self.PredictedBackground
+
         TotalLogPoisson = 0.0
         for set_name in self.sets_names:
-            lamb = Exp[set_name][:,0]#+Bkg[set_name]
+            lamb = Exp[set_name][:,0]
             k = Data[set_name]
-            TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
+            TotalLogPoisson += (k - lamb + k*np.log(lamb/k))
 
         return -2*np.sum(TotalLogPoisson)
-
-
-# ----------------------------------------------------------
-# FITTING THE DATA WITH THE COVARIANCE MATRIX
-# ----------------------------------------------------------
-
-    def get_inverse_flux_covariance(self):
-        """
-        Returns the inverse of the neutrino covariance matrix, V^-1.
-        """
-        return np.linalg.inv(np.array(self.NeutrinoCovarianceMatrix))
-
-    def get_resolution_matrix_underdim(self):
-        """
-        Returns an underdimension of the response matrix.
-        """
-        mat = np.zeros((len(self.NeutrinoLowerBinEdges),self.n_bins))
-        for i in range(0,self.n_bins):
-            minrec = self.FindFineBinIndex(self.DataLowerBinEdges[i])
-            maxrec = self.FindFineBinIndex(self.DataUpperBinEdges[i])
-            for j in range(0,len(self.NeutrinoLowerBinEdges)):
-                mintrue = self.FindFineBinIndex(self.NeutrinoLowerBinEdges[j])
-                maxtrue = self.FindFineBinIndex(self.NeutrinoUpperBinEdges[j])
-                mat[j,i] = np.mean(self.FromEtrueToErec[mintrue:maxtrue,minrec:maxrec])
-        return mat
-
-    def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
-        """
-        Input: a  model with which to compute expectations.
-        Output: a chi2 statistic comparing data and expectations.
-        """
-        U = self.get_resolution_matrix_underdim()
-        UT = U.transpose()
-        Vinv = self.get_inverse_flux_covariance()
-
-        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average)
-        Data = self.ObservedData
-        chi2 = 0.
-        for set_name in self.sets_names:
-            exp_i = Exp[set_name][:,0]#+Bkg[set_name]
-            dat_i = Data[set_name]
-            chi2 += (dat_i-exp_i).dot(UT.dot(Vinv.dot(U.dot(dat_i-exp_i))))
-
-        return chi2

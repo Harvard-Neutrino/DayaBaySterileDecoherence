@@ -12,7 +12,7 @@ import matplotlib
 import Models
 import DayaBay as DB
 
-path_to_style= main_dir+common_dir
+path_to_style = main_dir+common_dir
 dir = 'PlotData/'
 plt.style.use(path_to_style+r"/paper.mplstyle")
 matplotlib.rcParams.update({'text.usetex': True})
@@ -23,6 +23,11 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 # PRELIMINAR FUNCTIONS
 # -------------------------------------------------------
 
+# We load the DayaBay class
+fitter = DB.DayaBay()
+
+# We define a function to read the data in PlotData
+# This data is produced by PWSterileFitTableX.py  or WPSterileFitTableX.py
 def txt_to_array(filename, sep = ","):
     """
     Input:
@@ -41,8 +46,8 @@ def txt_to_array(filename, sep = ","):
     mat = np.array(mat).astype(np.float)
     return mat
 
-fitter = DB.DayaBay()
-
+# Computes the Poisson Chi2 for given parameters.
+# This is necessary to compute the chi2 of the null hypothesis
 def getChi2(mass,angl,wave_packet = False):
     if wave_packet == False:
         model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)
@@ -51,6 +56,7 @@ def getChi2(mass,angl,wave_packet = False):
     chi2 = fitter.get_poisson_chi2(model)
     return chi2
 
+# We apply a common style to all plots
 def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
     axxis.grid(linestyle = '--')
     axxis.tick_params(axis='x')
@@ -66,6 +72,7 @@ def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
         contours.collections[i].set_label(labels[i])
     axxis.legend(loc = 'lower left', fontsize = 20)
 
+# Colorblind-sensitive colors
 color1 = '#FFB14E'
 color2 = '#EA5F94'
 color3 = '#0000FF'
@@ -74,10 +81,12 @@ titlesize = 13.
 size = (7,7)
 margins = dict(left=0.16, right=0.97,bottom=0.1, top=0.93)
 
+
 # -------------------------------------------------
 # STERILE PLANE WAVE CONTOUR - PLANE WAVE FORMALISM
 # -------------------------------------------------
 
+# We load the data
 data_PW = txt_to_array(dir+'PWSterileChi2.dat')
 data_PW = np.unique(data_PW,axis=0) # We remove duplicates from the list
 
@@ -172,7 +181,7 @@ figNH.savefig('Figures/WPContour_nullhyp.png')
 
 
 # ----------------------------------------------
-# 2SIGMA PLOT COMPARISON
+# 2SIGMA FORMALISM COMPARISON
 # ----------------------------------------------
 
 margins = dict(left=0.16, right=0.97,bottom=0.1, top=0.97)
