@@ -24,7 +24,6 @@ class Best:
     def __init__(self):
         # We define some units. All results will be in units of m, kg and days.
 
-
         self.NeutrinoEnergies = [427e3*self.eV,432e3*self.eV,747e3*self.eV,752e3*self.eV]
         self.FissionFractions = {427e3*self.eV: 0.0895, 432e3*self.eV: 0.0093,
                                  747e3*self.eV: 0.8163, 752e3*self.eV: 0.0849}
@@ -38,7 +37,8 @@ class Best:
         self.r_out = 218.0*self.cm/2. # Radius of the cylindrical outer target
         self.h_out = 234.5*self.cm    # Height of the cylindrial outer target
 
-        self.GeometricCorrection = 1./1.09
+        self.GeometricCorrectionInner = 1./1.0985196
+        self.GeometricCorrectionOuter = 1./1.0891257
 
         self.ProductionRateData = np.array([49.4,44.9,62.9,73.3,49.8,69.5,64.6,53.8,49.9,69.1,
                                             41.1,63.6,51.4,66.6,46.9,87.3,50.4,59.7,43.0,78.8])/self.day
@@ -79,7 +79,9 @@ class Best:
             return -np.sqrt(self.r_in**2-rho**2)
 
         int = integrate.dblquad(integrand,0,self.r_in,lbound,ubound)[0]/2.
-        return self.InitialActivity*self.GaNumberDensity*self.CrossSection*int*self.GeometricCorrection
+        # print('Inner: ',int,int*self.GeometricCorrection)
+        # print(self.InitialActivity*self.GaNumberDensity*self.CrossSection*0.5203)
+        return self.InitialActivity*self.GaNumberDensity*self.CrossSection*int*self.GeometricCorrectionInner
 
 
 
@@ -108,7 +110,9 @@ class Best:
 
         int  = integrate.dblquad(integrand,0,self.r_out,-self.h_out/2,ubound1)[0]/2.
         int += integrate.dblquad(integrand,self.r_Cr,self.r_out,lbound2,self.h_out/2)[0]/2.
-        return self.InitialActivity*self.GaNumberDensity*self.CrossSection*int*self.GeometricCorrection
+        # print('Outer: ',int,int*self.GeometricCorrection)
+        # print(self.InitialActivity*self.GaNumberDensity*self.CrossSection*0.5441)
+        return self.InitialActivity*self.GaNumberDensity*self.CrossSection*int*self.GeometricCorrectionOuter
 
 
     def get_total_covariance_matrix(self):
@@ -120,15 +124,27 @@ class Best:
     def get_inverse_covariance_matrix(self):
         return np.linalg.inv(np.array(self.get_total_covariance_matrix()))
 
-    def get_chi2(self,model):
+    def get_chi2_all(self,model):
         rate_in  = self.get_inner_production_rate(model)
         rate_out = self.get_outer_production_rate(model)
         pred = np.concatenate((np.repeat(rate_in,10),np.repeat(rate_out,10)))
+        # print(pred)
 
         # print(rate_in -self.ProductionRateData[0],rate_out-self.ProductionRateData[1])
         Vinv = self.get_inverse_covariance_matrix()
 
         chi2 = (self.ProductionRateData-pred).dot(Vinv.dot(self.ProductionRateData-pred))
+        return chi2
+
+    def get_chi2(self,model):
+        rate_in  = self.get_inner_production_rate(model)
+        rate_out = self.get_outer_production_rate(model)
+
+        # print(rate_in -self.ProductionRateData[0],rate_out-self.ProductionRateData[1])
+        Vinv = self.get_inverse_covariance_matrix()
+
+        chi2 = (54.9-rate_in)**2/(2.5**2+(0.02*rate_in)**2+(0.02*rate_in)**2)
+        chi2 += (55.6-rate_out)**2/(2.7**2+(0.02*rate_out)**2+(0.02*rate_out)**2)
         return chi2
 
 
@@ -143,12 +159,15 @@ class Best:
 
 
 
-# test = Best()
-#
-# noosc = Models.NoOscillations()
+test = Best()
+
+noosc = Models.NoOscillations()
 # osc = Models.PlaneWaveSterile(DM2_41 = 1, Sin22Th14 = 0.4)
 # chi = 1
+# test.get_inner_production_rate(noosc)
+# test.get_outer_production_rate(noosc)
 # # print(test.get_inner_production_rate(noosc)*chi)
 # # print(test.get_outer_production_rate(noosc)*chi)
+test.get_chi2(noosc)
 # print(test.get_chi2(noosc))
 # print(test.get_chi2(osc))
