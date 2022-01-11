@@ -1,37 +1,17 @@
 import numpy as np
 import os
 
-# To understand the information on the bins, we must understand the physical process.
-# An electron antineutrino arrives to the detector with an energy which can go between
-# 0 and infty. However, only if the antineutrino has an energy > 1.8 MeV, it can
-# produce IBD. In such case, a positron will be produced (with kinetic and rest energy).
-
-# This positron will have total energy between 511 keV and infty. It will annihilate with
-# an electron at rest. This will produce a flash of light, whose energy can go between
-# 1.022 MeV and infty (due to the rest mass energy of the positron+electron).
-
-# The energy of this light is called prompt energy, and is the one from the data bins.
-# We can relate the prompt energy with the incoming antineutrino energy through
-# Eprompt = Erealnu - 0.78 (MeV).
-# For more information, the process is described in 1610.04802.
-
-# -------------------------------------------------------------
-# PS: The program begins to take prompt energies from ~0.78 MeV.
-#     This is a bit stupid, since the first possible antineutrino energy should be
-#     ~1.806 MeV and the first non-null prompt energy will be 1.022 MeV.
-#     However, it will bring up no error, since this is taken into account
-#     in the IBD cross-section, which is set to be 0 if the antineutrino does not
-#     have enough energy.
-
 dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
+
+
 
 # -------------------------------------------------------------
 #  RECONSTRUCTION MATRIX FUNCTION
 # -------------------------------------------------------------
 
-
 # The reconstruction matrix has a long tail at low energies, as is
-# explained in 1609.03910.
+# explained in 1609.03910. In the following functions, we mimic it.
+
 def gaussian(x,mu,sig):
     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-(x-mu)**2/sig**2)
 
@@ -39,6 +19,11 @@ def reconstruct_matrix_function(etrue,erec):
     """
     This function tries to mimic the response matrix in inset from figure 3(a)
     in 1610.05134. More information on the fit in 1609.03910.
+    This also tries to mimic the plots from references
+       Yoon (2021): Search for sterile neutrinos at RENO, XIX International Workshop on Neutrino Telescopes.
+       H. Kim (2017): Search for Sterile Neutrino at NEOS Experiment, 13th Recontres du Vietnam.
+    This function is not in use in the program, and is only here as a reference
+    as to how we have computed the response matrix in Data/ReconstructMatrix.dat
 
     Input:
     etrue, erec (float): the true and reconstructed energies.
@@ -64,11 +49,16 @@ def reconstruct_matrix_function(etrue,erec):
         return (factor_g*gaussian(erec,mu2,sig2)+0.01)*norm
 
 
+
 # -------------------------------------------------------------
 #   HISTOGRAM BINS
 # -------------------------------------------------------------
 
 # Histogram bins of the measured data.
+
+# The last bin in the NEOS analysis has given some trouble due to the uncertainty
+# in digitalizing the data from figure 3(a).
+# Therefore, in our analysis we have chosen to ignore it, since its effect should not be very important.
 
 lastbin = 1 # 0 for including the last bin (7-10 MeV), 1 for removing it
 number_of_bins = 61-lastbin
@@ -104,7 +94,7 @@ def txt_to_array(filename, sep = ","):
     mat = np.array(mat).astype(np.float)
     return mat
 
-# Contains the full data from 1610.05134 for all three experimental halls.
+# Contains the full data from 1610.05134 for all three experimental halls, digitalized.
 # Columns:
 # 0: Number of events, per day, per 100 keV;
 # 1: Number of expected events, per day, per 100 keV
@@ -116,16 +106,14 @@ def txt_to_array(filename, sep = ","):
 
 
 norm = 180.-46.
-# It is important to say: this normalisation factor must not include the deltaE
+# This is the total number of days that the NEOS experiment has been running.
+# This normalisation matches the total number of events computed from the statistical errors in figure 3(c).
 
-fudge_data = 1.
-fudge_bkg = 1.
 all_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins]}
-observed_data  = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,0]}
-predicted_data = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,1]}
-predicted_data_HM = {'NEOS': norm*fudge_data*txt_to_array(dir+"AllData.dat")[:number_of_bins,2]}
-predicted_bkg = {'NEOS': norm*fudge_bkg*txt_to_array(dir+"AllData.dat")[:number_of_bins,3]}
-# predicted_bkg = {'NEOS':np.zeros([number_of_bins])}
+observed_data  = {'NEOS': norm*txt_to_array(dir+"AllData.dat")[:number_of_bins,0]}
+predicted_data = {'NEOS': norm*txt_to_array(dir+"AllData.dat")[:number_of_bins,1]}
+predicted_data_HM = {'NEOS': norm*txt_to_array(dir+"AllData.dat")[:number_of_bins,2]}
+predicted_bkg = {'NEOS': norm*txt_to_array(dir+"AllData.dat")[:number_of_bins,3]}
 
 
 ratio_data = {'NEOS': txt_to_array(dir+"AllData.dat")[:number_of_bins,4]}

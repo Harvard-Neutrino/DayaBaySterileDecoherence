@@ -40,13 +40,14 @@ width = {'NEOS': 1.5} # this is half-width, i.e. NEOS has L = (23.7 +- 1.5) m. F
 
 
 
-
 # -----------------------------------------------------
 #   RECONSTRUCTION/RESPONSE MATRIX
 # -----------------------------------------------------
 
 # This information is saved in a separate file 'ReconstructMatrix.dat'.
 # We define this function to read and save the info on the file.
+# For information on how to build this matrix has been built,
+# check NEOSData.py, function reconstruct_matrix_function
 def txt_to_array(filename, sep = ","):
     """
     Input:
@@ -104,9 +105,10 @@ spectrum = np.array([344.19, 770.96, 1080.9, 1348.4, 1528.8, 1687.0, 1746.6, 176
 
 # The neutrino flux correlation matrix is obtained from http://vietnam.in2p3.fr/2017/neutrinos/transparencies/5_friday/1_morning/7_kim.pdf
 neutrino_correlation_matrix = txt_to_array(dir+"NeutrinoCorrelationMatrix.dat")[:-1,1:]
-# Afterwars, we compute the covariance matrix taking into account this correlation,
+# Afterwards, we compute the covariance matrix taking into account this correlation,
 # and normalising it to the systematic and statistical errors from figure 3(c) in 1610.05134.
 # Covariance matrix is, therefore, not normalised to the total number of data, but to the ratio to DB.
+# For more information on this, check NEOS.py, function get_total_covariance_matrix.
 # Both matrices are in prompt energy.
 neutrino_covariance_matrix = txt_to_array(dir+"NeutrinoCovMatrix.dat")
 

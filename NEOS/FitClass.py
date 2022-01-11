@@ -9,54 +9,6 @@ import time
 
 import numpy as np
 
-class StandardModelFit:
-
-    def __init__(self, wave_packet = False, use_HM = True):
-        # The wave packet argument will tell us whether to fit the data
-        # according to the wave packet formalism or not (plane wave).
-        self.WavePacket = wave_packet
-        self.fitter = NEOS.Neos()
-        self.UseHM = use_HM
-
-
-    def getChi2(self,mass,angl):
-        """
-        Computes the "chi2" value from the Poisson probability, taking into account
-        every bin from every detector in the global fit, for a given square mass and mixing.
-
-        Input:
-        mass: the value of Delta m^2_{41} of the sterile neutrino.
-        angl: the value of sin^2(2theta_{41})
-
-        Output: (float) the chi2 value.
-        """
-        if self.WavePacket == False:
-            model = Models.PlaneWaveSM(Sin22Th13 = angl,DM2_ee = mass)
-        elif self.WavePacket == True:
-            model = Models.WavePacketSM(Sin22Th13 = angl,DM2_ee = mass)
-        chi2 = self.fitter.get_poisson_chi2(model, use_HM = self.UseHM)
-        print(mass,angl,chi2)
-        return chi2
-
-
-    def write_data_table(self,mass_ax,angl_ax,filename):
-        """
-        Writes a square table with the chi2 values of different masses and angles in a file.
-
-        Input:
-        mass_ax (array/list): the values of Delta m^2_{41}.
-        angl_ax (array/list): the values of sin^2(2theta_{41})
-        filename (str): the name of the file in which to write the table.
-        """
-        file = open(filename,'w')
-        for m in mass_ax:
-            for a in angl_ax:
-                file.write('{0:1.5f},{1:1.5f},{2:7.4f}\n'.format(m,a,self.getChi2(m,a)))
-        file.close()
-
-        return
-
-
 class SterileFit:
 
     def __init__(self, wave_packet = False, use_HM = True):
@@ -77,18 +29,14 @@ class SterileFit:
         mass: the value of Delta m^2_{41} of the sterile neutrino.
 
         Output:
-        A boolean dictionary with first key 'DB'/'NEOS' and second key 'integrate'/'average'
+        A boolean dictionary with key 'integrate'/'average'
         """
-        if mass <= 0.15:
-            return {'DB':{'integrate':False,'average':False},'NEOS':{'integrate':False,'average':False}}
-        elif (mass > 0.15) and (mass <= 1.):
-            return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':False,'average':False}}
-        elif (mass > 1.) and (mass <= 2.):
-            return {'DB':{'integrate':True,'average':False},'NEOS':{'integrate':True,'average':False}}
-        elif (mass > 2.) and (mass <= 10.):
-            return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':True,'average':False}}
+        if mass <= 1.:
+            return {'integrate':False,'average':False}
+        elif (mass > 1.) and (mass <= 10.):
+            return {'integrate':True,'average':False}
         elif (mass > 10.):
-            return {'DB':{'integrate':False,'average':True},'NEOS':{'integrate':False,'average':True}}
+            return {'integrate':False,'average':True}
 
     def getChi2(self,mass,angl):
         """
@@ -107,8 +55,8 @@ class SterileFit:
             model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
 
         wdwd = self.what_do_we_do(mass)
-        chi2 = self.fitter.get_both_chi2(model,integrate = wdwd['NEOS']['integrate'], average = wdwd['NEOS']['average'], use_HM = self.UseHM)
-        print(mass,angl,chi2[0],chi2[1])
+        chi2 = self.fitter.get_chi2(model,integrate = wdwd['integrate'], average = wdwd['average'], use_HM = self.UseHM)
+        print(mass,angl,chi2)
         return chi2
 
     def write_data_table(self,mass_ax,angl_ax,filename):
@@ -124,20 +72,5 @@ class SterileFit:
         for m in mass_ax:
             for a in angl_ax:
                 chi2 = self.getChi2(m,a)
-                file.write('{0:1.5f},{1:1.5f},{2:7.4f},{3:7.4f}\n'.format(m,a,chi2[0],chi2[1]))
+                file.write('{0:1.5f},{1:1.5f},{2:7.4f}\n'.format(m,a,chi2))
         file.close()
-
-
-# -----------------------------------------------------------------------
-# Best-fit from DayaBay
-# mass = 2.5e-3,angl = 0.0841
-
-# datmass = np.logspace(-2,1,3)
-# datangl = np.logspace(-3,0,3)
-# print(datmass,datangl)
-#
-# begin = time.time()
-# fit = SterileGlobalFit()
-# fit.write_data_table(datmass,datangl,'SMPWSterileChi2_new.dat')
-# end = time.time()
-# print('Time = '+str(end-begin)[:6]+' s.')

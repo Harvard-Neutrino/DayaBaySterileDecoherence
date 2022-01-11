@@ -5,12 +5,13 @@ sys.path.append(os.getcwd()[:-5]+common_dir)
 
 import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF
+import Models
+
 import NEOSParameters as NEOSP
 import NEOSData as NEOSD
-import Models
+
 import numpy as np
 from scipy import integrate as integrate
-from scipy import interpolate as interpolate
 
 
 class Neos:
@@ -27,18 +28,21 @@ class Neos:
         """
         # Physical quantities
         self.deltaEfine = 0.05 # in MeV. It is the resolution of the Etrue to Erec matrix.
+
         # In principle, our analysis is flux-free, i.e. independent of the flux.
         # Therefore, the total normalisation of the flux is not important.
-        # However, we consider an arbitrary large number of targets to prevent very small event expectations.
-        self.TotalNumberOfProtonsHM = 9.74503e51#*180/(180-46)#4.76567e50
-        self.TotalNumberOfProtonsDB = 1.06406e06#*180/(180-46)
+        # However, we have a normalisation factor which normalises our data to the
+        # same order than the observed data from NEOS.
+        # The normalisation factor depends on the reference flux we are using.
+        self.TotalNumberOfProtonsHM = 9.74503e51
+        self.TotalNumberOfProtonsDB = 1.06406e06
 
         self.sets_names = NEOSP.exp_names
         self.reactor_names = NEOSP.reac_names
         self.isotopes_to_consider = NEOSP.isotopes
-
         self.mean_fission_fractions = NEOSP.mean_fis_frac
-        self.EfficiencyOfHall = NEOSP.efficiency # Not quite useful in NEOS, but yes in general.
+
+        self.EfficiencyOfHall = NEOSP.efficiency # Not quite useful in NEOS (only 1 detector), but yes in general.
         self.DistanceFromReactorToHall = NEOSP.distance
         self.WidthOfHall = NEOSP.width
 
@@ -132,7 +136,8 @@ class Neos:
         flux_parameters (dict): check 'HubberMullerFlux.py'.
 
         Output:
-        The flux of neutrinos with energy enu coming from the isotope.
+        The flux of neutrinos with energy enu coming from the isotope,
+        according to the Huber-Mueller prediction.
         """
         flux = HMF.reactor_isotope_flux(isotope_name, flux_parameters)
         return flux.GetFlux(enu)
@@ -154,7 +159,7 @@ class Neos:
         experiment (str): name of the experimental hall.
 
         Output:
-        The width (in meters) of such detector
+        The width (in meters) of such detector.
         """
         return self.WidthOfHall[experiment]
 
@@ -164,8 +169,8 @@ class Neos:
 
     def calculate_naked_event_expectation_simple(self,model,set_name,i, bins = None, average = False, use_HM = True):
         """
-        This function implements formula (A.2) from 1709.04294, adapted to NEOS.
-        Here we don't neglect the width of the detector, and integrate over it.
+        This function implements formula (A13).
+        We don't neglect the width of the detector, and integrate over it.
 
         Input:
         model: a class containing the information of the model.
@@ -174,15 +179,14 @@ class Neos:
         i (int): the data bin we want to compute the expectation of.
         bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
         average (bool): whether to pick oscProbability_av or not from the model.
+        use_HM (bool): whether to use the HM or the DB fluxes (check get_flux and get_flux_HM).
         """
-        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
-        ElectronMass = 0.511 # MeV
-
         expectation = 0.0
 
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
         # We allow for the possibility of custom bins, using the argument bins
+        # This is necessary for the GlobalFit (DB+NEOS) routine.
         if isinstance(bins,np.ndarray): #Check whether the user has introduced a numpy array of custom bins
             min_energy_fine_index = self.FindFineBinIndex(bins[:-1][i])
             max_energy_fine_index = self.FindFineBinIndex(bins[ 1:][i])
@@ -191,10 +195,12 @@ class Neos:
             max_energy_fine_index = self.FindFineBinIndex(self.DataUpperBinEdges[i])
 
         W = self.get_width(set_name) # in meters, the detector total width is 2W
-        ndL = 10 # We only integrate through L with three points. It is probably enough.
+        ndL = 10 # We integrate through L with ten points. It is probably enough.
         dL = (2*W)/(ndL-1)
 
         for reactor in self.reactor_names:
+            # There is only one reactor, so we will only do this loop once,
+            # but this keeps full generality.
             Lmin = self.get_distance(set_name,reactor) - W
             Lmax = self.get_distance(set_name,reactor) + W
 
@@ -213,9 +219,11 @@ class Neos:
 
                         if use_HM == True:
                             # For the GlobalFit, it is necessary to use HM flux.
-                            flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope] for isotope in self.isotopes_to_consider]))
+                            flux = np.sum(np.array([self.get_flux_HM(enu,isotope)*self.mean_fission_fractions[isotope]
+                                                                             for isotope in self.isotopes_to_consider]))
                         else:
-                            flux = self.get_flux(enu) # the flux from DB slows down the program A LOT, use with caution
+                            # For the NEOS only fit, we use the DB flux.
+                            flux = self.get_flux(enu)
 
 
                         # Here we perform trapezoidal integration, the extremes contribute 1/2.
@@ -232,7 +240,6 @@ class Neos:
                     # real antineutrino energies loop ends
                 # L distances loop ends
             # reconstructed energies loop ends
-            #expectation /= L**2 # this is an error, and the root of all evil in the world
 
             # reactor loop ends
             # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
@@ -242,18 +249,20 @@ class Neos:
             TotalNumberOfProtons = self.TotalNumberOfProtonsHM
         else:
             TotalNumberOfProtons = self.TotalNumberOfProtonsDB
+
         return expectation*self.deltaEfine**2*dL/(2*W)*self.EfficiencyOfHall[set_name]*TotalNumberOfProtons
 
 
     def integrand(self,enu,L,model,erf,etf, use_HM = True):
         """
-        This function returns the integrand of formula (A.2) from 1709.04294.
+        This function returns the integrand of formula (A13).
 
         Input:
         erf, etf: indices of reconstructed and true energies, in the response matrix.
         enu: true energy of the neutrino. This will be the parameter of integration.
         L: the length between experimental hall and reactor.
         model: the model with which to compute the oscillation probability.
+        use_HM (bool): whether to use the HM or the DB fluxes (check get_flux and get_flux_HM).
         """
         # Computes the HM flux for all isotopes
         if use_HM == True:
@@ -271,10 +280,10 @@ class Neos:
 
     def calculate_naked_event_expectation_integr(self,model,set_name,i, bins = None, use_HM = True):
         """
-        This function implements formula (A.2) from 1709.04294.
+        This function implements formula (A13).
         Here we don't neglect the width of the detector, and integrate over it.
-        In this case, however, we perform an integral inside the fine energy
-        bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
+        We also perform an integral inside the fine energy bins,
+        to take into account possible rapid oscillations (e.g., a heavy sterile).
 
         Input:
         model: a class containing the information of the model.
@@ -282,10 +291,8 @@ class Neos:
         set_name (str): name of the experimental hall studied.
         bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
         i (int): the data bin we want to compute the expectation of.
+        use_HM (bool): whether to use the HM or the DB fluxes (check get_flux and get_flux_HM).
         """
-        DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
-        ElectronMass = 0.511 # MeV
-
         expectation = 0.0
         # We want to know what are the fine reconstructed energies for which
         # we want to make events inside the data bin i.
@@ -347,6 +354,7 @@ class Neos:
         do_we_integrate: whether to integrate inside each energy bin or not.
         do_we_average: whether to use the oscProbability_av from the model.
         custom_bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
+        use_HM (bool): whether to use the HM or the DB fluxes (check get_flux and get_flux_HM).
 
         Output:
         A dictionary with a string key for each experimental hall, linking to a
@@ -365,7 +373,7 @@ class Neos:
                                     for set_name in self.sets_names])
 
         if do_we_integrate == True:
-            # Once we know we don't integrate, we check whether the user has introduced a custom binning
+            # Once we know we do integrate, we check whether the user has introduced a custom binning
             if isinstance(custom_bins,np.ndarray):
                 imax = len(custom_bins)-1
                 Expectation = dict([(set_name,
@@ -381,7 +389,7 @@ class Neos:
     def normalization_to_data(self,events):
         """
         Returns a normalization factor with which to normalise the expected events
-        to the predicated data according to SM.
+        to the observed data from NEOS.
 
         Input:
         events: a dictionary with a string key for each experimental hall, linking to
@@ -407,8 +415,13 @@ class Neos:
 
     def get_expectation(self,model, integrate = False, average = False, use_HM = True):
         """
+        This function is only called in the NEOS only fit.
+
         Input:
         model: a model from Models.py for which to compute the expected number of events.
+        integrate: whether to integrate inside each energy bin or not.
+        average: whether to use the oscProbability_av from the model.
+        use_HM (bool): whether to use the HM or the DB fluxes (check get_flux and get_flux_HM).
 
         Output:
         A 2-tuple with the expectation from the model and from a model without oscillations.
@@ -448,13 +461,20 @@ class Neos:
 
         This function is not in use, just as a demonstration on how one can
         construct the covariance matrix from the correlation matrix and the stat. errors.
+        Instead, we simply use the data from Data/NeutrinoCovMatrix.dat, which has been
+        obtained using this same function.
         """
         corr_mat = self.NeutrinoCorrelationMatrix
+
+        # We load σi, the square root of the diagonal elements of the systematic part of the cov matrix.
         syst_err = self.RatioSystError['NEOS']
+        # We compute all elements of the covariance matrix as Vij = σi·σj
         syst_err = np.tile(syst_err,(len(syst_err),1))*(np.tile(syst_err,(len(syst_err),1)).transpose())
 
+        # Statistical errors are only in the diagonal
         stat_err = self.RatioStatError['NEOS']**2*np.identity(self.n_bins)
-        # np.savetxt('NeutrinoCovMatrix.dat',corr_mat*syst_err+stat_err,delimiter = ',')
+
+        # np.savetxt('Data/NeutrinoCovMatrix.dat',corr_mat*syst_err+stat_err,delimiter = ',')
         return corr_mat*syst_err+stat_err
 
     def get_inverse_covariance_matrix(self):
@@ -471,97 +491,33 @@ class Neos:
 # FITTING THE DATA
 # ----------------------------------------------------------
 
-
     def get_chi2(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
         """
-        Computes the "chi2" value from the total number of events in figure 3(a),
-        using the covariance matrix provided in NEOSParameters.py
+        Computes the "chi2" value according to formula (A12), that is,
+        using the ratio of the expected events to DB in figure 3(c) of 1610.05134,
+        using the covariance matrix provided in NEOSParameters.py.
 
         Input:
-        model: a model from Models.py for which to compute the expected number of events.
+        model: a model from Models.py for which to compute the expected number of events
+        do_we_integrate: whether to integrate inside each energy bin or not.
+        do_we_average: whether to use the oscProbability_av from the model.
+        use_HM (bool): whether to use the HM or the DB fluxes (check get_flux and get_flux_HM).
 
         Output: (float) the chi2 value.
         """
-        Vinv = self.get_inverse_covariance_matrix()
-        # norm = self.PredictedData['NEOS']
-        modelSM = Models.PlaneWaveSM()
-        # To be rigorous, this should be PlaneWaveSM or WavePacketSM depending on what we're doing.
-        # Don't think this will make much of a mess.
-        norm = self.get_expectation(modelSM, use_HM = use_HM)['NEOS'][:,0]
-        Vinv /= np.tile(norm,(len(norm),1))*(np.tile(norm,(len(norm),1)).transpose())
-        Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)
-        Data = self.ObservedData
-        chi2 = 0.
-        for set_name in self.sets_names:
-            exp_i = Exp[set_name][:,0]#+Bkg[set_name]
-            dat_i = Data[set_name]
-            chi2 += (dat_i-exp_i).dot(Vinv.dot(dat_i-exp_i))
 
-        return chi2
-
-    def get_chi2_ratio(self,model, do_we_integrate = False, do_we_average = False, use_HM = True):
-        """
-        Computes the "chi2" value from the ratio of the expected events to DB in figure 3(c),
-        using the covariance matrix provided in NEOSParameters.py
-
-        Input:
-        model: a model from Models.py for which to compute the expected number of events.
-
-        Output: (float) the chi2 value.
-        """
+        # Computes the expectation according to the model.
         Exp = self.get_expectation(model, integrate = do_we_integrate, average = do_we_average, use_HM = use_HM)['NEOS']
+
+        # Computes the expectation according to the the SM.
+        # For full rigorosity, this should be PlaneWaveSM or WavePacketSM depending on the introduced model.
+        # However, the difference between both probabilities is very small and we can neglect it.
         modelSM = Models.PlaneWaveSM()
         ExpSM = self.get_expectation(modelSM, use_HM = use_HM)['NEOS']
+
+        # Computes the theoretical ratio and compares it to the data in 3(c).
         teo = Exp[:,0]/ExpSM[:,0]
         ratio = self.RatioData['NEOS']
         Vinv = self.get_inverse_covariance_matrix()
 
         return (teo-ratio).dot(Vinv.dot(teo-ratio))
-
-    def get_both_chi2(self, model, integrate = False, average = False, use_HM = True):
-        """
-        Computes the "chi2" value from both figures 3(a) and 3(c),
-        using the covariance matrix provided in NEOSParameters.py
-
-        Input:
-        model: a model from Models.py for which to compute the expected number of events.
-
-        Output: (float) a tuple with the values of the 3(a) chi2 and the 3(c) chi2.
-        """
-        modelSM = Models.PlaneWaveSM()
-        ExpSM = self.get_expectation(modelSM, use_HM = use_HM)
-        Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
-        Data = self.ObservedData
-        ratio = self.RatioData
-
-        chi2 = 0.0
-        chi2_ratio = 0.0
-        for set_name in self.sets_names:
-            Vinv_r = self.get_inverse_covariance_matrix()
-            Vinv = Vinv_r/(np.tile(ExpSM[set_name][:,0],(len(ExpSM[set_name][:,0]),1))*(np.tile(ExpSM[set_name][:,0],(len(ExpSM[set_name][:,0]),1)).transpose()))
-            chi2 += (Data[set_name]-Exp[set_name][:,0]).dot(Vinv.dot(Data[set_name]-Exp[set_name][:,0]))
-            chi2_ratio += (ratio[set_name]-Exp[set_name][:,0]/ExpSM[set_name][:,0]).dot(Vinv_r.dot(ratio[set_name]-Exp[set_name][:,0]/ExpSM[set_name][:,0]))
-
-        return (chi2,chi2_ratio)
-
-
-    # def get_poisson_chi2(self,model, integrate = False, average = False, use_HM = True):
-    #     """
-    #     Computes the "chi2" value from the Poisson probability, fitting the total number of events in figure 3(a).
-    #
-    #     Input:
-    #     model: a model from Models.py for which to compute the expected number of events.
-    #
-    #     Output: (float) the log Poisson "chi2" value.
-    #     """
-    #     # Honestly, have never tried this. Probably, it should work.
-    #     Exp = self.get_expectation(model, integrate = integrate, average = average, use_HM = use_HM)
-    #     Data = self.ObservedData
-    #
-    #     TotalLogPoisson = 0.0
-    #     for set_name in self.sets_names:
-    #         lamb = Exp[set_name][:,0]#+Bkg[set_name]
-    #         k = Data[set_name]
-    #         TotalLogPoisson += (k - lamb + k*np.log(lamb/k))#*fudge[set_name]
-    #
-    #     return -2*np.sum(TotalLogPoisson)
