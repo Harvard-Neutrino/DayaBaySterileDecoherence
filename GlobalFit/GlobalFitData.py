@@ -24,6 +24,7 @@ datupperbinNEOS = np.array([1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,
                             2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,
                             4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.6,5.7,5.8,5.9,6.0,6.1,6.2,6.3,6.4,6.5,6.6,6.7,6.8,6.9])
 
+# Therefore, for every bin of DayaBay, there are two bins of NEOS.
 # We are losing some bins from NEOS and DayaBay. However, we expect that such bins
 # are not the most significant and don't modify largely our result.
 
@@ -32,20 +33,26 @@ datupperbinNEOS = np.array([1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,
 number_of_bins = {'EH1': number_of_bins_DB, 'EH2': number_of_bins_DB,
                   'EH3': number_of_bins_DB, 'NEOS': number_of_bins_NEOS}
 
+# Only the upper and lower edges from the bins, respectively:
 datlowerbin = {'EH1': datlowerbinDB, 'EH2': datlowerbinDB,
               'EH3': datlowerbinDB, 'NEOS': datlowerbinNEOS}
 datupperbin = {'EH1': datupperbinDB, 'EH2': datupperbinDB,
               'EH3': datupperbinDB, 'NEOS': datupperbinNEOS}
 
+# All bin edges, including the first and the last one.
 datallbin = {'EH1': np.append(datlowerbinDB,datupperbinDB[-1]), 'EH2': np.append(datlowerbinDB,datupperbinDB[-1]),
               'EH3': np.append(datlowerbinDB,datupperbinDB[-1]), 'NEOS': np.append(datlowerbinNEOS,datupperbinNEOS[-1])}
 
+# The spacing of the bins
 deltaE = {'EH1': datupperbinDB - datlowerbinDB, 'EH2': datupperbinDB - datlowerbinDB,
               'EH3': datupperbinDB - datlowerbinDB, 'NEOS': datupperbinNEOS - datlowerbinNEOS}
+
+
 
 # DATA FILES
 # ----------------------------------
 
+# We define the following function to read the files in DB and NEOS Data directories.
 def txt_to_array(filename, sep = ","):
     """
     Input:
@@ -67,10 +74,9 @@ def txt_to_array(filename, sep = ","):
 
 # The data document should be separated by comma (,). For other delimiters, check the above function txt_to_array.
 # The data must contain this information:
-    # Number of observed events, per day, per 100 keV
-    # Number of expected events, per day, per 100 keV
-    # Number of background events, per day, per 100 keV
-# This is the only information that will be used from all_data.
+    # Number of observed events
+    # Number of expected events
+    # Number of background events
 # Modify all_data such that the observed events is in column 0, expected events in 1 and background events in 2.
 
 # Here we read the data files from DayaBay (1610.04802) and the digitised data from NEOS results (1610.05134).
@@ -78,14 +84,18 @@ dir = os.path.dirname(os.path.abspath(__file__))[:-10]
 dirDB = dir+"/DayaBay/Data/"
 dirNEOS = dir+"/NEOS/Data/"
 
-fudge = 180.-46. # Total of days the NEOS detector was on. NEOS Data is the number of events, PER DAY.
+fudge = 180.-46. # Total of days the NEOS detector was on. Normalised from the statistical error of figure 3(c).
+# Note that the data digitised from figure 3(a) in 1610.05134 is the number of events, PER DAY.
 all_data = {'EH1': np.concatenate((txt_to_array(dirDB+"DataEH1.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH1.dat")[1:29,6:7]),axis=1),
             'EH2': np.concatenate((txt_to_array(dirDB+"DataEH2.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH2.dat")[1:29,6:7]),axis=1),
             'EH3': np.concatenate((txt_to_array(dirDB+"DataEH3.dat")[1:29,3:5],txt_to_array(dirDB+"DataEH3.dat")[1:29,6:7]),axis=1),
             'NEOS':fudge*np.concatenate((txt_to_array(dirNEOS+'AllData.dat')[3:-2,0:2],txt_to_array(dirNEOS+'AllData.dat')[3:-2,3:4]), axis = 1)}
 
+# We will also need the ratio data, digitised from figure 3(c) in 1610.05134
 ratio_data = {'NEOS': txt_to_array(dirNEOS+'AllData.dat')[3:-2,4:]}
 
+# The following data is the prediction of the 3+0 model (with standard oscillation parameters from nu-fit.org)
+# For more information on how these data is obtained, check get_expectation in GlobalFit.py
 neos_data_SM_PW = {'NEOS': np.array([4517.36176096,5059.54129615,5344.43875083,5875.71307814,6129.76758459,
                                   6547.40771313,6805.87475128,7154.26046943,7270.03639783,7482.72105086,
                                   7696.24175979,7713.68661912,7792.59449109,7863.56831131,7596.01409129,
@@ -112,9 +122,11 @@ neos_data_SM_WP = {'NEOS': np.array([4514.40653482,5056.13286082,5339.88464703,5
                                      764.21697912,670.09940263,528.23575122,492.47571455,421.17332215,
                                      362.07871724])}
 
+
 # RECONSTRUCTION MATRIX
 # ---------------------
 
+# The response matrices are read from the DayaBay&NEOS Data directories.
 reconstruct_mat = {'EH1': txt_to_array(dirDB+"ReconstructMatrix.dat"),
                    'EH2': txt_to_array(dirDB+"ReconstructMatrix.dat"),
                    'EH3': txt_to_array(dirDB+"ReconstructMatrix.dat"),
@@ -142,6 +154,7 @@ neutrino_upper_bin_edges = {'EH1': nuupperbin,
                             'EH3': nuupperbin,
                             'NEOS': nuupperbin}
 
+
 # NEUTRINO COVARIANCE MATRIX
 # --------------------------
 
@@ -155,6 +168,6 @@ neutrino_cov_mat = {'EH1': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
                     'EH3': txt_to_array(dirDB+"NeutrinoCovMatrix.dat"),
                     'NEOS': txt_to_array(dirNEOS+"NeutrinoCovMatrix.dat")[3:-1,3:-1]}
 
-# It is tricky to decide whether the NEOS covariance matrix, which contains the correlations
-# from the DayaBay spectrum which we are not using here.
-# However, for now we decide it is for the better to use it.
+# In principle, the NEOS covariance matrix is computed using the DB antineutrino flux, which
+# relies on the assumption of 3+0 oscillations. Therefore, this should not be entirely
+# self-consistent. However, we neglect the effect of this wrong assumption in the covariance matrix.

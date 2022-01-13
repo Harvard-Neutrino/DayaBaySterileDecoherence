@@ -24,6 +24,11 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 # PRELIMINAR FUNCTIONS
 # -------------------------------------------------------
 
+# We load the DayaBay class
+fitter = GF.GlobalFit()
+
+# We define a function to read the data in PlotData
+# This data is produced by PWSterileFitTableX.py  or WPSterileFitTableX.py
 def txt_to_array(filename, sep = ","):
     """
     Input:
@@ -42,8 +47,8 @@ def txt_to_array(filename, sep = ","):
     mat = np.array(mat).astype(np.float)
     return mat
 
-fitter = GF.GlobalFit()
-
+# Computes the Poisson Chi2 for given parameters.
+# This is necessary to compute the chi2 of the null hypothesis
 def getChi2(mass,angl,wave_packet = False):
     if wave_packet == False:
         model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)
@@ -52,6 +57,7 @@ def getChi2(mass,angl,wave_packet = False):
     chi2 = fitter.get_chi2(model)
     return chi2
 
+# We apply a common style to all plots
 def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
     axxis.grid(linestyle = '--')
     axxis.tick_params(axis='x')
@@ -67,6 +73,7 @@ def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
         contours.collections[i].set_label(labels[i])
     axxis.legend(loc = 'lower right', fontsize = 20)
 
+# Colorblind-sensitive colors
 color1 = '#FFB14E'
 color2 = '#EA5F94'
 color3 = '#0000FF'
@@ -75,10 +82,12 @@ titlesize = 13.
 size = (7,7)
 margins = dict(left=0.16, right=0.97,bottom=0.1, top=0.93)
 
+
 # -------------------------------------------------
 # STERILE PLANE WAVE CONTOUR - PLANE WAVE FORMALISM
 # -------------------------------------------------
 
+# We load the data
 data_PW = txt_to_array(dir+'PWSterileChi2.dat')
 data_PW = np.unique(data_PW,axis=0) # We remove duplicates from the list
 
@@ -181,7 +190,7 @@ fig_comp,ax_comp = plt.subplots(figsize = size, gridspec_kw = margins)
 cont_PW = ax_comp.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [6.18], colors = color2)
 cont_PW.collections[0].set_label(r'$2\sigma$ Plane wave')
 cont_WP = ax_comp.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-null_hyp_WP),levels = [6.18], colors = color3)
-cont_WP.collections[0].set_label(r'$2\sigma$ Wave packet')
+cont_WP.collections[0].set_label(r'$2\sigma$ Wave package')
 
 ax_comp.annotate('DB+NEOS', xy = (1.25e-3,5), size = 42)
 ax_comp.grid(linestyle = '--')
