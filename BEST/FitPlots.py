@@ -22,6 +22,12 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 # PRELIMINAR FUNCTIONS
 # -------------------------------------------------------
 
+
+# We load the GlobalFit class
+fitter = BEST.Best()
+
+# We define a function to read the data in PlotData
+# This data is produced by PWSterileFitTableX.py  or WPSterileFitTableX.py
 def txt_to_array(filename, sep = ","):
     """
     Input:
@@ -40,17 +46,18 @@ def txt_to_array(filename, sep = ","):
     mat = np.array(mat).astype(np.float)
     return mat
 
-fitter = BEST.Best()
-
+# Computes the Poisson Chi2 for given parameters.
+# This is necessary to compute the chi2 of the null hypothesis
 def getChi2(mass,angl,wave_packet = False):
     if wave_packet == False:
         model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)
     else:
         model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
-    # chi2 = fitter.get_poisson_chi2(model)
+
     chi2 = fitter.get_chi2(model)
     return chi2
 
+# We apply a common style to all plots
 def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
     axxis.grid(linestyle = '--')
     axxis.tick_params(axis='x')
@@ -64,6 +71,7 @@ def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
         contours.collections[i].set_label(labels[i])
     axxis.legend(loc = 'lower left', fontsize = 20)
 
+# Colorblind-sensitive colors
 color1 = '#FFB14E'
 color2 = '#EA5F94'
 color3 = '#0000FF'
@@ -179,7 +187,7 @@ fig_comp,ax_comp = plt.subplots(figsize = size, gridspec_kw = margins)
 cont_PW = ax_comp.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-bestfit_PW[2]),levels = [6.18], colors = color2, linestyles = ['solid'])
 cont_PW.collections[0].set_label(r'$2\sigma$ Plane wave')
 cont_WP = ax_comp.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-bestfit_WP[2]),levels = [6.18], colors = color3,linestyles = ['solid'])
-cont_WP.collections[0].set_label(r'$2\sigma$ Wave packet')
+cont_WP.collections[0].set_label(r'$2\sigma$ Wave package')
 
 ax_comp.annotate('PROSPECT', xy = (5e-3,14), size = 42)
 ax_comp.grid(linestyle = '--')

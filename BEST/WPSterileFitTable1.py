@@ -1,14 +1,16 @@
 import FitClass as FC
 import numpy as np
 import time
-dir = 'PlotData/'
 
+# This is an example program of how to obtain points of the chi2
+# Here we use the variables and functions from FitClass.py
+
+# Tune these arrays to the interval of parameters you wish to study
 datangl1 = np.linspace(0,1,120)
 datmass1 = np.linspace(0,10,120)
 
-# datmass1 = np.array([10.0])
-# datangl1 = np.linspace(0.2,0.7,20)
-# datangl1 = np.array([0.4])
+# The data is saved inside PlotData
+dir = 'PlotData/'
 
 begin = time.time()
 fit = FC.SterileFit(wave_packet = True)

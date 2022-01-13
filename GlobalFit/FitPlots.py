@@ -24,7 +24,7 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 # PRELIMINAR FUNCTIONS
 # -------------------------------------------------------
 
-# We load the DayaBay class
+# We load the GlobalFit class
 fitter = GF.GlobalFit()
 
 # We define a function to read the data in PlotData
