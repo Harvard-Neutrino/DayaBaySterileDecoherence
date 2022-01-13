@@ -6,9 +6,9 @@ sys.path.append(os.getcwd()[:-9]+common_dir)
 import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF
 import PROSPECTParameters as PROSP
+
 import numpy as np
 from scipy import integrate as integrate
-from scipy import interpolate as interpolate
 
 
 class Prospect:
@@ -19,21 +19,20 @@ class Prospect:
         """
         Initialises the class.
         No numeric information is found here. All parameters and data are
-        gathered in files 'PROSPECTParameters.py' or 'PROSPECTData.py',
+        gathered in files 'PROSPECTParameters.py',
         in order to have a better organisation and to make tuning easier.
         For more information on these data, check the files.
+        This class implements the PROSPECT fit
         """
-        # Physical quantities
 
-        # THIS MUST BE CHANGED!!! THE RECONSTRUCTION MATRIX HAS DIFFERENT DELTAE IN TRUE/REC
         self.deltaEtfine = 0.1 # true energy in MeV. It is the resolution of the Etrue to Erec matrix.
 
         # This is the normalisation to match the PROSPECT data of expected events without oscillations (assuming no sterile osc).
         # In principle, we leave that each baseline has its own normalisation factor, because it has a different
-        # number and characterstics of segments. However, the values are similar because of the construction of the experiment.
+        # number and characteristics of segments. However, the values are similar because of the construction of the experiment.
+        # However, note that the analysis is independent of the flux normalisation.
         self.TotalNumberOfProtons = {1: 7.90080e+48, 2: 7.907335e+48, 3: 7.816715e+48, 4: 7.82966e+48, 5: 7.78062e+48,
                                      6: 7.69161e+48, 7: 7.660865e+48, 8: 7.723525e+48, 9: 7.77155e+48, 10: 7.76728e+48}
-                # self.TotalNumberOfProtonsDB = 1.06406e06#*180/(180-46)
 
         self.sets_names = PROSP.exp_names
         self.reactor_names  = PROSP.reac_names
@@ -64,42 +63,6 @@ class Prospect:
         self.ObservedData = PROSP.observed_data
         self.PredictedBackground = PROSP.background
         self.DataError = PROSP.error_data
-
-
-    # # FUNCTIONS TO MAKE HISTOGRAMS (Probably not necessary in PROSPECT)
-    # # -----------------------------------
-    #
-    # def get_true_energy_bin_centers(self):
-    #     """
-    #     This function divides the whole reconstructed energy spectrum in
-    #     the energy intervals which the experiment is capable to resolve.
-    #     The resolution is given by deltaEfine (here, 0.05 MeV).
-    #     This energy will allow neutrino energies from 0.78 MeV to 12.78 MeV (after
-    #     summing 0.78 MeV in the function), approximately.
-    #
-    #     Output:
-    #     returns a numpy array (the same length as the resolution
-    #     matrix) with the center of the bins of the resolution of the experiment.
-    #     """
-    #     enutrue = []
-    #     for i in range(0,len(self.FromEtrueToErec[1])):
-    #         enutrue.append((i+0.5)*self.deltaEfine)
-    #     return enutrue
-    #
-    # def FindFineBinIndex(self,energy):
-    #     """
-    #     Input:
-    #     energy (float): prompt energy or neutrino true energy.
-    #
-    #     Output:
-    #     An integer telling us the index of the true_energy_bin_centers
-    #     bin in which the input energy is found.
-    #     """
-    #     dindex = np.int(np.floor(energy/self.deltaEfine - 0.5))
-    #     if dindex<0:
-    #         return 0
-    #     else:
-    #         return dindex
 
 
     # FUNCTIONS TO GET FLUX, DISTANCES AND CROSS-SECTION
@@ -148,7 +111,7 @@ class Prospect:
 
     def calculate_naked_event_expectation_simple(self,model,segment,i, do_we_average = False):
         """
-        This function implements formula (A.2) from 1709.04294, adapted to PROSPECT.
+        This function implements formula (A18), for a single segment.
         Here we don't neglect the width of the segment, and integrate over it.
         However, the integral is not exhaustive, since we consider the segment small.
 
@@ -158,7 +121,7 @@ class Prospect:
         segment (str): name of the experimental hall studied.
         i (int): the data bin we want to compute the expectation of.
         bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
-        average (bool): whether to pick oscProbability_av or not from the model.
+        do_we_average (bool): whether to pick oscProbability_av or not from the model.
         """
         DeltaNeutronToProtonMass = 1.29322 # MeV from PDG2018 mass differences
         ElectronMass = 0.511 # MeV
@@ -170,8 +133,7 @@ class Prospect:
         # we want to make events inside the data bin i.
 
         W = self.get_width(segment) # in meters, the detector total width is 2W
-        ndL = 5 # We only integrate through L with three points. It is probably enough.
-        # ndL = 1 #We prefer not to integrate in L yet.
+        ndL = 5 # We only integrate through L with five points. It is probably enough.
         dL = (2*W)/(ndL-1)
 
         for reactor in self.reactor_names:
@@ -203,10 +165,9 @@ class Prospect:
 
                     # real antineutrino energies loop ends
                 # L distances loop ends
-            #expectation /= L**2 # this is an error, and the root of all evil in the world
 
             # reactor loop ends
-            # the two deltaEfine are to implement a trapezoidal numeric integration in etrue and erec
+            # the deltaEtfine is to implement a trapezoidal numeric integration in etf
             # the dL is to implement a trapezoidal numeric integration in L
             # we divide by the total width 2W because we want an intensive quantity! It is an average, not a total sum.
         return expectation*self.deltaEtfine*self.EfficiencyOfHall[segment]*dL/(2*W)
@@ -214,7 +175,7 @@ class Prospect:
 
     def integrand(self,enu,L,model,segment,erf,etf):
         """
-        This function returns the integrand of formula (A.2) from 1709.04294.
+        This function returns the integrand of formula (A18).
 
         Input:
         erf, etf: indices of reconstructed and true energies, in the response matrix.
@@ -234,7 +195,7 @@ class Prospect:
 
     def calculate_naked_event_expectation_integr(self,model,segment,i):
         """
-        This function implements formula (A.2) from 1709.04294.
+        This function implements formula (A18), for a single segment.
         Here we don't neglect the width of the detector, and integrate over it.
         In this case, however, we perform an integral inside the fine energy
         bins, to take into account possible rapid oscillations (e.g., a heavy sterile).
@@ -284,12 +245,26 @@ class Prospect:
             # real antineutrino energies loop ends
 
             # # reconstructed energies loop ends
-            # only one trapezoidal numeric integration has been done
 
         # reactor loop ends
         return expectation*dL/(2*W)*self.EfficiencyOfHall[segment]
 
+
+
     def get_baseline_expectation(self,model,baseline,do_we_integrate = False, do_we_average = False):
+        """
+        This function sums the number of expected events for the segments
+        inside a given baseline.
+
+        Input:
+        model: a Models.py class with which to compute oscillation probabilities.
+        baseline (int): the index of the baseline we want to compute the expectations of.
+        do_we_integrate: whether to integrate inside each energy bin or not.
+        do_we_average: whether to use the oscProbability_av from the model.
+
+        Output:
+        (float) the total number of expected events in the baseline.
+        """
         exp = np.zeros(self.n_bins)
 
         if do_we_integrate == False:
@@ -302,34 +277,36 @@ class Prospect:
 
         return exp*self.TotalNumberOfProtons[baseline]
 
+
+
     def get_expectation_unnorm_nobkg(self,model,do_we_integrate = False, do_we_average = False):
         """
-        Computes the histogram of expected number of events without normalisation
-        to the real data, and without summing the predicted background.
+        Computes the histogram of expected number of events.
 
         Input:
         model: a Models.py class with which to compute oscillation probabilities.
         do_we_integrate: whether to integrate inside each energy bin or not.
         do_we_average: whether to use the oscProbability_av from the model.
-        custom_bins: a numpy array of custom bins to calculate expectations with. Useful for GlobalFit.py
 
         Output:
-        A dictionary with a string key for each experimental hall, linking to a
-        numpy array with the expected events for each histogram bin.
-        NO DICTIONARY HERE, WE DON'T LIKE DICTIONARIES
+        A 160-dimensional list with the expected events in the 16 energy bins
+        of each of the 10 different baselines, ordered in increasing length,
+        and then in increasing energy.
         """
+
         Expectation = []
         for baseline in self.Baselines:
             Expectation = np.append(Expectation,self.get_baseline_expectation(model,baseline,do_we_integrate = do_we_integrate, do_we_average = do_we_average))
 
-        # Expectation = dict([(set_name,np.array(Expectation)) for set_name in self.sets_names])
         return Expectation
+
 
 
     def normalization_to_data(self,events):
         """
         Returns a normalization factor with which to normalise the expected events
-        to the predicated data according to SM.
+        to the predicated data according to SM, given by the collaboration
+        This is not used in the algorithm, but for computing the self.TotalNumberOfProtons
 
         Input:
         events: a dictionary with a string key for each experimental hall, linking to
@@ -338,18 +315,15 @@ class Prospect:
 
         Output:
         norm: a normalisation factor with which to multiply events such that the total
-        number of events of "events" is the same as the one from NEOS data.
+        number of events of "events" is the same as the one from PROSPECT SM prediction.
         """
         TotalNumberOfEvents = []
 
         for baseline in self.Baselines:
             TotalNumberOfEvents.append(np.sum(self.PredictedData[baseline]))
 
-        # TotalNumberOfBkg = dict([(set_name,np.sum(self.PredictedBackground[set_name]))
-        #                           for set_name in self.sets_names])
         events = events.reshape((10,16))
-        # norm = dict([(set_name,(TotalNumberOfEvents-TotalNumberOfBkg[set_name])/np.sum(events[set_name]))
-                     # for set_name in self.sets_names])
+
         norm = np.array(TotalNumberOfEvents)/np.sum(events,axis = 1)
         norm = dict([(bl,norm[bl-1]) for bl in self.Baselines])
 
@@ -357,60 +331,69 @@ class Prospect:
         return norm
 
 
+
     def get_expectation(self,model, do_we_integrate = False, do_we_average = False):
         """
+        Returns the same data as get_expectation_unnorm_nobkg, but inside
+        a dictionary, with each key being the index for each baseline.
+
         Input:
         model: a model from Models.py for which to compute the expected number of events.
-
-        Output:
-        A 2-tuple with the expectation from the model and from a model without oscillations.
-        Each element of a tuple is a dictionary, where each key is an experimental hall.
-        Such key links to a numpy array which contains: the histogram of expected events,
-        the error bars of each bin, the lower limits of each bin, and the upper limits of each bin.
-        The error bars are purely statistical, i.e. sqrt(N).
+        do_we_integrate: whether to integrate inside each energy bin or not.
+        do_we_average: whether to use the oscProbability_av from the model.
         """
 
         # We build the expected number of events for our model and we roughly normalise so that is of the same order of the data.
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = do_we_integrate, do_we_average = do_we_average)
 
-        # exp_events = dict([(set_name,exp_events[set_name] +self.PredictedBackground[set_name]) for set_name in self.sets_names])
-        self.normalization_to_data(exp_events)
-
-        # For the NEOS single fit, there are no nuissance parameters. We just return the data.
-        # model_expectations = dict([(set_name,np.array([(exp_events[set_name][i],np.sqrt(exp_events[set_name][i]),
-        #                                                 self.DataLowerBinEdges[i],self.DataUpperBinEdges[i])
-        #                                                 for i in range(0,self.n_bins)]))
-        #                           for set_name in self.sets_names])
         exp_events = exp_events.reshape((10,16))
         exp_events = dict([(bl,exp_events[bl-1]) for bl in self.Baselines])
         return exp_events
 
 
     def get_data_per_baseline(self):
+        """
+        Returns the observed data of PROSPECT, inside
+        a dictionary, with each key being the index for each baseline.
+        """
+
         data = self.ObservedData
+
+        # The PROSPECT data is organised for differen segments.
+        # Thus, we must sum for all the segments inside each baseline.
         data_per_baseline = {}
         for bl in self.Baselines:
             total_data = 0.0
             for segment in self.Baselines[bl]:
                 total_data += data[segment]
             data_per_baseline.update({bl:total_data})
+
         return data_per_baseline
 
     def get_bkg_per_baseline(self):
+        """
+        Returns the background data of PROSPECT, inside
+        a dictionary, with each key being the index for each baseline.
+        """
+
         bkg = self.PredictedBackground
+
+        # The PROSPECT data is organised for differen segments.
+        # Thus, we must sum for all the segments inside each baseline.
         data_per_baseline = {}
         for bl in self.Baselines:
             total_data = 0.0
             for segment in self.Baselines[bl]:
                 total_data += bkg[segment]
             data_per_baseline.update({bl:total_data})
+
         return data_per_baseline
 
 
 
 
 # ----------------------------------------------------------
-# BUILDING THE COVARIANCE MATRIX
+# COVARIANCE MATRIX
 # ----------------------------------------------------------
 
     def get_covariance_matrix(self):
@@ -418,7 +401,7 @@ class Prospect:
         Returns a numpy array with the total covariance matrix in prompt energy,
         taking into account both systematic and statistical errors.
 
-        This function is not in use.
+        This function is not really in use.
         """
         return self.CovarianceMatrix
 
@@ -430,39 +413,38 @@ class Prospect:
         return np.linalg.inv(np.array(self.CovarianceMatrix))
 
 
+
+
 # ----------------------------------------------------------
 # FITTING THE DATA
 # ----------------------------------------------------------
 
-
     def get_chi2(self,model, do_we_integrate = False, do_we_average = False):
         """
-        Computes the "chi2" value from the total number of events in figure 3(a),
-        using the covariance matrix provided in NEOSParameters.py
+        Computes the chi2 value from formula (A15).
 
         Input:
         model: a model from Models.py for which to compute the expected number of events.
+        do_we_integrate: whether to integrate inside each energy bin or not.
+        do_we_average: whether to use the oscProbability_av from the model.
 
         Output: (float) the chi2 value.
         """
         Vinv = self.get_inverse_covariance_matrix()
 
+        # We retrieve the data and compute Me as defined in (A17)
         Data = self.get_data_per_baseline()
         Data = np.array([Data[bl] for bl in self.Baselines])
         Data_sum = np.repeat(np.sum(Data, axis = 1),16)
         Data = Data.flatten()
 
-        # Prediction from PROSPECT, has a chi2 = 129.
-        # exp_events = self.PredictedData
-        # exp_events = np.array([exp_events[bl] for bl in self.Baselines]).flatten()
-
         # Our prediction
         exp_events = self.get_expectation_unnorm_nobkg(model,do_we_integrate = do_we_integrate, do_we_average = do_we_average)
 
-
+        # We compute Pe as defined in (A17)
         Events_sum = np.repeat(np.sum(exp_events.reshape((10,16)), axis = 1),16)
 
         x = Data-Data_sum*exp_events/Events_sum
-
         chi2 = x.dot(Vinv.dot(x))
+
         return chi2

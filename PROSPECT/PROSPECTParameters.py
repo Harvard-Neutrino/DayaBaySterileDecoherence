@@ -1,8 +1,9 @@
 import numpy as np
 import os
 
-
-# We define this function to read and save the info on the file.
+# All the data here has been taken from the auxiliary files of PROSPECT 2006.11210
+# The files are in the same original format and are saved in the Data/ directory
+# We define this function to read and save the info on the files.
 def txt_to_array(filename, sep = ","):
     """
     Input:
@@ -24,8 +25,6 @@ def txt_to_array(filename, sep = ","):
 
 dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 
-
-
 # -----------------------------------------------------
 #    EXPERIMENTAL PARAMETERS
 # -----------------------------------------------------
@@ -36,11 +35,15 @@ dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 exp_names = ['PROSPECT']
 reac_names = ['HFIR']
 
+# The data from PROSPECT has information on all the segments that its detector is divided into.
+# However, only a few of them are active (i.e. they produce the final data).
+# The indices for such active segments are defined here
 active_segments = np.array([15,16,19,20,22,30,33,35,37,38,39,45,49,51,53,54,57,58,59,61,62,64,65,66,67,71,72,74,75,76,77,78,80,81,82,85,
           88,89,90,91,92,93,95,96,99,100,101,103,104,105,106,108,109,110,113,114,116,117,118,119,120,123,124,129,131,132,134,135,137,138])
 number_of_segments = active_segments.shape[0]
 
-isotopes = ['U235']#,'U238','PU239','PU241']
+# The HFIR reactor from the PROSPECT experiment is only made of U235.
+isotopes = ['U235']
 
 
 
@@ -53,7 +56,7 @@ segment_map = txt_to_array(dir+'1.1_Osc_SegmentMap.txt')
 distance = dict([(segment,{'HFIR':segment_map[segment,1]}) for segment in active_segments])
 
 # All segments which have a similar distance to the reactor are put into a common group, the "baseline".
-# The information on which baseline corresponds to each detector is on the same file.
+# The information on which segtment corresponds to each baseline is on the same file.
 # Here we define a dictionary which tells us which segments belong to each baseline.
 active_segment_map = segment_map[active_segments]
 baselines = dict([(bl,active_segment_map[active_segment_map[:,0] == bl][:,2].astype(int)) for bl in range(1,11)])
@@ -64,7 +67,6 @@ baselines = dict([(bl,active_segment_map[active_segment_map[:,0] == bl][:,2].ast
 # We can approximate each segment by a 30cm cube. Physics in a nutshell!
 segment_width = 0.50/2 # this is half-width of HFIR reactor.
 width = dict([(segment,segment_width) for segment in active_segments])
-# We still need to check if this will be of any use
 
 
 
@@ -72,8 +74,8 @@ width = dict([(segment,segment_width) for segment in active_segments])
 # -----------------------------
 # This has been taken from Table IX (nueve) on 1607.05378.
 # In principle this only applies to DayaBay, but we have assumed the same works for PROSPECT.
-# However, since HFIR from PROSPECT only uses U235, this should not worry us, it might be absorbed in
-# a renormalisation of the flux.
+# However, since HFIR from PROSPECT only uses U235, this should not worry us, it is absorbed
+# by a renormalisation of the flux.
 mean_fis_frac = {'U235':0.655}#,'U238':0.0720,'PU239':0.235,'PU241':0.038}
 
 
@@ -89,7 +91,7 @@ efficiency = dict([(segment,efficiency_data[segment,2]) for segment in active_se
 
 
 
-#   RECONSTRUCTION/RESPONSE MATRIX
+# RECONSTRUCTION/RESPONSE MATRIX
 # -----------------------------------------------------
 
 # Every active segment has its own response matrix, which is saved in '1.3_Osc_DetResponseXX.txt'
@@ -107,11 +109,12 @@ reconstruct_mat = dict([(segment,txt_to_array(dir+'1.3_Osc_DetResponse{}.txt'.fo
 covariance_matrix = txt_to_array(dir+"1.2_Osc_CovarianceMatrix.txt")
 
 
+
+
+
 # -------------------------------------------------------------
 #   EXPERIMENTAL DATA
 # -------------------------------------------------------------
-
-
 
 # TRUE ENERGY BINS
 # -----------------------------------------------------------

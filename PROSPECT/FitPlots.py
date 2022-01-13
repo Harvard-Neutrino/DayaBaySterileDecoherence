@@ -181,7 +181,7 @@ fig_comp,ax_comp = plt.subplots(figsize = size, gridspec_kw = margins)
 cont_PW = ax_comp.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [6.18], colors = color2, linestyles = ['solid'])
 cont_PW.collections[0].set_label(r'$2\sigma$ Plane wave')
 cont_WP = ax_comp.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-null_hyp_WP),levels = [6.18], colors = color3,linestyles = ['solid'])
-cont_WP.collections[0].set_label(r'$2\sigma$ Wave packet')
+cont_WP.collections[0].set_label(r'$2\sigma$ Wave package')
 
 ax_comp.annotate('PROSPECT', xy = (5e-3,14), size = 42)
 ax_comp.grid(linestyle = '--')
@@ -196,3 +196,4 @@ ax_comp.set_ylim([0.08,25.])
 ax_comp.legend(loc = 'lower left', fontsize = 20)
 
 fig_comp.savefig('Figures/ContourComparison.png')
+fig_comp.savefig('Figures/ContourComparison.pdf')

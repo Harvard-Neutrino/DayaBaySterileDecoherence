@@ -20,7 +20,7 @@ class StandardModelFit:
 
     def getChi2(self,mass,angl):
         """
-        Computes the "chi2" value from the Poisson probability, taking into account
+        Computes the "chi2" value from (A8), taking into account
         every bin from every detector in the global fit, for a given square mass and mixing.
 
         Input:
