@@ -46,3 +46,12 @@ The `Common_cython` directory includes diferent programs which are required by a
 `InverseBetaDecayCrossSection.py` defines different functions to be compute the IBD cross-sections, as its own name states.
 
 `Models.pyx` defines different classes of models which define different oscillation probabilities. For example, there is a class for the standard oscillations (with parameters from nu-fit.org), or some classe for oscillations with a sterile neutrino. The only requirement for this classes is that they have a method `oscProbability` and `oscProbability_av` which return the full and averaged oscillation probabilities at distance L and energy E, respectively.
+
+## Miscellaneous
+Finally, the `Misc` folder contains different and diverse files.
+
+`Plot Neutrino Experiments.ipynb` reproduces figure 1 in our paper, e.g. plots the position in (L,E) of relevant neutrino oscillation experiments, and the relevant scales.
+
+`SuperFitPlots.py` reproduces figure 4 of our paper, e.g. computes the total chi2 of all nuclear reactor experiments and of BEST, and plots the exclusion contours and preferred regions. These are saved in the subdirectory `/AllFitFigures`.
+
+`Probability.py` is simply used to draw toy plots of the oscillation probabilities defined in `Models.py`.
