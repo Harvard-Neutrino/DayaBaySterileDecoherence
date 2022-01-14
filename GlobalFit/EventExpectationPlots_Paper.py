@@ -38,6 +38,7 @@ dm2 = 2.32
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 Model_ste2 = Models.WavePacketSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
+
 # -------------------------------------------------------------
 # INITIAL COMPUTATIONS
 # ------------------------------------------------------------
@@ -97,7 +98,7 @@ axNEOS.set_ylabel(r"$P_{ee}^{\text{ste}}/P_{ee}^{\text{SM}}$", fontsize = 24)
 # axNEOS.tick_params(axis='y', labelsize=13)
 axNEOS.grid(linestyle="--")
 axNEOS.axis([1.2,7.0,0.9,1.1])
-axNEOS.legend(loc="lower left",ncol = 2, fontsize=18)
+axNEOS.legend(loc="lower left",ncol = 2, fontsize=18, frameon = True, framealpha = 0.8)
 
 figNEOS.suptitle(r'$\text{NEOS},\ \Delta m^2_{41} = %.2f \text{ eV}^2$, $\sin^2 2\theta_{14} = %.2f$'%(dm2,sin2))
 figNEOS.savefig("Figures/NEOSRatio/NEOSRatio_Paper.png")

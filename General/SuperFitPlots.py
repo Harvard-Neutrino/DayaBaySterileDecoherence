@@ -2,7 +2,7 @@ import sys
 import os
 import time
 common_dir = '/Common_cython'
-main_dir = os.getcwd()
+main_dir = os.getcwd()[:-8]
 sys.path.append(main_dir+common_dir)
 sys.path.append(main_dir+"/GlobalFit")
 sys.path.append(main_dir+"/PROSPECT")
