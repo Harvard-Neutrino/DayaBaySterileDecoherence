@@ -1,7 +1,7 @@
 import sys
 import os
 common_dir = '/Common_cython'
-main_dir = os.getcwd()[:-8]
+main_dir = os.getcwd()[:-5]
 sys.path.append(main_dir+common_dir)
 sys.path.append(main_dir+"/DayaBay")
 sys.path.append(main_dir+"/NEOS")
