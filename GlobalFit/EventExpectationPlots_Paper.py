@@ -88,7 +88,7 @@ figNEOS,axNEOS = plt.subplots(1,1,figsize = (8,6),gridspec_kw=margins)
 
 set = 'NEOS'
 axNEOS.step(x_ax[set],ratio, where = 'mid', label = 'Plane wave', zorder = 3, color = color2)
-axNEOS.step(x_ax[set],ratio2, where = 'mid', label = 'Wave package', zorder = 2, color = color3)
+axNEOS.step(x_ax[set],ratio2, where = 'mid', label = 'Wave packet', zorder = 2, color = color3)
 axNEOS.errorbar(x_ax[set],fitter.NEOSRatioData, yerr = fitter.NEOSRatioStatError, label = "NEOS data", fmt = "ok", zorder = 1, elinewidth = 1)
 axNEOS.plot(x_ax[set],np.ones([fitter.n_bins[set]]),linestyle = 'dashed', color = 'k', zorder = 0.1)
 

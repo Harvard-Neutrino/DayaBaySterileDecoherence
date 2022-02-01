@@ -3,6 +3,7 @@ import os
 import time
 common_dir = '/Common_cython'
 main_dir = os.getcwd()[:-5]
+print(main_dir)
 sys.path.append(main_dir+common_dir)
 sys.path.append(main_dir+"/GlobalFit")
 sys.path.append(main_dir+"/PROSPECT")
@@ -23,9 +24,9 @@ import scipy.interpolate
 
 
 path_to_style = main_dir + common_dir
-dirGF = 'GlobalFit/PlotData/'
-dirPS = 'PROSPECT/PlotData/'
-dirBEST = 'BEST/PlotData/'
+dirGF = main_dir+'/GlobalFit/PlotData/'
+dirPS = main_dir+'/PROSPECT/PlotData/'
+dirBEST = main_dir+'/BEST/PlotData/'
 plotdir = 'AllFitFigures/'
 plt.style.use(path_to_style+r"/paper.mplstyle")
 matplotlib.rcParams.update({'text.usetex': True})
@@ -283,7 +284,7 @@ fig_comp,ax_comp = plt.subplots(figsize = size, gridspec_kw = margins)
 cont_PW = ax_comp.tricontour(data_PW[:,1],data_PW[:,0],(data_PW[:,2]-null_hyp_PW),levels = [6.18], colors = color2, zorder = 10)
 cont_PW.collections[0].set_label(r'$2\sigma$ Plane wave')
 cont_WP = ax_comp.tricontour(data_WP[:,1],data_WP[:,0],(data_WP[:,2]-null_hyp_WP),levels = [6.18], colors = color3, zorder = 20)
-cont_WP.collections[0].set_label(r'$2\sigma$ Wave package')
+cont_WP.collections[0].set_label(r'$2\sigma$ Wave packet')
 # ax_comp.scatter(dataBEST_PW[:,1],dataBEST_PW[:,0],marker = '+', s = 1.) # This tells us the resolution of our table
 
 
@@ -309,7 +310,7 @@ ax_comp.set_xlabel(r"$\sin^2 2 \theta_{14}$", fontsize = 24)
 ax_comp.set_xlim([4e-3,1])
 ax_comp.set_ylim([8e-2,10])
 ax_comp.legend(loc = 'upper left', fontsize = 18)
-ax_comp.legend(proxy,[r'$2\sigma$ Plane wave',r'$2\sigma$ Wave package',r'BEST $2\sigma$ PW',r'BEST $2\sigma$ WP'],loc = 'upper left', fontsize = 17)
+ax_comp.legend(proxy,[r'$2\sigma$ Plane wave',r'$2\sigma$ Wave packet',r'BEST $2\sigma$ PW',r'BEST $2\sigma$ WP'],loc = 'upper left', fontsize = 17)
 
 fig_comp.savefig(plotdir+'ContourComparison.pdf')
 fig_comp.savefig(plotdir+'ContourComparison.png')
