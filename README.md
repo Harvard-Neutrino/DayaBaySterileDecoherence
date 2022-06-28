@@ -1,8 +1,17 @@
 # DayaBaySterileDecoherence
 
-This is a very simple Python program designed to analyse different low-energy sterile neutrino experiments, and which is connected to our paper [here](https://arxiv.org/abs/2201.05108). Namely, the program is capable of analysing the [DayaBay](https://arxiv.org/abs/1610.04802v1), [NEOS](https://arxiv.org/abs/1610.05134v4), [PROSPECT](https://arxiv.org/abs/2006.11210v2) and [BEST](https://arxiv.org/abs/2109.11482v1) data. The analyses focus on studying sterile neutrino oscillations, addressing possible differences between the plane wave approximation and the more complete wave package formalism.
+This is a very simple Python program designed to analyse different low-energy sterile neutrino experiments, and which is connected to our paper [here](https://arxiv.org/abs/2201.05108). Namely, the program is capable of analysing the [DayaBay](https://arxiv.org/abs/1610.04802v1), [NEOS](https://arxiv.org/abs/1610.05134v4), [PROSPECT](https://arxiv.org/abs/2006.11210v2) and [BEST](https://arxiv.org/abs/2109.11482v1) data. The analyses focus on studying sterile neutrino oscillations, addressing possible differences between the plane wave approximation and the more complete wave package formalism. However, this program can be extended to arbitrary oscillation formulas.
 
 In this file we briefly introduce the program and the different analyses and plots one can do with it.
+
+## Before starting
+In order for most scripts to work, one needs to compile the following file:
+
+```
+user@user: ~/DayaBaySterileDecoherence$ sh Common_cython/compile.sh
+```
+
+This will prepare the necessary libraries, which are written in Cython. This same command must be done each time a modification is done to the file `Models.py` or `HuberMullerFlux.py`.
 
 ## General structure
 The main folder of the program contains 5+2 directories. Namely:
@@ -22,7 +31,7 @@ And not
 ```
 user@user: ~/DayaBaySterileDecoherence$ python3 NEOS/FitPlots.py
 ```
-This last command may (or may not) rise some errors.
+This last command may (or may not) rise some errors. Sorry for the inconvenience.
 
 
 ## Experiment analysis directories
@@ -34,7 +43,7 @@ This section describes the content inside BEST, DayaBay, GlobalFit, NEOS and PRO
 
 `EventExpectationPlots.py` is, as the same name says, a program to compute event expectation and plot them different ways: measured spectrum, ratio to the standard oscillations, the value of the test statistic per bin... The figures are saved in the subdirectory `/Figures`
 
-`FitClass.py` defines a class to ease the task of computing the test statistic for different values of the mass and the mixing. This class is then called by `PWSterileFitTable.py` and `WPSterileFitTable.py`, which write a file the value of this statistic in the subdirectory `/PlotData`.
+`FitClass.py` defines a class to ease the task of computing the test statistic for different values of the mass and the mixing. This class is then called by `PWSterileFitTable.py` and `WPSterileFitTable.py`, which write in a file the value of this statistic in the subdirectory `/PlotData`.
 
 `FitPlots.py` draws the exclusion contours using the data written by these files, and found in `/PlotData/PWSterileChi2.dat` or `/PlotData/WPSterileChi2.dat`.
 
@@ -45,7 +54,7 @@ The `Common_cython` directory includes diferent programs which are required by a
 
 `InverseBetaDecayCrossSection.py` defines different functions to be compute the IBD cross-sections, as its own name states.
 
-`Models.pyx` defines different classes of models which define different oscillation probabilities. For example, there is a class for the standard oscillations (with parameters from nu-fit.org), or some classe for oscillations with a sterile neutrino. The only requirement for this classes is that they have a method `oscProbability` and `oscProbability_av` which return the full and averaged oscillation probabilities at distance L and energy E, respectively.
+`Models.pyx` defines different classes of models which define different oscillation probabilities. For example, there is a class for the standard oscillations (with parameters from nu-fit.org), or some classe for oscillations with a sterile neutrino. The only requirement for this classes is that they have a method `oscProbability` and `oscProbability_av` which return the full and averaged oscillation probabilities at distance L and energy E, respectively. Feel free to write your own class!
 
 ## Miscellaneous
 Finally, the `Misc` folder contains different and diverse files.
