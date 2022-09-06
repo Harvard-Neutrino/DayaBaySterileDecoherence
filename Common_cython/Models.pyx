@@ -85,14 +85,15 @@ class PlaneWaveSM:
 # Uses the approximate formula from Daya Bay. No matter effects.
 # -----------------------------------------------------------
 class WavePacketSM:
-    def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3):
+    def __init__(self,Sin22Th13 = 0.0868525,DM2_31 = 2.515e-3, Sigma = 2.1e-4):
+        # DM2 in eV^2, Sigma in nm.
         self.th13 = np.arcsin(sqrt(Sin22Th13))/2.
         self.th12 = 0.583763
         self.dm2_31 = DM2_31
         self.dm2_21 = 7.42e-5
         self.dm2_32 = self.dm2_31 - self.dm2_21
         nm = 50677.308*1e-7 # 1/eV
-        self.sigmax = 2.1e-4*nm # after multiplying by nm, sigmax in 1/eV
+        self.sigmax = Sigma*nm # after multiplying by nm, sigmax in 1/eV
 
     def fosc(self, double enu, double L,double deltam):
         return cos(L*deltam/(2*enu))*np.exp(-L**2*deltam**2/(32.*enu**4*self.sigmax**2))
@@ -180,7 +181,7 @@ class PlaneWaveSterile:
 # Uses the final formula for computation efficiency. No matter effects.
 # -----------------------------------------------------------
 class WavePacketSterile:
-    def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1):
+    def __init__(self,Sin22Th14 = 0.01,DM2_41 = 0.1, Sigma = 2.1e-4):
         self.th14 = np.arcsin(sqrt(Sin22Th14))/2.
         self.th13 = np.arcsin(sqrt(0.0868525))/2.
         self.th12 = 0.583763
@@ -191,7 +192,7 @@ class WavePacketSterile:
         self.dm2_42 = self.dm2_41 - self.dm2_21
         self.dm2_43 = self.dm2_41 - self.dm2_31
         nm = 50677.308*1e-7 # 1/eV
-        self.sigmax = 2.1e-4*nm # after multiplying by nm, sigmax in 1/eV
+        self.sigmax = Sigma*nm # after multiplying by nm, sigmax in 1/eV
 
     def fosc(self,double enu, double L, double deltam):
         return cos(L*deltam/(2*enu))*np.exp(-L**2*deltam**2/(32.*enu**4*self.sigmax**2))

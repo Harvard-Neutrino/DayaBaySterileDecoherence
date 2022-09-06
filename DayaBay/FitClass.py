@@ -18,7 +18,7 @@ class StandardModelFit:
         self.fitter = DB.DayaBay()
 
 
-    def getChi2(self,mass,angl):
+    def getChi2(self,mass,angl, sigma = 2.1e-4):
         """
         Computes the "chi2" value from (A8), taking into account
         every bin from every detector in the global fit, for a given square mass and mixing.
@@ -32,13 +32,13 @@ class StandardModelFit:
         if self.WavePacket == False:
             model = Models.PlaneWaveSM(Sin22Th13 = angl,DM2_ee = mass)
         elif self.WavePacket == True:
-            model = Models.WavePacketSM(Sin22Th13 = angl,DM2_ee = mass)
+            model = Models.WavePacketSM(Sin22Th13 = angl,DM2_ee = mass, Sigma = sigma)
         chi2 = self.fitter.get_poisson_chi2(model)
         print(mass,angl,chi2)
         return chi2
 
 
-    def write_data_table(self,mass_ax,angl_ax,filename):
+    def write_data_table(self,mass_ax,angl_ax,filename, sigma = 2.1e-4):
         """
         Writes a square table with the chi2 values of different masses and angles in a file.
 
@@ -50,7 +50,7 @@ class StandardModelFit:
         file = open(filename,'w')
         for m in mass_ax:
             for a in angl_ax:
-                file.write('{0:1.8f},{1:1.6f},{2:7.4f}\n'.format(m,a,self.getChi2(m,a)))
+                file.write('{0:1.8f},{1:1.6f},{2:7.4f}\n'.format(m,a,self.getChi2(m,a, sigma = sigma)))
         file.close()
 
         return
@@ -84,7 +84,7 @@ class SterileFit:
         elif (mass > 2.):
             return {'integrate':False,'average':True}
 
-    def getChi2(self,mass,angl):
+    def getChi2(self,mass,angl, sigma = 2.1e-4):
         """
         Computes the "chi2" value from the Poisson probability, taking into account
         every bin from every detector in the global fit, for a given square mass and mixing.
@@ -98,14 +98,14 @@ class SterileFit:
         if self.WavePacket == False:
             model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)
         elif self.WavePacket == True:
-            model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
+            model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass, Sigma = sigma)
 
         wdwd = self.what_do_we_do(mass)
         chi2 = self.fitter.get_poisson_chi2(model,do_we_integrate = wdwd['integrate'], do_we_average = wdwd['average'])
         print(mass,angl,chi2)
         return chi2
 
-    def write_data_table(self,mass_ax,angl_ax,filename):
+    def write_data_table(self,mass_ax,angl_ax,filename, sigma = 2.1e-4):
         """
         Writes a square table with the chi2 values of different masses and angles in a file.
 
@@ -117,5 +117,5 @@ class SterileFit:
         file = open(filename,'w')
         for m in mass_ax:
             for a in angl_ax:
-                file.write('{0:1.8f},{1:1.5f},{2:7.4f}\n'.format(m,a,self.getChi2(m,a)))
+                file.write('{0:1.8f},{1:1.5f},{2:7.4f}\n'.format(m,a,self.getChi2(m,a, sigma = sigma)))
         file.close()

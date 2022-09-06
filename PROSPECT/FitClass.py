@@ -39,7 +39,7 @@ class SterileFit:
         elif (mass > 20.):
             return {'integrate':False,'average':True}
 
-    def getChi2(self,mass,angl):
+    def getChi2(self,mass,angl, sigma = 2.1e-4):
         """
         Computes the "chi2" value from formula (A15),
         for a given square mass and mixing.
@@ -53,14 +53,14 @@ class SterileFit:
         if self.WavePacket == False:
             model = Models.PlaneWaveSterile(Sin22Th14 = angl, DM2_41 = mass)
         elif self.WavePacket == True:
-            model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass)
+            model = Models.WavePacketSterile(Sin22Th14 = angl, DM2_41 = mass, Sigma = sigma)
 
         wdwd = self.what_do_we_do(mass)
         chi2 = self.fitter.get_chi2(model,do_we_integrate = wdwd['integrate'], do_we_average = wdwd['average'])
         print(mass,angl,chi2)
         return chi2
 
-    def write_data_table(self,mass_ax,angl_ax,filename):
+    def write_data_table(self,mass_ax,angl_ax,filename, sigma = 2.1e-4):
         """
         Writes a square table with the chi2 values of different masses and angles in a file.
 
@@ -72,6 +72,6 @@ class SterileFit:
         file = open(filename,'w')
         for m in mass_ax:
             for a in angl_ax:
-                chi2 = self.getChi2(m,a)
+                chi2 = self.getChi2(m,a, sigma = sigma)
                 file.write('{0:1.5f},{1:1.5f},{2:7.4f}\n'.format(m,a,chi2))
         file.close()

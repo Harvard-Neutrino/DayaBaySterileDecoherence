@@ -17,6 +17,6 @@ datmass1 = np.logspace(np.log10(0.08),0,150)
 
 begin = time.time()
 fit = FC.SterileFit(wave_packet = True, use_HM = False)
-fit.write_data_table(datmass1,datangl1,'WPSterileChi2_1.dat')
+fit.write_data_table(datmass1,datangl1,'WPSterileChi2_1.dat', sigma = 2.1e-4)
 end = time.time()
 print('Time = '+str(end-begin)[:6]+' s.')

@@ -6,15 +6,15 @@ import time
 # Here we use the variables and functions from FitClass.py
 
 # Tune these arrays to the interval of parameters you wish to study
-datmass1 = np.logspace(-4,np.log10(0.1499),120)
-datangl1 = np.logspace(-3,np.log10(0.8),120)
-
+datmass1 = np.logspace(np.log10(1.6),1,80)
+datangl1 = np.logspace(np.log10(0.003),np.log10(0.8),90)
+# Trigarà 24h, presumiblement
 
 # The data is saved inside PlotData
 dir = 'PlotData/'
 
 begin = time.time()
-fit = FC.SterileFit(wave_packet = True) # Here we choose WP formalism
-fit.write_data_table(datmass1,datangl1,dir+'WPSterileChi2_1.dat', sigma = 2.1e-4)
+fit = FC.SterileGlobalFit(wave_packet = True) # Here we choose WP formalism
+fit.write_data_table(datmass1,datangl1,dir+'WPSterileChi2_2.1e-3_2.dat', sigma = 2.1e-3)
 end = time.time()
 print('Time = '+str(end-begin)[:6]+' s.')
