@@ -98,7 +98,7 @@ def stylize(axxis,contours,t_ax = [1e-3,1], m_ax = [1e-2,10]):
     axxis.tick_params(axis='y')
     axxis.set_xscale('log')
     axxis.set_yscale('log')
-    axxis.set_ylabel(r"$\Delta m^2_{41} (\text{eV}^2)$", fontsize = 24)
+    axxis.set_ylabel(r"$\Delta m^2_{41} (\textrm{eV}^2)$", fontsize = 24)
     axxis.set_xlabel(r"$\sin^2 2 \theta_{14}$", fontsize = 24)
     axxis.set_xlim([4e-3,1])
     axxis.set_ylim([8e-2,10])
@@ -115,6 +115,16 @@ margins = dict(left=0.16, right=0.97,bottom=0.1, top=0.93)
 color1 = '#FFB14E'
 color2 = '#EA5F94'
 color3 = '#0000FF'
+
+# s90 = 0.0212
+# s99 = 0.0446
+# solar90 = np.sin(2*np.arcsin(np.sqrt(s90)))**2
+# solar99 = np.sin(2*np.arcsin(np.sqrt(s99)))**2
+
+# Solar bounds obtained from figure 1 of 2111.12530
+solar90 = 0.158 
+solar99 = 0.248
+# print(solar90,solar99)
 
 
 # -------------------------------------------------
@@ -148,7 +158,14 @@ chi2PS_PW = scipy.interpolate.griddata(pointsPS_PW, valuesPS_PW, (yy, xx), metho
 
 data_PW = np.vstack((yy.flatten(),xx.flatten(),(chi2GF_PW+chi2PS_PW).flatten())).transpose()
 
-# print(data_chi2)
+print(data_PW)
+# print(x.shape)
+
+file = open('AllFitPointsPW.dat','w')
+for i in range(x.shape[0]):
+    for j in range(y.shape[0]):
+        file.write('{0:1.8f},{1:1.6f},{2:7.4f}\n'.format(data_PW[i+200*j,0],data_PW[i+200*j,1],data_PW[i+200*j,2]))
+file.close()
 
 
 # We find which is the point with minimum chi2, i.e. our best fit.
@@ -174,7 +191,7 @@ axBF.scatter(bestfit[1],bestfit[0],marker = '+', label = r'Best fit')
 
 stylize(axBF,conts)
 
-figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f \text{ eV}^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]), fontsize = titlesize)
+figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f \textrm{ eV}^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]), fontsize = titlesize)
 figBF.savefig(plotdir+'PWContour_bestfit.png')
 
 
@@ -225,6 +242,12 @@ chi2PS_WP = scipy.interpolate.griddata(pointsPS_WP, valuesPS_WP, (yy, xx), metho
 
 data_WP = np.vstack((yy.flatten(),xx.flatten(),(chi2GF_WP+chi2PS_WP).flatten())).transpose()#
 
+file = open('AllFitPointsWP.dat','w')
+for i in range(x.shape[0]):
+    for j in range(y.shape[0]):
+        file.write('{0:1.8f},{1:1.6f},{2:7.4f}\n'.format(data_WP[i+200*j,0],data_WP[i+200*j,1],data_WP[i+200*j,2]))
+file.close()
+
 # We find which is the point with minimum chi2, i.e. our best fit.
 min_index = np.where((data_WP[:,2] == np.min(data_WP[:,2])))[0][0]
 print(min_index)
@@ -249,7 +272,7 @@ axBF.scatter(bestfit[1],bestfit[0],marker = '+', label = r'Best fit')
 
 stylize(axBF,conts)
 
-figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f \text{ eV}^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]), fontsize = titlesize)
+figBF.suptitle(r'Best fit:  $\Delta m^2_{41} = %.2f \textrm{ eV}^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(bestfit[0],bestfit[1], bestfit[2]), fontsize = titlesize)
 figBF.savefig(plotdir+'WPContour_bestfit.png')
 
 
@@ -274,7 +297,7 @@ figNH.savefig(plotdir+'WPContour_nullhyp.png')
 # 2SIGMA PLOT COMPARISON
 # ----------------------------------------------
 
-margins = dict(left=0.16, right=0.97,bottom=0.1, top=0.97)
+margins = dict(left=0.16, right=0.97,bottom=0.11, top=0.97)
 fig_comp,ax_comp = plt.subplots(figsize = size, gridspec_kw = margins)
 # contBEST = ax_comp.plot(dataBEST1[:,0],dataBEST1[:,1], label = r'BEST $2\sigma$', color = color1, zorder = 2)
 # ax_comp.fill_between(dataBEST1[:,0],dataBEST1[:,1],10, alpha = 0.4, color = color1, zorder = 0, label = 'BEST+SAGE\n+GALLEX'+r' $2\sigma$')
@@ -293,11 +316,12 @@ cont_BEST_WP = ax_comp.tricontourf(dataBEST_WP[:,1],dataBEST_WP[:,0],(dataBEST_W
 cont_BEST_PW = ax_comp.tricontour(dataBEST_PW[:,1],dataBEST_PW[:,0],(dataBEST_PW[:,2]-bestfitBEST_PW[2]), levels = [6.18], colors = color2, linewidths = 1,zorder = 6.5)
 cont_BEST_WP = ax_comp.tricontour(dataBEST_WP[:,1],dataBEST_WP[:,0],(dataBEST_WP[:,2]-bestfitBEST_WP[2]), levels = [6.18], colors = color3, linewidths = 1,zorder = 5.5)
 
-# cont_BEST_PW.collections[0].set_label(r'B+S+G $2\sigma$ PW')
-# cont_BEST_WP.collections[0].set_label(r'B+S+G $2\sigma$ WP')
+cont_BEST_PW.collections[0].set_label(r'B+S+G $2\sigma$ PW')
+cont_BEST_WP.collections[0].set_label(r'B+S+G $2\sigma$ WP')
 
 proxy = [plt.Line2D([0], [0], color=color2, lw=2), plt.Line2D([0], [0], color=color3, lw=2),
-         plt.Rectangle((0.1,0.1),0.8,0.8,fc = color2, alpha = 0.3),plt.Rectangle((0.1,0.1),0.8,0.8,fc = color3, alpha = 0.3)]
+         plt.Rectangle((0.1,0.1),0.8,0.8,fc = color2, alpha = 0.3),plt.Rectangle((0.1,0.1),0.8,0.8,fc = color3, alpha = 0.3),
+         plt.Line2D([0],[0], color = 'gray', ls = 'dashed', lw = 2)]
 
 # ax_comp.annotate('DB+NEOS', xy = (1.25e-3,5), size = 42)
 ax_comp.grid(linestyle = '--')
@@ -305,12 +329,17 @@ ax_comp.tick_params(axis='x')
 ax_comp.tick_params(axis='y')
 ax_comp.set_xscale('log')
 ax_comp.set_yscale('log')
-ax_comp.set_ylabel(r"$\Delta m^2_{41} (\text{eV}^2)$", fontsize = 24)
+ax_comp.set_ylabel(r"$\Delta m^2_{41} (\textrm{eV}^2)$", fontsize = 24)
 ax_comp.set_xlabel(r"$\sin^2 2 \theta_{14}$", fontsize = 24)
 ax_comp.set_xlim([4e-3,1])
 ax_comp.set_ylim([8e-2,10])
+
+ax_comp.vlines(solar90,0.08,10,colors='gray',linestyles = 'dashed')
+# ax_comp.vlines(solar99,0.08,10,colors='gray',linestyles = 'dotted')
+ax_comp.annotate("", xy=(solar90*1.5,1.2e-1), xytext=(solar90,1.2e-1),arrowprops=dict(arrowstyle="->", color = 'gray', lw = 1), zorder = 101)
+
 ax_comp.legend(loc = 'upper left', fontsize = 18)
-ax_comp.legend(proxy,[r'$2\sigma$ Plane wave',r'$2\sigma$ Wave packet',r'BEST $2\sigma$ PW',r'BEST $2\sigma$ WP'],loc = 'upper left', fontsize = 17)
+ax_comp.legend(proxy,[r'$2\sigma$ Plane wave',r'$2\sigma$ Wave packet',r'BEST $2\sigma$ PW',r'BEST $2\sigma$ WP', 'Solar'],loc = 'upper left', fontsize = 17)
 
 fig_comp.savefig(plotdir+'ContourComparison.pdf')
 fig_comp.savefig(plotdir+'ContourComparison.png')
