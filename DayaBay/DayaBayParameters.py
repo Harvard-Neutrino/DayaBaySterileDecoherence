@@ -70,6 +70,6 @@ def txt_to_array(filename, sep = ","):
 
 # We use the previous function to read the reconstruction matrix,
 # which is used to transform from real energies to reconstructed energies.
-dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
+dir = os.path.realpath(__file__)[:-len('DayaBayParameters.py')]+"Data/"
 
 reconstruct_mat = txt_to_array(dir+"ReconstructMatrix.dat")

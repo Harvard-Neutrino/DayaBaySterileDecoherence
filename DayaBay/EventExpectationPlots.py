@@ -1,8 +1,12 @@
 #!/usr/bin/python3
 import time
+import os
 
 import DayaBay as DB
 import Models
+
+dir = os.path.realpath(__file__)[:-len('EventExpectationPlots.py')]
+plotdir = dir + 'Figures/'
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,8 +18,8 @@ Model_osc = Models.PlaneWaveSM()
 # Model_coh = Models.WavePacketSM()
 
 # Sterile parameters
-sin2 = 0.06
-dm2 = 0.5
+sin2 = 0.06 # sin^2(theta_{14})
+dm2 = 0.5   # Delta m_{14}^2
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
 
@@ -85,7 +89,7 @@ for i in range(len(fitter.sets_names)):
     axev[i].legend(loc="upper right",fontsize=16)
 
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
+figev.savefig(plotdir+"EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 
 
@@ -116,7 +120,7 @@ for i in range(len(fitter.sets_names)):
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
+figev.savefig(plotdir+"EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 
 
@@ -145,4 +149,4 @@ for i in range(len(fitter.sets_names)):
     # axchi[i].legend(loc="upper right",fontsize=16)
 
 figchi.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figchi.savefig("Figures/Chi2/Chi2_%.2f_%.3f_ste.png"%(dm2,sin2))
+figchi.savefig(plotdir+"Chi2/Chi2_%.2f_%.3f_ste.png"%(dm2,sin2))

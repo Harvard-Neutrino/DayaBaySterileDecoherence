@@ -16,8 +16,7 @@ import os
 # For more information, the process is described in 1610.04802.
 
 
-dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
-
+dir = os.path.realpath(__file__)[:-len('DayaBayData.py')]+"Data/"
 
 # -------------------------------------------------------------
 #   HISTOGRAM BINS

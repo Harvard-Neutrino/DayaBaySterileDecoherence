@@ -1,7 +1,9 @@
 import sys
 import os
-common_dir = '/Common_cython'
-sys.path.append(os.getcwd()[:-8]+common_dir)
+homedir = os.path.realpath(__file__)[:-len('DayaBay/FitClass.py')]
+common_dir = 'Common_cython'
+sys.path.append(homedir+common_dir)
+
 
 import DayaBay as DB
 import Models
@@ -26,6 +28,7 @@ class StandardModelFit:
         Input:
         mass: the value of Delta m^2_{41} of the sterile neutrino.
         angl: the value of sin^2(2theta_{41})
+        sigma: the value of the wave packet width (in nm)
 
         Output: (float) the chi2 value.
         """
@@ -46,6 +49,7 @@ class StandardModelFit:
         mass_ax (array/list): the values of Delta m^2_{41}.
         angl_ax (array/list): the values of sin^2(2theta_{41})
         filename (str): the name of the file in which to write the table.
+        sigma: the value of the wave packet width (in nm)
         """
         file = open(filename,'w')
         for m in mass_ax:
@@ -92,6 +96,7 @@ class SterileFit:
         Input:
         mass: the value of Delta m^2_{41} of the sterile neutrino.
         angl: the value of sin^2(2theta_{41})
+        sigma: the value of the wave packet width (in nm)
 
         Output: (float) the chi2 value.
         """
@@ -113,6 +118,7 @@ class SterileFit:
         mass_ax (array/list): the values of Delta m^2_{41}.
         angl_ax (array/list): the values of sin^2(2theta_{41})
         filename (str): the name of the file in which to write the table.
+        sigma: the value of the wave packet width (in nm)
         """
         file = open(filename,'w')
         for m in mass_ax:
