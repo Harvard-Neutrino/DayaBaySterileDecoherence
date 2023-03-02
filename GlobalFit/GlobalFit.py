@@ -1,9 +1,10 @@
 import sys
 import os
-common_dir = '/Common_cython'
-sys.path.append(os.getcwd()[:-10]+common_dir)
-sys.path.append(os.getcwd()[:-10]+"/NEOS")
-sys.path.append(os.getcwd()[:-10]+"/DayaBay")
+homedir = os.path.realpath(__file__)[:-len('GlobalFit/GlobalFit.py')]
+common_dir = 'Common_cython'
+sys.path.append(homedir+common_dir)
+sys.path.append(homedir+"/NEOS")
+sys.path.append(homedir+"/DayaBay")
 
 import NEOS
 import DayaBay as DB

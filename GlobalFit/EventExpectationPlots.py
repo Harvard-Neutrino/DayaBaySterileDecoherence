@@ -2,10 +2,11 @@
 import time
 import sys
 import os
-common_dir = '/Common_cython'
-sys.path.append(os.getcwd()[:-10]+common_dir)
-sys.path.append(os.getcwd()[:-10]+"/NEOS")
-sys.path.append(os.getcwd()[:-10]+"/DayaBay")
+homedir = os.path.realpath(__file__)[:-len('GlobalFit/EventExpectationPlots.py')]
+common_dir = 'Common_cython'
+sys.path.append(homedir+common_dir)
+sys.path.append(homedir+"/NEOS")
+sys.path.append(homedir+"/DayaBay")
 
 
 import GlobalFit as GF
@@ -26,6 +27,7 @@ dm2 = 0.25
 Model_ste = Models.PlaneWaveSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 # Model_ste = Models.WavePacketSterile(Sin22Th14 = sin2, DM2_41 = dm2)
 
+plotdir = homedir + 'GlobalFit/Figures/'
 
 # -------------------------------------------------------------
 # INITIAL COMPUTATIONS
@@ -95,7 +97,7 @@ for i in range(4):
     axev[i].legend(loc="upper right",fontsize=16)
 
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
+figev.savefig(plotdir+"EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 
 # ----------------------------------------------
@@ -130,7 +132,7 @@ for i in range(4):
     axev[i].legend(loc="upper right",fontsize=16)
 
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.3f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figev.savefig("Figures/EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
+figev.savefig(plotdir+"EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
 
 
 # ----------------------------------------------
@@ -164,4 +166,4 @@ for i in range(4):
     # axchi[i].legend(loc="upper right",fontsize=16)
 
 figchi.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{13} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,np.sum(chi2_per_exp)), fontsize = 17)
-figchi.savefig("Figures/Chi2/Chi2_%.2f_%.3f_ste.png"%(dm2,sin2))
+figchi.savefig(plotdir+"Chi2/Chi2_%.2f_%.3f_ste.png"%(dm2,sin2))

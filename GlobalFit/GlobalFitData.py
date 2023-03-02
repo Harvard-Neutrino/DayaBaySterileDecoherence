@@ -80,7 +80,7 @@ def txt_to_array(filename, sep = ","):
 # Modify all_data such that the observed events is in column 0, expected events in 1 and background events in 2.
 
 # Here we read the data files from DayaBay (1610.04802) and the digitised data from NEOS results (1610.05134).
-dir = os.path.dirname(os.path.abspath(__file__))[:-10]
+dir = os.path.realpath(__file__)[:-len('GlobalFit/GlobalFitData.py')]
 dirDB = dir+"/DayaBay/Data/"
 dirNEOS = dir+"/NEOS/Data/"
 
