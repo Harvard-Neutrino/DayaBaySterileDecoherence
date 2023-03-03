@@ -21,19 +21,14 @@ The main folder of the program contains 5+2 directories. Namely:
  - Misc: some miscellaneous files to plot some interesting graphics, namely those of our paper.
 All the Python files `.py` can be run with the `python3` command on your terminal.
 
-__Note:__ All the programs here have been tested running the command in the same directory where the `.py` file is. That is, if one wants to run `NEOS/FitPlots.py`, the only procedure that has been tested is
-
 ```
 user@user: ~/DayaBaySterileDecoherence$ cd NEOS
 user@user: ~/DayaBaySterileDecoherence/NEOS$ python3 FitPlots.py
 ```
-
-And not
+or
 ```
 user@user: ~/DayaBaySterileDecoherence$ python3 NEOS/FitPlots.py
 ```
-This last command may (or may not) rise some errors. Sorry for the inconvenience.
-
 
 ## Experiment analysis directories
 This section describes the content inside BEST, DayaBay, GlobalFit, NEOS and PROSPECT directories. For clarity, we will use NEOS as the example.
