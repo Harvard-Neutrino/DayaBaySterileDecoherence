@@ -1,7 +1,8 @@
 import sys
 import os
-common_dir = '/Common_cython'
-sys.path.append(os.getcwd()[:-5]+common_dir)
+homedir = os.path.realpath(__file__)[:-len('NEOS/NEOS.py')]
+common_dir = 'Common_cython'
+sys.path.append(homedir+common_dir)
 
 import InverseBetaDecayCrossSection as IBD
 import HuberMullerFlux as HMF

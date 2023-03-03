@@ -1,7 +1,10 @@
 import numpy as np
 import os
 
-dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
+dir = os.path.realpath(__file__)[:-len('NEOSData.py')]+'Data/'
+# common_dir = 'Common_cython'
+# sys.path.append(homedir+common_dir)
+# dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
 
 
 

@@ -1,7 +1,9 @@
 import sys
 import os
-common_dir = '/Common_cython'
-sys.path.append(os.getcwd()[:-5]+common_dir)
+homedir = os.path.realpath(__file__)[:-len('NEOS/EventExpectationPlots.py')]
+common_dir = 'Common_cython/'
+plotdir = homedir + 'NEOS/Figures/'
+sys.path.append(homedir+common_dir)
 
 import time
 import NEOS
@@ -94,7 +96,7 @@ axSM.grid(linestyle="--")
 axSM.legend(loc="upper right",fontsize=16)
 
 figSM.suptitle(r'SM fit: $\Delta m^2_{31} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
-figSM.savefig("Figures/EventExpectation/EventExpectation_SM.png")
+figSM.savefig(plotdir+"EventExpectation/EventExpectation_SM.png")
 
 
 # -------------------------------------------------------
@@ -117,7 +119,7 @@ axev.legend(loc="upper right",fontsize=16)
 # figev.suptitle(r'Our best fit: $\Delta m^2_{13} = 2.5·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.07821$', fontsize = 17)
 # figev.suptitle(r'DB best fit: $\Delta m^2_{13} = 2.4·10^{-3} eV^2$, $\sin^2 2\theta_{13} = 0.0841$', fontsize = 17)
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,chi2), fontsize = 17)
-figev.savefig("Figures/EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
+figev.savefig(plotdir+"EventExpectation/EventExpectation_%.2f_%.3f_ste.png"%(dm2,sin2))
 # As we can see, both ways of computing the event expectations give the same result.
 
 
@@ -145,4 +147,4 @@ axev.grid(linestyle="--")
 axev.legend(loc="lower left",fontsize=16)
 
 figev.suptitle(r'Sterile with $\Delta m^2_{41} = %.2f eV^2$, $\sin^2 2\theta_{14} = %.2f$. Total $\chi^2 = %.2f$'%(dm2,sin2,chi2), fontsize = 17)
-figev.savefig("Figures/EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
+figev.savefig(plotdir+"EventRatio/EventRatio_%.2f_%.3f_ste.png"%(dm2,sin2))
