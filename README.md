@@ -8,7 +8,8 @@ In this file we briefly introduce the program and the different analyses and plo
 In order for most scripts to work, one needs to compile the following file:
 
 ```
-user@user: ~/DayaBaySterileDecoherence$ sh Common_cython/compile.sh
+user@user: ~/DayaBaySterileDecoherence$ cd Common_cython
+user@user: ~/DayaBaySterileDecoherence/Common_cython$ sh compile.sh
 ```
 
 This will prepare the necessary libraries, which are written in Cython. This same command must be done each time a modification is done to the file `Models.py` or `HuberMullerFlux.py`.

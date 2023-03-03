@@ -2,5 +2,5 @@ from distutils.core import setup
 from Cython.Build import cythonize
 
 setup(
-            ext_modules = cythonize("Common_cython/HuberMullerFlux.pyx")
+            ext_modules = cythonize("HuberMullerFlux.pyx", compiler_directives={'language_level' : "3"})
         )
