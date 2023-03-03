@@ -8,7 +8,7 @@ import time
 # Tune these arrays to the interval of parameters you wish to study
 masses = np.logspace(np.log10(2.),1,3)
 
-i = 0
+i = 1
 datmass1 = np.logspace(np.log10(masses[i]),np.log10(masses[i+1]*0.99),30)
 datangl1 = np.logspace(-2,-0.001,40)
 

@@ -22,8 +22,7 @@ def txt_to_array(filename, sep = ","):
     mat = np.array(mat).astype(np.float)
     return mat
 
-
-dir = os.path.dirname(os.path.abspath(__file__))+"/Data/"
+dir = os.path.realpath(__file__)[:-len('PROSPECTParameters.py')]+'Data/'
 
 # -----------------------------------------------------
 #    EXPERIMENTAL PARAMETERS
