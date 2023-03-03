@@ -1,8 +1,8 @@
 # DayaBaySterileDecoherence
 
-This is a very simple Python program designed to analyse different low-energy sterile neutrino experiments, and which is connected to our paper [here](https://arxiv.org/abs/2201.05108). Namely, the program is capable of analysing the [DayaBay](https://arxiv.org/abs/1610.04802v1), [NEOS](https://arxiv.org/abs/1610.05134v4), [PROSPECT](https://arxiv.org/abs/2006.11210v2) and [BEST](https://arxiv.org/abs/2109.11482v1) data. The analyses focus on studying sterile neutrino oscillations, addressing possible differences between the plane wave approximation and the more complete wave package formalism. However, this program can be extended to arbitrary oscillation formulas.
+This is a very simple Python program designed to analyse different low-energy sterile neutrino experiments, and which is connected to our paper [here](https://arxiv.org/abs/2201.05108). Namely, the program is capable of analysing the [DayaBay](https://arxiv.org/abs/1610.04802v1), [NEOS](https://arxiv.org/abs/1610.05134v4), [PROSPECT](https://arxiv.org/abs/2006.11210v2) and [BEST](https://arxiv.org/abs/2109.11482v1) data. The analyses focus on studying sterile neutrino oscillations, addressing possible differences between the plane wave approximation and the more complete wave package formalism. However, this program can be extended to arbitrary oscillation formulas. Program written by Toni Bertólez-Martínez. For any doubt, please open an issue or send an email to antoni.bertolez@fqa.ub.edu.
 
-In this file we briefly introduce the program and the different analyses and plots one can do with it.
+In this ReadMe we briefly introduce the program and the different analyses and plots one can do with it.
 
 ## Before starting
 In order for most scripts to work, one needs to compile the following file:
@@ -12,7 +12,7 @@ user@user: ~/DayaBaySterileDecoherence$ cd Common_cython
 user@user: ~/DayaBaySterileDecoherence/Common_cython$ sh compile.sh
 ```
 
-This will prepare the necessary libraries, which are written in Cython. This same command must be done each time a modification is done to the file `Models.py` or `HuberMullerFlux.py`.
+This will prepare the necessary libraries, which are written in Cython. You require `python3-dev` in order to run these files. This same command must be done each time a modification is done to the file `Models.py` or `HuberMullerFlux.py`.
 
 ## General structure
 The main folder of the program contains 5+2 directories. Namely:
